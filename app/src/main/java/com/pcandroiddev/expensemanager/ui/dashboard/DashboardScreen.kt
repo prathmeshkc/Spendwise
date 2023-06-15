@@ -30,6 +30,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pcandroiddev.expensemanager.R
+import com.pcandroiddev.expensemanager.navigation.ExpenseManagerRouter
+import com.pcandroiddev.expensemanager.navigation.Screen
+import com.pcandroiddev.expensemanager.navigation.SystemBackButtonHandler
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
 
@@ -89,7 +92,7 @@ fun DashboardScreen() {
                 .align(Alignment.BottomEnd),
             containerColor = FABColor,
             onClick = {
-                Log.d("DashboardScreen", "FAB Clicked")
+                ExpenseManagerRouter.navigateTo(destination = Screen.AddTransactionScreen)
             }
 
         ) {

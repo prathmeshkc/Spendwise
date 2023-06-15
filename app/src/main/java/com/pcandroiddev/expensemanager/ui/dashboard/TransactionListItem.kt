@@ -32,6 +32,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pcandroiddev.expensemanager.R
+import com.pcandroiddev.expensemanager.navigation.ExpenseManagerRouter
+import com.pcandroiddev.expensemanager.navigation.Screen
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.GreenIncomeColor
@@ -54,7 +56,7 @@ fun TransactionListItem() {
         modifier = Modifier
             .padding(vertical = 9.dp, horizontal = 16.dp)
             .height(68.dp)
-            .clickable { /*TODO*/ },
+            .clickable { ExpenseManagerRouter.navigateTo(destination = Screen.TransactionDetailsScreen) },
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(containerColor = ComponentsBackgroundColor),
         shape = RoundedCornerShape(2.dp)
