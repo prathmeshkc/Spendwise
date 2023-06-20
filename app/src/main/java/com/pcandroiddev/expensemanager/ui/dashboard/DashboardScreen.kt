@@ -12,8 +12,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Receipt
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -22,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -86,25 +90,35 @@ fun DashboardScreen() {
 
         }
 
-        FloatingActionButton(
+        ExtendedFloatingActionButton(
             modifier = Modifier
-                .padding(bottom = 31.dp, end = 33.dp)
+                .padding(bottom = 30.dp, end = 30.dp)
                 .align(Alignment.BottomEnd),
             containerColor = FABColor,
+            text = {
+                Text(
+                    text = "Add Transaction",
+                    style = TextStyle(
+                        fontFamily = FontFamily(Font(R.font.inter_regular)),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.W500,
+                        color = DetailsTextColor
+                    ),
+
+                    )
+            },
+            icon = {
+                Icon(
+                    imageVector = Icons.Outlined.Receipt,
+                    contentDescription = "Add Transaction",
+                    tint = DetailsTextColor
+                )
+            },
             onClick = {
                 ExpenseManagerRouter.navigateTo(destination = Screen.AddTransactionScreen)
             }
 
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Add,
-                contentDescription = "Add Transaction",
-                tint = DetailsTextColor
-
-            )
-
-        }
-
+        )
     }
 }
 

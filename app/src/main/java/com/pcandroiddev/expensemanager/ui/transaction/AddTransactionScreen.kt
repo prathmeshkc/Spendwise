@@ -53,7 +53,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pcandroiddev.expensemanager.R
+import com.pcandroiddev.expensemanager.data.local.TransactionType
 import com.pcandroiddev.expensemanager.navigation.ExpenseManagerRouter
 import com.pcandroiddev.expensemanager.navigation.Screen
 import com.pcandroiddev.expensemanager.navigation.SystemBackButtonHandler
@@ -63,6 +65,8 @@ import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
+import com.pcandroiddev.expensemanager.ui.uievents.AddTransactionUIEvent
+import com.pcandroiddev.expensemanager.viewmodels.AddTransactionViewModel
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.DatePickerDefaults
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
@@ -70,10 +74,13 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-//TODO: Handle top app bar navigationIcon
+//TODO: Add onValueChange for UIEvents
+
+private const val TAG = "AddTransactionScreen"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTransactionScreen() {
+fun AddTransactionScreen(addTransactionViewModel: AddTransactionViewModel = viewModel()) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = SurfaceBackgroundColor
@@ -106,37 +113,91 @@ fun AddTransactionScreen() {
                 )
             )
 
-            Row(
+            TransactionTypeSegmentedButton(
                 modifier = Modifier
                     .padding(horizontal = 70.dp, vertical = 16.dp)
                     .fillMaxWidth(),
-            ) {
-                val transactionType = listOf("INCOME", "EXPENSE")
-                SegmentedControl(
-                    items = transactionType,
-                    defaultSelectedItemIndex = 1,
-                    useFixedWidth = true,
-                    itemWidth = 120.dp
-                ) {
-                    Log.e("CustomToggle", "Selected item : ${transactionType[it]}")
+                onSelectionChange = { transactionType ->
+                    addTransactionViewModel.onEventChange(
+                        event = AddTransactionUIEvent.TransactionTypeChanged(
+                            transactionType = transactionType
+                        )
+                    )
                 }
-
-
-            }
+            )
 
             Column(
                 modifier = Modifier
                     .padding(horizontal = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
 
-
             ) {
-                TransactionTitleTextFieldComponent()
-                TransactionAmountTextFieldComponent()
-                TransactionTypeMenuComponent()
-                TransactionDateComponent()
-                TransactionNoteComponent()
-                SaveTransactionButton()
+                TransactionTitleTextFieldComponent(
+                    errorStatus = addTransactionViewModel.addTransactionUIState.value.titleError,
+                    onTextChanged = { title ->
+                        addTransactionViewModel.onEventChange(
+                            event = AddTransactionUIEvent.TitleChanged(
+                                title
+                            )
+                        )
+                    }
+                )
+
+
+                TransactionAmountTextFieldComponent(
+                    errorStatus = addTransactionViewModel.addTransactionUIState.value.amountError,
+                    onTextChanged = { amount ->
+                        addTransactionViewModel.onEventChange(
+                            event = AddTransactionUIEvent.AmountChanged(
+                                amount
+                            )
+                        )
+                    }
+                )
+
+
+                TransactionCategoryMenuComponent(
+                    errorStatus = addTransactionViewModel.addTransactionUIState.value.categoryError,
+                    onSelectionChanged = { category ->
+                        addTransactionViewModel.onEventChange(
+                            event = AddTransactionUIEvent.CategoryChanged(
+                                category
+                            )
+                        )
+                    }
+                )
+
+
+                TransactionDateComponent(
+                    onDateChanged = { date ->
+                        addTransactionViewModel.onEventChange(
+                            event = AddTransactionUIEvent.DateChanged(
+                                date
+                            )
+                        )
+                    }
+                )
+
+
+                TransactionNoteComponent(
+                    errorStatus = addTransactionViewModel.addTransactionUIState.value.noteError,
+                    onTextChanged = { note ->
+                        addTransactionViewModel.onEventChange(
+                            event = AddTransactionUIEvent.NoteChanged(
+                                note
+                            )
+                        )
+                    }
+                )
+
+
+                SaveTransactionButton(
+                    onButtonClicked = {
+                        //TODO: Navigate Back to Dashboard. Handle in onButtonClicked Lambda
+                        //TODO: Check if all the fields are filled
+                        addTransactionViewModel.onEventChange(event = AddTransactionUIEvent.SaveTransactionButtonClicked)
+                    }
+                )
 
             }
 
@@ -150,10 +211,37 @@ fun AddTransactionScreen() {
     }
 }
 
+@Composable
+fun TransactionTypeSegmentedButton(
+    modifier: Modifier = Modifier,
+    onSelectionChange: (String) -> Unit
+) {
+    Row(
+        modifier = modifier
+    ) {
+        val transactionTypeItems = listOf("INCOME", "EXPENSE")
+        SegmentedControl(
+            items = transactionTypeItems,
+            defaultSelectedItemIndex = 1,
+            useFixedWidth = true,
+            itemWidth = 120.dp
+        ) {
+            val transactionType: String =
+                if (it == 0) TransactionType.INCOME.name
+                else TransactionType.EXPENSE.name
+            Log.e(TAG, "Selected item : $transactionType")
+            onSelectionChange(transactionType)
+        }
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionTitleTextFieldComponent() {
+fun TransactionTitleTextFieldComponent(
+    errorStatus: Boolean = false,
+    onTextChanged: (String) -> Unit
+) {
 
 
     var transactionTitle by remember {
@@ -164,15 +252,15 @@ fun TransactionTitleTextFieldComponent() {
         mutableStateOf(false)
     }
 
-    val isErrorInTitle by remember {
-        derivedStateOf {
-            if (!isFocused && transactionTitle.isEmpty()) {
-                false
-            } else {
-                transactionTitle.isEmpty()
-            }
-        }
-    }
+    /* val isErrorInTitle by remember {
+         derivedStateOf {
+             if (!isFocused && transactionTitle.isEmpty()) {
+                 false
+             } else {
+                 transactionTitle.isEmpty()
+             }
+         }
+     }*/
 
 
 
@@ -187,6 +275,7 @@ fun TransactionTitleTextFieldComponent() {
         value = transactionTitle,
         onValueChange = {
             transactionTitle = it
+            onTextChanged(it)
         },
         textStyle = TextStyle(
             color = DetailsTextColor,
@@ -207,16 +296,16 @@ fun TransactionTitleTextFieldComponent() {
             )
         },
         supportingText = {
-            if (isErrorInTitle) {
+            if (isFocused && !errorStatus) {
                 Text(
                     text = "Title must not be empty",
                     fontFamily = FontFamily(Font(R.font.inter_regular))
                 )
             }
         },
-        isError = isErrorInTitle,
+        isError = isFocused && !errorStatus,
         trailingIcon = {
-            if (isErrorInTitle) {
+            if (isFocused && !errorStatus) {
                 Icon(
                     imageVector = Icons.Filled.Error,
                     tint = MaterialTheme.colorScheme.error,
@@ -227,7 +316,6 @@ fun TransactionTitleTextFieldComponent() {
         singleLine = true,
         colors = TextFieldDefaults.outlinedTextFieldColors(
             containerColor = SurfaceBackgroundColor,
-
             focusedBorderColor = FABColor,
             cursorColor = Color.White,
             focusedLabelColor = FABColor,
@@ -242,7 +330,10 @@ fun TransactionTitleTextFieldComponent() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionAmountTextFieldComponent() {
+fun TransactionAmountTextFieldComponent(
+    errorStatus: Boolean = false,
+    onTextChanged: (String) -> Unit
+) {
 
     var transactionAmount by remember {
         mutableStateOf("")
@@ -252,16 +343,16 @@ fun TransactionAmountTextFieldComponent() {
         mutableStateOf(false)
     }
 
-    val isErrorInAmount by remember {
-        derivedStateOf {
-            if (!isFocused && transactionAmount.isEmpty()) {
-                false
-            } else {
-                transactionAmount.isEmpty()
-            }
-        }
-    }
-
+    /* val isErrorInAmount by remember {
+         derivedStateOf {
+             if (!isFocused && transactionAmount.isEmpty()) {
+                 false
+             } else {
+                 transactionAmount.isEmpty()
+             }
+         }
+     }
+ */
 
     OutlinedTextField(
         modifier = Modifier
@@ -274,6 +365,7 @@ fun TransactionAmountTextFieldComponent() {
         value = transactionAmount,
         onValueChange = {
             transactionAmount = it
+            onTextChanged(it)
         },
         textStyle = TextStyle(
             color = DetailsTextColor,
@@ -295,16 +387,16 @@ fun TransactionAmountTextFieldComponent() {
             )
         },
         supportingText = {
-            if (isErrorInAmount) {
+            if (isFocused && !errorStatus) {
                 Text(
-                    text = "Title must not be empty",
+                    text = "Amount must not be empty",
                     fontFamily = FontFamily(Font(R.font.inter_regular))
                 )
             }
         },
-        isError = isErrorInAmount,
+        isError = isFocused && !errorStatus,
         trailingIcon = {
-            if (isErrorInAmount) {
+            if (isFocused && !errorStatus) {
                 Icon(
                     imageVector = Icons.Filled.Error,
                     tint = MaterialTheme.colorScheme.error,
@@ -334,13 +426,16 @@ fun TransactionAmountTextFieldComponent() {
             imeAction = ImeAction.Next
         ),
 
-    )
+        )
 }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionTypeMenuComponent() {
+fun TransactionCategoryMenuComponent(
+    errorStatus: Boolean = false,
+    onSelectionChanged: (String) -> Unit
+) {
     val transactionCategory = listOf(
         "Entertainment", "Food", "Healthcare",
         "Housing", "Insurance", "Miscellaneous",
@@ -348,9 +443,13 @@ fun TransactionTypeMenuComponent() {
         "Transportation", "Utilities"
     )
 
+    var isFocused by remember {
+        mutableStateOf(false)
+    }
+
     var isExpanded by remember { mutableStateOf(false) }
 
-    var selectedFilter by remember { mutableStateOf(transactionCategory[0]) }
+    var selectedCategory by remember { mutableStateOf("") }
 
     ExposedDropdownMenuBox(
         modifier = Modifier
@@ -362,7 +461,7 @@ fun TransactionTypeMenuComponent() {
     ) {
 
         OutlinedTextField(
-            value = selectedFilter,
+            value = selectedCategory,
             onValueChange = { },
             textStyle = TextStyle(
                 color = DetailsTextColor,
@@ -376,6 +475,7 @@ fun TransactionTypeMenuComponent() {
                     fontFamily = FontFamily(Font(R.font.inter_regular))
                 )
             },
+            isError = isFocused && !errorStatus,
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
             },
@@ -387,7 +487,14 @@ fun TransactionTypeMenuComponent() {
                 focusedLabelColor = FABColor,
                 unfocusedLabelColor = HeadingTextColor
             ),
-            modifier = Modifier.menuAnchor()
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor()
+                .onFocusChanged { focusState ->
+                    if (focusState.isFocused) {
+                        isFocused = true
+                    }
+                }
         )
 
         ExposedDropdownMenu(
@@ -412,8 +519,13 @@ fun TransactionTypeMenuComponent() {
                         )
                     },
                     onClick = {
-                        selectedFilter = filter
+                        selectedCategory = filter
                         isExpanded = false
+                        onSelectionChanged(filter)
+                        Log.d(
+                            TAG,
+                            "TransactionCategoryMenuComponent selectedCategory: $selectedCategory"
+                        )
                     })
             }
         }
@@ -425,7 +537,9 @@ fun TransactionTypeMenuComponent() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionDateComponent() {
+fun TransactionDateComponent(
+    onDateChanged: (String) -> Unit
+) {
 
     var selectedDate by remember {
         mutableStateOf(LocalDate.now())
@@ -512,6 +626,8 @@ fun TransactionDateComponent() {
             )
         ) {
             selectedDate = it
+            onDateChanged(formattedDate)
+            Log.d(TAG, "TransactionDateComponent formattedDate: $formattedDate")
         }
 
     }
@@ -522,7 +638,10 @@ fun TransactionDateComponent() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionNoteComponent() {
+fun TransactionNoteComponent(
+    errorStatus: Boolean = false,
+    onTextChanged: (String) -> Unit
+) {
 
     val localFocusManager = LocalFocusManager.current
 
@@ -530,12 +649,22 @@ fun TransactionNoteComponent() {
         mutableStateOf("")
     }
 
+    var isFocused by remember {
+        mutableStateOf(false)
+    }
+
     TextField(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .onFocusChanged { focusState ->
+                if(focusState.isFocused) {
+                    isFocused = true
+                }
+            },
         value = transactionNote,
         onValueChange = {
             transactionNote = it
+            onTextChanged(it)
         },
         textStyle = TextStyle(
             color = DetailsTextColor,
@@ -549,6 +678,15 @@ fun TransactionNoteComponent() {
                 text = "Transaction Note",
                 fontFamily = FontFamily(Font(R.font.inter_regular))
             )
+        },
+        isError = isFocused && !errorStatus,
+        supportingText = {
+            if (isFocused && !errorStatus) {
+                Text(
+                    text = "Only whitespaces not allowed!",
+                    fontFamily = FontFamily(Font(R.font.inter_regular))
+                )
+            }
         },
         colors = TextFieldDefaults.textFieldColors(
             containerColor = SurfaceBackgroundColor,
@@ -569,7 +707,9 @@ fun TransactionNoteComponent() {
 }
 
 @Composable
-fun SaveTransactionButton() {
+fun SaveTransactionButton(
+    onButtonClicked: () -> Unit
+) {
     ExtendedFloatingActionButton(
         modifier = Modifier
             .padding(top = 30.dp)
@@ -589,7 +729,11 @@ fun SaveTransactionButton() {
                 contentDescription = "Save Transaction"
             )
         },
-        onClick = { ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen) },
+        onClick = {
+            onButtonClicked.invoke()
+//            ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)
+            Log.d(TAG, "SaveTransactionButton: Save Transaction Button Clicked")
+        },
         containerColor = FABColor
     )
 
@@ -598,8 +742,17 @@ fun SaveTransactionButton() {
 
 @Preview
 @Composable
-fun AddEditTransactionScreenPreview() {
+fun AddTransactionScreenPreview() {
 
-    AddTransactionScreen()
+//    AddTransactionScreen()
+
+    TransactionTypeSegmentedButton(
+        modifier = Modifier
+            .padding(horizontal = 70.dp, vertical = 16.dp)
+            .fillMaxWidth(),
+        onSelectionChange = {
+            Log.d(TAG, "AddTransactionScreenPreview: $it")
+        }
+    )
 
 }

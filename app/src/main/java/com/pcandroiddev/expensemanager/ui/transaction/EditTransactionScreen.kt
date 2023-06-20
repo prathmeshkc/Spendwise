@@ -30,6 +30,7 @@ import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
+import com.pcandroiddev.expensemanager.ui.uievents.AddTransactionUIEvent
 
 
 //TODO: Pass in the ViewModel, which will provide the Transaction object.
@@ -92,12 +93,46 @@ fun EditTransactionScreen() {
                 verticalArrangement = Arrangement.spacedBy(20.dp)
 
             ) {
-                TransactionTitleTextFieldComponent()
-                TransactionAmountTextFieldComponent()
-                TransactionTypeMenuComponent()
-                TransactionDateComponent()
-                TransactionNoteComponent()
-                SaveTransactionButton()
+                TransactionTitleTextFieldComponent(
+                    onTextChanged = { title ->
+
+                    }
+                )
+
+
+                TransactionAmountTextFieldComponent(
+                    onTextChanged = { amount ->
+
+                    }
+                )
+
+
+                TransactionCategoryMenuComponent(
+                    onSelectionChanged = { category ->
+
+                    }
+                )
+
+
+                TransactionDateComponent(
+                    onDateChanged = { date ->
+
+                    }
+                )
+
+
+                TransactionNoteComponent(
+                    onTextChanged = { note ->
+
+                    }
+                )
+
+
+                SaveTransactionButton(
+                    onButtonClicked = {
+
+                    }
+                )
 
             }
 
