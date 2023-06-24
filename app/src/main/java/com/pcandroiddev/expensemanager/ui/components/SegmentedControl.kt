@@ -1,9 +1,8 @@
-package com.pcandroiddev.expensemanager.ui.custom
+package com.pcandroiddev.expensemanager.ui.components
 
 import androidx.annotation.ColorRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
@@ -50,7 +49,7 @@ fun SegmentedControl(
     val selectedIndex = remember { mutableStateOf(defaultSelectedItemIndex) }
 
     Row(
-        modifier = Modifier.fillMaxWidth()
+//        modifier = Modifier.fillMaxWidth()
     ) {
         items.forEachIndexed { index, item ->
             OutlinedButton(

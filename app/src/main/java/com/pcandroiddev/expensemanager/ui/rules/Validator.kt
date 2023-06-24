@@ -1,7 +1,12 @@
 package com.pcandroiddev.expensemanager.ui.rules
 
 import android.util.Log
+import android.util.Patterns
 
+
+/**
+Returns true if validation is successful
+ */
 object Validator {
 
     fun validateTitle(title: String): ValidationResult {
@@ -23,13 +28,19 @@ object Validator {
         )
     }
 
-    //TODO: In case we decide to go with monthly refresh approach, change the validation logic for date to be not more than that months end date
 
     fun validateNote(note: String): ValidationResult {
         return ValidationResult(
             status = note.isNotBlank()
         )
     }
+
+    fun validateEmail(email: String): ValidationResult {
+        return ValidationResult(
+            status = (email.isNotEmpty() && Patterns.EMAIL_ADDRESS.matcher(email).matches())
+        )
+    }
+
 
 }
 

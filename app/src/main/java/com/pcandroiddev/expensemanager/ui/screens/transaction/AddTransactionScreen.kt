@@ -1,4 +1,4 @@
-package com.pcandroiddev.expensemanager.ui.transaction
+package com.pcandroiddev.expensemanager.ui.screens.transaction
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -27,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -59,7 +60,7 @@ import com.pcandroiddev.expensemanager.data.local.TransactionType
 import com.pcandroiddev.expensemanager.navigation.ExpenseManagerRouter
 import com.pcandroiddev.expensemanager.navigation.Screen
 import com.pcandroiddev.expensemanager.navigation.SystemBackButtonHandler
-import com.pcandroiddev.expensemanager.ui.custom.SegmentedControl
+import com.pcandroiddev.expensemanager.ui.components.SegmentedControl
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
@@ -108,23 +109,27 @@ fun AddTransactionScreen(addTransactionViewModel: AddTransactionViewModel = view
                         )
                     }
                 },
-                colors = TopAppBarDefaults.smallTopAppBarColors(
+                colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = ComponentsBackgroundColor
                 )
             )
 
-            TransactionTypeSegmentedButton(
+            Row(
                 modifier = Modifier
-                    .padding(horizontal = 70.dp, vertical = 16.dp)
+                    .padding(top = 12.dp, bottom = 12.dp)
                     .fillMaxWidth(),
-                onSelectionChange = { transactionType ->
-                    addTransactionViewModel.onEventChange(
-                        event = AddTransactionUIEvent.TransactionTypeChanged(
-                            transactionType = transactionType
+                horizontalArrangement = Arrangement.Center
+            ) {
+                TransactionTypeSegmentedButton(
+                    onSelectionChange = { transactionType ->
+                        addTransactionViewModel.onEventChange(
+                            event = AddTransactionUIEvent.TransactionTypeChanged(
+                                transactionType = transactionType
+                            )
                         )
-                    )
-                }
-            )
+                    }
+                )
+            }
 
             Column(
                 modifier = Modifier
@@ -213,30 +218,26 @@ fun AddTransactionScreen(addTransactionViewModel: AddTransactionViewModel = view
 
 @Composable
 fun TransactionTypeSegmentedButton(
-    modifier: Modifier = Modifier,
     onSelectionChange: (String) -> Unit
 ) {
-    Row(
-        modifier = modifier
+
+    val transactionTypeItems = listOf("INCOME", "EXPENSE")
+    SegmentedControl(
+        items = transactionTypeItems,
+        defaultSelectedItemIndex = 1,
+        useFixedWidth = true,
+        itemWidth = 120.dp
     ) {
-        val transactionTypeItems = listOf("INCOME", "EXPENSE")
-        SegmentedControl(
-            items = transactionTypeItems,
-            defaultSelectedItemIndex = 1,
-            useFixedWidth = true,
-            itemWidth = 120.dp
-        ) {
-            val transactionType: String =
-                if (it == 0) TransactionType.INCOME.name
-                else TransactionType.EXPENSE.name
-            Log.e(TAG, "Selected item : $transactionType")
-            onSelectionChange(transactionType)
-        }
+        val transactionType: String =
+            if (it == 0) TransactionType.INCOME.name
+            else TransactionType.EXPENSE.name
+        Log.e(TAG, "Selected item : $transactionType")
+        onSelectionChange(transactionType)
     }
+
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionTitleTextFieldComponent(
     errorStatus: Boolean = false,
@@ -314,12 +315,15 @@ fun TransactionTitleTextFieldComponent(
             }
         },
         singleLine = true,
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            containerColor = SurfaceBackgroundColor,
-            focusedBorderColor = FABColor,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = SurfaceBackgroundColor,
+            unfocusedContainerColor = SurfaceBackgroundColor,
+            disabledContainerColor = SurfaceBackgroundColor,
             cursorColor = Color.White,
+            focusedBorderColor = FABColor,
+            unfocusedBorderColor = DetailsTextColor,
             focusedLabelColor = FABColor,
-            unfocusedLabelColor = HeadingTextColor
+            unfocusedLabelColor = DetailsTextColor,
         ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
 
@@ -328,7 +332,6 @@ fun TransactionTitleTextFieldComponent(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionAmountTextFieldComponent(
     errorStatus: Boolean = false,
@@ -412,14 +415,18 @@ fun TransactionAmountTextFieldComponent(
         },
         singleLine = true,
         maxLines = 1,
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            containerColor = SurfaceBackgroundColor,
-            textColor = DetailsTextColor,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = SurfaceBackgroundColor,
+            unfocusedContainerColor = SurfaceBackgroundColor,
+            focusedTextColor = DetailsTextColor,
+            unfocusedTextColor = DetailsTextColor,
             focusedBorderColor = FABColor,
+            unfocusedBorderColor = DetailsTextColor,
             cursorColor = Color.White,
             focusedLeadingIconColor = DetailsTextColor,
+            unfocusedLeadingIconColor = DetailsTextColor,
             focusedLabelColor = FABColor,
-            unfocusedLabelColor = HeadingTextColor
+            unfocusedLabelColor = DetailsTextColor
         ),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number,
@@ -479,13 +486,16 @@ fun TransactionCategoryMenuComponent(
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
             },
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                containerColor = SurfaceBackgroundColor,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = SurfaceBackgroundColor,
+                unfocusedContainerColor = SurfaceBackgroundColor,
+                disabledContainerColor = SurfaceBackgroundColor,
                 focusedBorderColor = FABColor,
+                unfocusedBorderColor = DetailsTextColor,
                 focusedTrailingIconColor = FABColor,
-                unfocusedTrailingIconColor = HeadingTextColor,
+                unfocusedTrailingIconColor = DetailsTextColor,
                 focusedLabelColor = FABColor,
-                unfocusedLabelColor = HeadingTextColor
+                unfocusedLabelColor = DetailsTextColor,
             ),
             modifier = Modifier
                 .fillMaxWidth()
@@ -535,7 +545,6 @@ fun TransactionCategoryMenuComponent(
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionDateComponent(
     onDateChanged: (String) -> Unit
@@ -583,13 +592,14 @@ fun TransactionDateComponent(
             fontFamily = FontFamily(Font(R.font.inter_regular)),
             fontSize = 15.sp
         ),
-        colors = TextFieldDefaults.textFieldColors(
-            disabledIndicatorColor = HeadingTextColor,
+        colors = TextFieldDefaults.colors(
             disabledTextColor = DetailsTextColor,
+            focusedContainerColor = SurfaceBackgroundColor,
+            unfocusedContainerColor = SurfaceBackgroundColor,
+            disabledContainerColor = SurfaceBackgroundColor,
+            disabledIndicatorColor = HeadingTextColor,
             disabledLabelColor = DetailsTextColor,
-            containerColor = SurfaceBackgroundColor,
-
-            ),
+        ),
 
         )
 
@@ -636,7 +646,6 @@ fun TransactionDateComponent(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionNoteComponent(
     errorStatus: Boolean = false,
@@ -657,7 +666,7 @@ fun TransactionNoteComponent(
         modifier = Modifier
             .fillMaxWidth()
             .onFocusChanged { focusState ->
-                if(focusState.isFocused) {
+                if (focusState.isFocused) {
                     isFocused = true
                 }
             },
@@ -688,14 +697,16 @@ fun TransactionNoteComponent(
                 )
             }
         },
-        colors = TextFieldDefaults.textFieldColors(
-            containerColor = SurfaceBackgroundColor,
-            disabledIndicatorColor = HeadingTextColor,
-            focusedIndicatorColor = FABColor,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = SurfaceBackgroundColor,
+            unfocusedContainerColor = SurfaceBackgroundColor,
+            disabledContainerColor = SurfaceBackgroundColor,
+            errorContainerColor = SurfaceBackgroundColor,
             cursorColor = Color.White,
+            focusedIndicatorColor = FABColor,
+            unfocusedIndicatorColor = DetailsTextColor,
             focusedLabelColor = FABColor,
-            unfocusedLabelColor = HeadingTextColor
-
+            unfocusedLabelColor = DetailsTextColor,
         ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions {
@@ -744,15 +755,28 @@ fun SaveTransactionButton(
 @Composable
 fun AddTransactionScreenPreview() {
 
-//    AddTransactionScreen()
 
-    TransactionTypeSegmentedButton(
+    /*TransactionTypeSegmentedButton(
         modifier = Modifier
             .padding(horizontal = 70.dp, vertical = 16.dp)
             .fillMaxWidth(),
         onSelectionChange = {
             Log.d(TAG, "AddTransactionScreenPreview: $it")
         }
-    )
+    )*/
+
+    Row(
+        modifier = Modifier
+            .padding(top = 12.dp, bottom = 12.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        TransactionTypeSegmentedButton(
+            onSelectionChange = { transactionType ->
+
+            }
+        )
+    }
+
 
 }

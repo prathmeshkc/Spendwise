@@ -7,11 +7,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.pcandroiddev.expensemanager.navigation.ExpenseManagerRouter
 import com.pcandroiddev.expensemanager.navigation.Screen
-import com.pcandroiddev.expensemanager.ui.dashboard.DashboardScreen
+import com.pcandroiddev.expensemanager.ui.screens.dashboard.DashboardScreen
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
-import com.pcandroiddev.expensemanager.ui.transaction.AddTransactionScreen
-import com.pcandroiddev.expensemanager.ui.transaction.EditTransactionScreen
-import com.pcandroiddev.expensemanager.ui.transaction.TransactionDetailsScreen
+import com.pcandroiddev.expensemanager.ui.screens.transaction.AddTransactionScreen
+import com.pcandroiddev.expensemanager.ui.screens.transaction.EditTransactionScreen
+import com.pcandroiddev.expensemanager.ui.screens.transaction.TransactionDetailsScreen
 
 @Composable
 fun ExpenseManagerApp() {

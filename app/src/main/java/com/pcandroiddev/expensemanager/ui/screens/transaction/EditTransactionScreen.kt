@@ -1,4 +1,4 @@
-package com.pcandroiddev.expensemanager.ui.transaction
+package com.pcandroiddev.expensemanager.ui.screens.transaction
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
@@ -25,12 +25,11 @@ import androidx.compose.ui.unit.sp
 import com.pcandroiddev.expensemanager.navigation.ExpenseManagerRouter
 import com.pcandroiddev.expensemanager.navigation.Screen
 import com.pcandroiddev.expensemanager.navigation.SystemBackButtonHandler
-import com.pcandroiddev.expensemanager.ui.custom.SegmentedControl
+import com.pcandroiddev.expensemanager.ui.components.SegmentedControl
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
-import com.pcandroiddev.expensemanager.ui.uievents.AddTransactionUIEvent
 
 
 //TODO: Pass in the ViewModel, which will provide the Transaction object.
@@ -64,7 +63,7 @@ fun EditTransactionScreen() {
                         )
                     }
                 },
-                colors = TopAppBarDefaults.smallTopAppBarColors(
+                colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = ComponentsBackgroundColor
                 )
             )

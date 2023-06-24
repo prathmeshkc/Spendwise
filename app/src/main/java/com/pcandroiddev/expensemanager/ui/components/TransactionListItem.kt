@@ -1,4 +1,4 @@
-package com.pcandroiddev.expensemanager.ui.dashboard
+package com.pcandroiddev.expensemanager.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -49,7 +49,7 @@ import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
  * 6. Transaction Data
  */
 
-
+//TODO: Add click listener HOF
 @Composable
 fun TransactionListItem() {
     Card(
@@ -119,6 +119,7 @@ fun TransactionListItem() {
 
 
                     ) {
+                    //TODO: Change the color of the text based on the transaction type
                     Text(
                         text = "+$1750.0",
                         fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
