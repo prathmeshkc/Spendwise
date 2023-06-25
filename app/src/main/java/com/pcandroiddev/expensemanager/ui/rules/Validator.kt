@@ -35,10 +35,41 @@ object Validator {
         )
     }
 
-    fun validateEmail(email: String): ValidationResult {
-        return ValidationResult(
-            status = (email.isNotEmpty() && Patterns.EMAIL_ADDRESS.matcher(email).matches())
-        )
+    fun validateName(name: String): Pair<Boolean, String> {
+        if (name.isEmpty() || name.isBlank()) {
+            return Pair(first = false, second = "Name must not be empty!")
+        }
+
+        if (name.length <= 3) {
+            return Pair(first = false, second = "Name should contain more than 3 characters!")
+        }
+
+        return Pair(first = true, second = "")
+    }
+
+    fun validateEmail(email: String): Pair<Boolean, String> {
+
+        if (email.isEmpty() || email.isBlank()) {
+            return Pair(first = false, second = "Email must not be empty!")
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            return Pair(first = false, second = "Invalid email address!")
+        }
+
+        return Pair(first = true, second = "")
+    }
+
+    fun validatePassword(password: String): Pair<Boolean, String> {
+        if (password.isEmpty()) {
+            return Pair(first = false, second = "Password must not be empty!")
+        }
+
+        if (password.length <= 4) {
+            return Pair(first = false, second = "Password should be more than 4 characters!")
+        }
+
+        return Pair(first = true, second = "")
     }
 
 

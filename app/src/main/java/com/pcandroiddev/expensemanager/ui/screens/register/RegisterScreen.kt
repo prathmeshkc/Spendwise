@@ -6,19 +6,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.FloatingActionButtonElevation
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -35,32 +38,46 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pcandroiddev.expensemanager.R
+import com.pcandroiddev.expensemanager.navigation.ExpenseManagerRouter
+import com.pcandroiddev.expensemanager.navigation.Screen
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
+import com.pcandroiddev.expensemanager.ui.theme.DisabledButtonColor
+import com.pcandroiddev.expensemanager.ui.theme.DisabledTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
+import com.pcandroiddev.expensemanager.ui.theme.LinkColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
+import com.pcandroiddev.expensemanager.ui.uievents.RegisterUIEvent
+import com.pcandroiddev.expensemanager.viewmodels.RegisterViewModel
 
 private const val TAG = "RegisterScreen"
 
 @Composable
-fun RegisterScreen() {
+fun RegisterScreen(registerViewModel: RegisterViewModel = viewModel()) {
 
     Surface(
         modifier = Modifier
@@ -69,12 +86,11 @@ fun RegisterScreen() {
     ) {
         Column(
             modifier = Modifier
-                .padding(start = 30.dp, end = 30.dp, top = 36.dp, bottom = 60.dp)
+                .padding(start = 30.dp, end = 30.dp, top = 26.dp, bottom = 30.dp)
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
         ) {
             Text(
-                modifier = Modifier
-                    .padding(top = 32.dp),
                 text = "Create New Account",
                 style = TextStyle(
                     color = DetailsTextColor,
@@ -94,25 +110,50 @@ fun RegisterScreen() {
                 )
             )
 
-            //TODO: handle errorStatus from the ViewModel
-            EmailTextField(
+            SimpleTextField(
                 modifier = Modifier
-                    .padding(top = 109.dp),
+                    .padding(top = 50.dp),
+                label = "Name",
+                placeholder = "Full Name",
+                leadingIcon = Icons.Outlined.Person,
+                errorStatus = registerViewModel.registerUIState.value.nameError,
                 onTextChanged = {
+                    registerViewModel.onEventChange(
+                        event = RegisterUIEvent.NameChanged(name = it)
+                    )
+                }
+            )
 
+            SimpleTextField(
+                modifier = Modifier
+                    .padding(top = 43.dp),
+                label = "Email",
+                placeholder = "Email",
+                leadingIcon = Icons.Outlined.Email,
+                errorStatus = registerViewModel.registerUIState.value.emailError,
+                onTextChanged = {
+                    registerViewModel.onEventChange(
+                        event = RegisterUIEvent.EmailChanged(email = it)
+                    )
                 })
 
-            //TODO: handle errorStatus from the ViewModel
             PasswordTextFieldComponent(
                 modifier = Modifier
                     .padding(top = 43.dp),
+                errorStatus = registerViewModel.registerUIState.value.passwordError,
                 onTextChanged = {
-
+                    registerViewModel.onEventChange(
+                        event = RegisterUIEvent.PasswordChanged(password = it)
+                    )
                 })
 
-            RegisterLoginButtonComponent(onButtonClicked = {
-
-            })
+            //TODO: Use LaunchedEffect to observe the sig up status
+            RegisterLoginButtonComponent(
+                label = "SIGN UP",
+                isEnable = registerViewModel.allValidationPassed.value,
+                onButtonClicked = {
+                    registerViewModel.onEventChange(event = RegisterUIEvent.RegisterButtonClicked)
+                })
 
             Text(
                 modifier = Modifier
@@ -134,7 +175,7 @@ fun RegisterScreen() {
                 horizontalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 Text(
-                    text = "SIGN IN WITH: ",
+                    text = "SIGN UP WITH: ",
                     style = TextStyle(
                         color = DetailsTextColor,
                         fontSize = 16.sp,
@@ -142,7 +183,10 @@ fun RegisterScreen() {
                     )
                 )
 
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = {
+                    //TODO: Use LaunchedEffect
+//                    registerViewModel.onEventChange(event = RegisterUIEvent.GoogleSignUpClicked)
+                }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_google),
                         contentDescription = "Sign Up with Google",
@@ -150,6 +194,14 @@ fun RegisterScreen() {
                     )
                 }
             }
+
+            ClickableLoginTextComponent(
+                modifier = Modifier
+                    .padding(top = 20.dp),
+                tryingToLogin = true,
+                onTextSelected = {
+                    ExpenseManagerRouter.navigateTo(destination = Screen.LoginScreen)
+                })
 
 
         }
@@ -159,13 +211,16 @@ fun RegisterScreen() {
 
 
 @Composable
-fun EmailTextField(
+fun SimpleTextField(
     modifier: Modifier = Modifier,
-    errorStatus: Boolean = false,
+    label: String,
+    placeholder: String,
+    leadingIcon: ImageVector,
+    errorStatus: Pair<Boolean, String> = Pair(false, ""),
     onTextChanged: (String) -> Unit
 ) {
 
-    var emailText by remember {
+    var text by remember {
         mutableStateOf("")
     }
 
@@ -181,9 +236,9 @@ fun EmailTextField(
                     isFocused = true
                 }
             },
-        value = emailText,
+        value = text,
         onValueChange = {
-            emailText = it
+            text = it
             onTextChanged(it)
         },
         textStyle = TextStyle(
@@ -193,41 +248,41 @@ fun EmailTextField(
         ),
         label = {
             Text(
-                text = "Email",
+                text = label,
                 fontFamily = FontFamily(Font(R.font.inter_regular))
             )
         },
         placeholder = {
             Text(
-                text = "example@domain.com",
+                text = placeholder,
                 fontFamily = FontFamily(Font(R.font.inter_regular)),
                 color = HeadingTextColor
             )
         },
         supportingText = {
-            if (isFocused && !errorStatus) {
+            if (isFocused && !errorStatus.first) {
                 Text(
-                    text = "Email must not be empty",
+                    text = errorStatus.second,
                     fontFamily = FontFamily(Font(R.font.inter_regular))
                 )
             }
         },
-        isError = isFocused && !errorStatus,
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Outlined.Email,
-                tint = HeadingTextColor,
-                contentDescription = "Email Icon"
-            )
-        },
+        isError = isFocused && !errorStatus.first,
         trailingIcon = {
-            if (isFocused && !errorStatus) {
+            if (isFocused && !errorStatus.first) {
                 Icon(
                     imageVector = Icons.Filled.Error,
                     tint = MaterialTheme.colorScheme.error,
-                    contentDescription = "Email Empty Error"
+                    contentDescription = "$label Empty Error"
                 )
             }
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = leadingIcon,
+                tint = HeadingTextColor,
+                contentDescription = "$label Icon"
+            )
         },
         singleLine = true,
         colors = TextFieldDefaults.colors(
@@ -251,7 +306,7 @@ fun EmailTextField(
 @Composable
 fun PasswordTextFieldComponent(
     modifier: Modifier = Modifier,
-    errorStatus: Boolean = false,
+    errorStatus: Pair<Boolean, String> = Pair(false, ""),
     onTextChanged: (String) -> Unit,
 ) {
 
@@ -328,7 +383,15 @@ fun PasswordTextFieldComponent(
 
         },
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        isError = isFocused && !errorStatus,
+        isError = isFocused && !errorStatus.first,
+        supportingText = {
+            if (isFocused && !errorStatus.first) {
+                Text(
+                    text = errorStatus.second,
+                    fontFamily = FontFamily(Font(R.font.inter_regular))
+                )
+            }
+        },
         colors = TextFieldDefaults.colors(
             focusedTextColor = HeadingTextColor,
             unfocusedTextColor = HeadingTextColor,
@@ -348,36 +411,96 @@ fun PasswordTextFieldComponent(
 
 @Composable
 fun RegisterLoginButtonComponent(
+    label: String,
+    isEnable: Boolean = false,
     onButtonClicked: () -> Unit
 ) {
-    ExtendedFloatingActionButton(
+    Button(
         modifier = Modifier
-            .padding(top = 50.dp)
+            .padding(top = 30.dp)
             .fillMaxWidth(),
-        text = {
-            Text(
-                text = "SIGN UP",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = DetailsTextColor
-            )
-        },
-        icon = {
-            Icon(
-                imageVector = Icons.Default.Check,
-                tint = Color.White,
-                contentDescription = "Register Account"
-            )
-        },
+        enabled = isEnable,
         onClick = {
             onButtonClicked.invoke()
 //            ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)
             Log.d(TAG, "RegisterLoginButtonComponent Clicked")
         },
-        containerColor = FABColor,
-        elevation = FloatingActionButtonDefaults.elevation(
+        colors = ButtonDefaults.buttonColors(
+            containerColor = FABColor,
+            disabledContainerColor = DisabledButtonColor,
+            contentColor = DetailsTextColor,
+            disabledContentColor = DisabledTextColor
+
+        ),
+        elevation = ButtonDefaults.buttonElevation(
             defaultElevation = 12.dp
         )
+    ) {
+        Text(
+            text = label,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+
+            )
+    }
+}
+
+@Composable
+fun ClickableLoginTextComponent(
+    modifier: Modifier = Modifier,
+    tryingToLogin: Boolean = false,
+    onTextSelected: (String) -> Unit
+) {
+    val initialText =
+        if (tryingToLogin) "Already have an account? " else "Don’t have an account? "
+    val loginText = if (tryingToLogin) "Login" else "Register"
+
+    val annotatedString = buildAnnotatedString {
+        withStyle(
+            style = SpanStyle(
+                color = DetailsTextColor,
+                fontSize = 20.sp,
+                fontFamily = FontFamily(Font(R.font.inter_light))
+            )
+        ) {
+            append(initialText)
+        }
+
+        withStyle(
+            style = SpanStyle(
+                color = LinkColor,
+                fontSize = 20.sp,
+                fontFamily = FontFamily(Font(R.font.inter_light))
+            )
+        ) {
+            pushStringAnnotation(tag = loginText, annotation = loginText)
+            append(loginText)
+        }
+    }
+
+    ClickableText(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 40.dp),
+        style = TextStyle(
+            fontSize = 21.sp,
+            fontWeight = FontWeight.Normal,
+            fontStyle = FontStyle.Normal,
+            textAlign = TextAlign.Center
+        ),
+        text = annotatedString,
+        onClick = { offset ->
+
+            annotatedString.getStringAnnotations(offset, offset)
+                .firstOrNull()?.also { span ->
+                    Log.d("ClickableTextComponent", "{${span.item}}")
+
+                    if (span.item == loginText) {
+                        onTextSelected(span.item)
+                    }
+                }
+
+        },
     )
 }
 

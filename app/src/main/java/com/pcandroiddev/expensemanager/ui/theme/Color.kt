@@ -17,4 +17,9 @@ val HeadingTextColor = Color(189, 189, 189)
 val GreenIncomeColor = Color(111, 207, 151)
 val RedExpenseColor = Color(235, 87, 87)
 val FABColor = Color(75, 153, 255)
+val DisabledButtonColor = Color(178, 203, 230)
+val DisabledTextColor = Color(158, 158, 158)
+val LinkColor = Color(0, 102, 255)
+
+
 

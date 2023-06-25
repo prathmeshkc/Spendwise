@@ -1,11 +1,9 @@
 package com.pcandroiddev.expensemanager.ui.states
 
-data class RegisterUIState(
-    var name: String = "",
+data class LoginUIState(
     var email: String = "",
     var password: String = "",
 
-    var nameError:  Pair<Boolean, String> = Pair(false, "Name must not be empty!"),
     var emailError: Pair<Boolean, String> = Pair(false, "Email must not be empty!"),
     var passwordError: Pair<Boolean, String> = Pair(false, "Password must not be empty!")
 )

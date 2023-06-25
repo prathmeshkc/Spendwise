@@ -8,6 +8,8 @@ import androidx.compose.ui.Modifier
 import com.pcandroiddev.expensemanager.navigation.ExpenseManagerRouter
 import com.pcandroiddev.expensemanager.navigation.Screen
 import com.pcandroiddev.expensemanager.ui.screens.dashboard.DashboardScreen
+import com.pcandroiddev.expensemanager.ui.screens.login.LoginScreen
+import com.pcandroiddev.expensemanager.ui.screens.register.RegisterScreen
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 import com.pcandroiddev.expensemanager.ui.screens.transaction.AddTransactionScreen
 import com.pcandroiddev.expensemanager.ui.screens.transaction.EditTransactionScreen
@@ -22,6 +24,15 @@ fun ExpenseManagerApp() {
 
         Crossfade(targetState = ExpenseManagerRouter.currentScreen) { currentScreen ->
             when (currentScreen.value) {
+
+                Screen.RegisterScreen -> {
+                    RegisterScreen()
+                }
+
+                Screen.LoginScreen -> {
+                    LoginScreen()
+                }
+
                 is Screen.DashboardScreen -> {
                     DashboardScreen()
                 }
@@ -37,6 +48,7 @@ fun ExpenseManagerApp() {
                 is Screen.EditTransactionScreen -> {
                     EditTransactionScreen()
                 }
+
 
             }
         }

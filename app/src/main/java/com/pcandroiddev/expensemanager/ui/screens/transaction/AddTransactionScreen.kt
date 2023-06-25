@@ -299,7 +299,7 @@ fun TransactionTitleTextFieldComponent(
         supportingText = {
             if (isFocused && !errorStatus) {
                 Text(
-                    text = "Title must not be empty",
+                    text = "Title must not be empty!",
                     fontFamily = FontFamily(Font(R.font.inter_regular))
                 )
             }
@@ -310,7 +310,7 @@ fun TransactionTitleTextFieldComponent(
                 Icon(
                     imageVector = Icons.Filled.Error,
                     tint = MaterialTheme.colorScheme.error,
-                    contentDescription = "Title Empty Error"
+                    contentDescription = "Title Empty Error!"
                 )
             }
         },
