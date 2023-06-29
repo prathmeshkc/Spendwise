@@ -2,18 +2,46 @@ package com.pcandroiddev.expensemanager.viewmodels
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.AuthResult
+import com.pcandroiddev.expensemanager.data.local.datastore.TokenManager
+import com.pcandroiddev.expensemanager.repository.auth.AuthRepository
 import com.pcandroiddev.expensemanager.ui.rules.Validator
-import com.pcandroiddev.expensemanager.ui.states.RegisterUIState
+import com.pcandroiddev.expensemanager.ui.states.AuthState
+import com.pcandroiddev.expensemanager.ui.states.ui.RegisterUIState
 import com.pcandroiddev.expensemanager.ui.uievents.RegisterUIEvent
+import com.pcandroiddev.expensemanager.utils.NetworkResult
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
 
-class RegisterViewModel : ViewModel() {
+//TODO: Add HiltViewModel when injecting into the constructor
+@HiltViewModel
+class RegisterViewModel @Inject constructor(
+    private val authRepository: AuthRepository,
+    private val tokenManager: TokenManager
+) : ViewModel() {
+
 
     var registerUIState = mutableStateOf(RegisterUIState())
         private set
 
     var allValidationPassed = mutableStateOf(false)
         private set
+
+    private val _signUpState = Channel<AuthState>()
+    val signUpState = _signUpState.receiveAsFlow()
+
+    var token: String? = null
 
     fun onEventChange(event: RegisterUIEvent) {
         when (event) {
@@ -43,15 +71,38 @@ class RegisterViewModel : ViewModel() {
 
     private fun registerUserWithEmailPassword() {
         Log.d(TAG, "Inside_registerUserWithEmailPassword")
-        validateWithRules()
         printState()
+        viewModelScope.launch(Dispatchers.IO) {
+            authRepository.registerUser(
+                email = registerUIState.value.email,
+                password = registerUIState.value.password
+            ).collect { authResult: NetworkResult<AuthResult> ->
+                when (authResult) {
+                    is NetworkResult.Loading -> {
+                        _signUpState.send(AuthState(isLoading = true))
+                    }
+
+                    is NetworkResult.Success -> {
+                        val tokenResult = authResult.data?.user?.getIdToken(false)?.await()
+                        val token = tokenResult?.token
+                        tokenManager.saveToken(token = token!!)
+                        Log.d(TAG, "registerUserWithEmailPassword: ${tokenManager.getToken()}")
+                        _signUpState.send(AuthState(isSuccess = "Sign Up Success!"))
+                    }
+
+                    is NetworkResult.Error -> {
+                        _signUpState.send(AuthState(isError = authResult.message))
+                    }
+                }
+            }
+        }
     }
 
     private fun registerWithGoogleSignUp() {
         Log.d(TAG, "Inside_registerWithGoogleSignUp")
-        validateWithRules()
         printState()
     }
+
 
     private fun validateWithRules() {
         val nameResult = Validator.validateName(name = registerUIState.value.name)

@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Receipt
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -25,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -33,9 +35,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.pcandroiddev.expensemanager.R
-import com.pcandroiddev.expensemanager.navigation.ExpenseManagerRouter
-import com.pcandroiddev.expensemanager.navigation.Screen
 import com.pcandroiddev.expensemanager.ui.components.ExpensesSearchBar
 import com.pcandroiddev.expensemanager.ui.components.TotalBalanceCard
 import com.pcandroiddev.expensemanager.ui.components.TotalExpenseCard
@@ -45,9 +46,25 @@ import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 import com.pcandroiddev.expensemanager.utils.isScrollingUp
+import com.pcandroiddev.expensemanager.viewmodels.DashboardViewModel
 
+private const val TAG = "DashboardScreen"
+
+//TODO: Observe for transaction list changes to update the list
 @Composable
-fun DashboardScreen() {
+fun DashboardScreen(
+    dashboardViewModel: DashboardViewModel = hiltViewModel(),
+    onAddTransactionFABClicked: () -> Unit,
+    onTransactionListItemClicked: (Int) -> Unit
+) {
+
+    val context = LocalContext.current
+    /*val token = dashboardViewModel.getToken()
+
+    if (token != null) {
+        Toast.makeText(context, "Token: $token", Toast.LENGTH_SHORT).show()
+    }
+*/
     val listState = rememberLazyListState()
     var isSearchBarActive by remember {
         mutableStateOf(false)
@@ -84,7 +101,9 @@ fun DashboardScreen() {
                         )
                     },
                     onClick = {
-                        ExpenseManagerRouter.navigateTo(destination = Screen.AddTransactionScreen)
+//                        ExpenseManagerRouter.navigateTo(destination = Screen.AddTransactionScreen)
+
+                        onAddTransactionFABClicked()
                     },
                     expanded = listState.isScrollingUp()
 
@@ -104,7 +123,8 @@ fun DashboardScreen() {
             ExpensesSearchBar(
                 modifier = Modifier
                     .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 12.dp)
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+                trailingIcon = Icons.Outlined.Logout
             ) { isActive ->
                 isSearchBarActive = isActive
             }
@@ -164,23 +184,45 @@ fun DashboardScreen() {
                 )
             }
 
-            TransactionList(listState = listState)
+            TransactionList(
+                listState = listState,
+                onTransactionListItemClicked = {
+                    onTransactionListItemClicked(it)
+                })
 
 
         }
     }
+
+
+//TODO: Change this back handler logic. Take a look at NoteWorthyApp navigation
+
+    /*BackHandler {
+        navController.popBackStack()
+    }*/
 }
 
 
+//TODO: Pass current transaction item to the lambda
+/**
+Make the onTransactionListItemClicked lambda take the respective transaction item
+which we can get from 'it' in the items lambda. Pass it
+ */
+
 @Composable
 fun TransactionList(
-    listState: LazyListState
+    listState: LazyListState,
+    onTransactionListItemClicked: (Int) -> Unit
 ) {
     LazyColumn(
         state = listState,
         content = {
             items(9) {
-                TransactionListItem()
+                TransactionListItem(
+                    onTransactionListItemClicked = {
+                        onTransactionListItemClicked(it)
+                    }
+                )
             }
         })
 }
@@ -188,5 +230,12 @@ fun TransactionList(
 @Preview
 @Composable
 fun DashboardScreenPreview() {
-    DashboardScreen()
+    DashboardScreen(
+        onAddTransactionFABClicked = {
+
+        },
+        onTransactionListItemClicked = {
+
+        }
+    )
 }

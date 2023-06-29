@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -159,6 +161,8 @@ fun FilterDropDown() {
 @Composable
 fun ExpensesSearchBar(
     modifier: Modifier = Modifier,
+    trailingIcon: ImageVector? = null,
+    trailingIconDesc: String = "",
     isActive: (Boolean) -> Unit
 ) {
 
@@ -214,6 +218,15 @@ fun ExpensesSearchBar(
                     contentDescription = "Expenses Search Bar"
                 )
             } else {
+
+                if (trailingIcon != null) {
+                    Icon(
+                        imageVector = trailingIcon,
+                        tint = HeadingTextColor,
+                        contentDescription = trailingIconDesc
+                    )
+                }
+
                 /*Row(
                     modifier = modifier.padding(end = 2.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -260,8 +273,8 @@ fun DashboardTopBarPreview() {
         Spacer(modifier = Modifier.padding(12.dp))
         FilterDropDown()
         Spacer(modifier = Modifier.padding(12.dp))
-        ExpensesSearchBar() {
-
-        }
+        ExpensesSearchBar(isActive = {
+            
+        })
     }
 }

@@ -1,6 +1,7 @@
 package com.pcandroiddev.expensemanager.ui.screens.transaction
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -54,7 +55,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.pcandroiddev.expensemanager.R
 import com.pcandroiddev.expensemanager.data.local.TransactionType
 import com.pcandroiddev.expensemanager.navigation.ExpenseManagerRouter
@@ -81,7 +84,11 @@ private const val TAG = "AddTransactionScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTransactionScreen(addTransactionViewModel: AddTransactionViewModel = viewModel()) {
+fun AddTransactionScreen(
+    addTransactionViewModel: AddTransactionViewModel = hiltViewModel(),
+    onNavigateUpClicked: () -> Unit,
+    onSaveTransactionClicked: () -> Unit
+) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = SurfaceBackgroundColor
@@ -101,7 +108,11 @@ fun AddTransactionScreen(addTransactionViewModel: AddTransactionViewModel = view
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen) }) {
+                    IconButton(onClick = {
+//                        ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)
+                        //TODO: Reset the respective UI State
+                        onNavigateUpClicked()
+                    }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             tint = HeadingTextColor,
@@ -198,22 +209,21 @@ fun AddTransactionScreen(addTransactionViewModel: AddTransactionViewModel = view
 
                 SaveTransactionButton(
                     onButtonClicked = {
-                        //TODO: Navigate Back to Dashboard. Handle in onButtonClicked Lambda
-                        //TODO: Check if all the fields are filled
+                        //TODO: In the launched effect, call onSaveTransactionClicked() to navigate to Dashboard screen
                         addTransactionViewModel.onEventChange(event = AddTransactionUIEvent.SaveTransactionButtonClicked)
                     }
                 )
 
             }
-
         }
-
-
     }
 
-    SystemBackButtonHandler {
-        ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)
-    }
+    //TODO: In the launched effect, call onLoginSuccessful()
+
+    /*BackHandler {
+//        ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)
+        navController.popBackStack()
+    }*/
 }
 
 @Composable

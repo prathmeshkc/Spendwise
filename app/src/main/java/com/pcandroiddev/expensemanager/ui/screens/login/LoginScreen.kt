@@ -10,7 +10,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -26,10 +25,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.pcandroiddev.expensemanager.R
-import com.pcandroiddev.expensemanager.navigation.ExpenseManagerRouter
-import com.pcandroiddev.expensemanager.navigation.Screen
 import com.pcandroiddev.expensemanager.ui.screens.register.ClickableLoginTextComponent
 import com.pcandroiddev.expensemanager.ui.screens.register.PasswordTextFieldComponent
 import com.pcandroiddev.expensemanager.ui.screens.register.RegisterLoginButtonComponent
@@ -37,12 +34,16 @@ import com.pcandroiddev.expensemanager.ui.screens.register.SimpleTextField
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 import com.pcandroiddev.expensemanager.ui.uievents.LoginUIEvent
-import com.pcandroiddev.expensemanager.ui.uievents.RegisterUIEvent
 import com.pcandroiddev.expensemanager.viewmodels.LoginViewModel
-import com.pcandroiddev.expensemanager.viewmodels.RegisterViewModel
 
+
+private const val TAG = "LoginScreen"
 @Composable
-fun LoginScreen(loginViewModel: LoginViewModel = viewModel()) {
+fun LoginScreen(
+    loginViewModel: LoginViewModel = hiltViewModel(),
+    onRegisterTextClicked: () -> Unit,
+    onLoginSuccessful: () -> Unit
+) {
 
     Surface(
         modifier = Modifier
@@ -151,16 +152,33 @@ fun LoginScreen(loginViewModel: LoginViewModel = viewModel()) {
                     .padding(top = 20.dp),
                 tryingToLogin = false,
                 onTextSelected = {
-                    ExpenseManagerRouter.navigateTo(destination = Screen.RegisterScreen)
+                    onRegisterTextClicked()
                 })
 
 
         }
     }
+
+    //TODO: In the launched effect, call onLoginSuccessful()
+
+    /*BackHandler {
+        navController.navigate(Screen.RegisterScreen.route) {
+            popUpTo(route = Screen.LoginScreen.route) {
+                inclusive = true
+            }
+        }
+    }*/
 }
 
 @Preview
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen()
+    LoginScreen(
+        onRegisterTextClicked = {
+
+        },
+        onLoginSuccessful = {
+
+        }
+    )
 }

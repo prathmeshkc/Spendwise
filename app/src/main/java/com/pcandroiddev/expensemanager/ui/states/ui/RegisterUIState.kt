@@ -1,4 +1,4 @@
-package com.pcandroiddev.expensemanager.ui.states
+package com.pcandroiddev.expensemanager.ui.states.ui
 
 data class RegisterUIState(
     var name: String = "",

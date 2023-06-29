@@ -5,11 +5,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.pcandroiddev.expensemanager.ui.rules.ValidationResult
 import com.pcandroiddev.expensemanager.ui.rules.Validator
-import com.pcandroiddev.expensemanager.ui.states.AddTransactionUIState
+import com.pcandroiddev.expensemanager.ui.states.ui.AddTransactionUIState
 import com.pcandroiddev.expensemanager.ui.uievents.AddTransactionUIEvent
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 
-class AddTransactionViewModel : ViewModel() {
+@HiltViewModel
+class AddTransactionViewModel @Inject constructor() : ViewModel() {
 
 
     var addTransactionUIState = mutableStateOf(AddTransactionUIState())

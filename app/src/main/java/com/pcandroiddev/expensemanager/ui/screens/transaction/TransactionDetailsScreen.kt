@@ -3,7 +3,6 @@
 package com.pcandroiddev.expensemanager.ui.screens.transaction
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -31,24 +31,44 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.rememberNavController
 import com.pcandroiddev.expensemanager.R
-import com.pcandroiddev.expensemanager.navigation.ExpenseManagerRouter
-import com.pcandroiddev.expensemanager.navigation.Screen
-import com.pcandroiddev.expensemanager.navigation.SystemBackButtonHandler
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
+import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
+import com.pcandroiddev.expensemanager.viewmodels.DetailsViewModel
 
 
 @Composable
-fun TransactionDetailsScreen() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
+fun TransactionDetailsScreen(
+    detailsViewModel: DetailsViewModel = hiltViewModel(),
+    onNavigateUpClicked: () -> Unit,
+    onEditFABClicked: () -> Unit,
+    onShareButtonClicked: () -> Unit,
+    onDeleteTransactionButtonClicked: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = SurfaceBackgroundColor
     ) {
         Column {
-            DetailsTopAppBar()
+            DetailsTopAppBar(
+                onBackButtonClicked = {
+                    //TODO: Reset the respective UI State
+                    onNavigateUpClicked()
+                },
+                onDeleteButtonClicked = {
+                    //TODO: Modify this lambda to take the appropriate object
+                    onDeleteTransactionButtonClicked()
+                },
+                onShareButtonClicked = {
+                    onShareButtonClicked()
+                }
+            )
+
             Column(
                 modifier = Modifier
                     .padding(20.dp)
@@ -65,7 +85,10 @@ fun TransactionDetailsScreen() {
                 EditFAB(
                     modifier = Modifier
                         .padding(bottom = 31.dp, end = 16.dp, top = 50.dp)
-                        .align(Alignment.End)
+                        .align(Alignment.End),
+                    onEditFABClicked = {
+                        onEditFABClicked()
+                    }
                 )
 
             }
@@ -73,13 +96,19 @@ fun TransactionDetailsScreen() {
 
     }
 
-    SystemBackButtonHandler {
-        ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)
-    }
+    /*BackHandler {
+//        ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)
+        navController.popBackStack()
+    }*/
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailsTopAppBar() {
+fun DetailsTopAppBar(
+    onBackButtonClicked: () -> Unit,
+    onDeleteButtonClicked: () -> Unit,
+    onShareButtonClicked: () -> Unit
+) {
     TopAppBar(
         modifier = Modifier.fillMaxWidth(),
         title = {
@@ -91,7 +120,11 @@ fun DetailsTopAppBar() {
             )
         },
         navigationIcon = {
-            IconButton(onClick = { ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen) }) {
+            IconButton(onClick = {
+//                ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)
+                onBackButtonClicked()
+
+            }) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     tint = HeadingTextColor,
@@ -100,19 +133,23 @@ fun DetailsTopAppBar() {
             }
         },
         actions = {
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = {
+                onDeleteButtonClicked()
+            }) {
                 Icon(
                     imageVector = Icons.Outlined.Delete,
                     tint = DetailsTextColor,
-                    contentDescription = ""
+                    contentDescription = "Delete Transaction Button"
                 )
             }
 
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = {
+                onShareButtonClicked()
+            }) {
                 Icon(
                     imageVector = Icons.Outlined.Share,
                     tint = DetailsTextColor,
-                    contentDescription = ""
+                    contentDescription = "Share Transaction Button"
                 )
             }
         },
@@ -143,7 +180,10 @@ fun DetailComponent(heading: String, value: String) {
 }
 
 @Composable
-fun EditFAB(modifier: Modifier = Modifier) {
+fun EditFAB(
+    modifier: Modifier = Modifier,
+    onEditFABClicked: () -> Unit
+) {
     ExtendedFloatingActionButton(
         modifier = modifier,
         text = { Text("EDIT", color = Color.White) },
@@ -155,7 +195,10 @@ fun EditFAB(modifier: Modifier = Modifier) {
             )
         },
         shape = RoundedCornerShape(50),
-        onClick = { ExpenseManagerRouter.navigateTo(destination = Screen.EditTransactionScreen) },
+        onClick = {
+//            ExpenseManagerRouter.navigateTo(destination = Screen.EditTransactionScreen)
+            onEditFABClicked()
+        },
         containerColor = FABColor
     )
 }
@@ -164,5 +207,18 @@ fun EditFAB(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 fun TransactionDetailsPreview() {
-    TransactionDetailsScreen()
+    TransactionDetailsScreen(
+        onNavigateUpClicked = {
+
+        },
+        onEditFABClicked = {
+
+        },
+        onShareButtonClicked = {
+
+        },
+        onDeleteTransactionButtonClicked = {
+
+        }
+    )
 }

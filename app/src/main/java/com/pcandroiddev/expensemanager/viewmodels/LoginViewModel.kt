@@ -4,10 +4,13 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.pcandroiddev.expensemanager.ui.rules.Validator
-import com.pcandroiddev.expensemanager.ui.states.LoginUIState
+import com.pcandroiddev.expensemanager.ui.states.ui.LoginUIState
 import com.pcandroiddev.expensemanager.ui.uievents.LoginUIEvent
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class LoginViewModel : ViewModel() {
+@HiltViewModel
+class LoginViewModel @Inject constructor() : ViewModel() {
 
     var loginUIState = mutableStateOf(LoginUIState())
         private set
@@ -39,13 +42,11 @@ class LoginViewModel : ViewModel() {
 
     private fun loginUserWithEmailPassword() {
         Log.d(TAG, "Inside_loginUserWithEmailPassword")
-        validateWithRules()
         printState()
     }
 
     private fun loginWithGoogleSignIn() {
         Log.d(TAG, "Inside_loginWithGoogleSignIn")
-        validateWithRules()
         printState()
     }
 

@@ -49,14 +49,16 @@ import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
  * 6. Transaction Data
  */
 
-//TODO: Add click listener HOF
+//TODO: Pass current transaction item to the lambda
 @Composable
-fun TransactionListItem() {
+fun TransactionListItem(
+    onTransactionListItemClicked: () -> Unit
+) {
     Card(
         modifier = Modifier
             .padding(vertical = 9.dp, horizontal = 16.dp)
             .height(68.dp)
-            .clickable { ExpenseManagerRouter.navigateTo(destination = Screen.TransactionDetailsScreen) },
+            .clickable { onTransactionListItemClicked() },
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(containerColor = ComponentsBackgroundColor),
         shape = RoundedCornerShape(2.dp)
@@ -147,5 +149,7 @@ fun TransactionListItem() {
 @Preview
 @Composable
 fun TransactionListItemPreview() {
-    TransactionListItem()
+    TransactionListItem(onTransactionListItemClicked = {
+
+    })
 }

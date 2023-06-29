@@ -1,6 +1,7 @@
 package com.pcandroiddev.expensemanager.ui.screens.register
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,21 +25,26 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -56,13 +62,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.pcandroiddev.expensemanager.R
-import com.pcandroiddev.expensemanager.navigation.ExpenseManagerRouter
-import com.pcandroiddev.expensemanager.navigation.Screen
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.DisabledButtonColor
@@ -73,11 +76,19 @@ import com.pcandroiddev.expensemanager.ui.theme.LinkColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 import com.pcandroiddev.expensemanager.ui.uievents.RegisterUIEvent
 import com.pcandroiddev.expensemanager.viewmodels.RegisterViewModel
+import kotlinx.coroutines.launch
 
 private const val TAG = "RegisterScreen"
 
 @Composable
-fun RegisterScreen(registerViewModel: RegisterViewModel = viewModel()) {
+fun RegisterScreen(
+    registerViewModel: RegisterViewModel = hiltViewModel(),
+    onLoginTextClicked: () -> Unit,
+    onRegistrationSuccessful: () -> Unit,
+
+    ) {
+    val signUpState = registerViewModel.signUpState.collectAsState(initial = null)
+    val coroutineScope = rememberCoroutineScope()
 
     Surface(
         modifier = Modifier
@@ -147,7 +158,7 @@ fun RegisterScreen(registerViewModel: RegisterViewModel = viewModel()) {
                     )
                 })
 
-            //TODO: Use LaunchedEffect to observe the sig up status
+            //TODO: Use LaunchedEffect to observe the sign up status
             RegisterLoginButtonComponent(
                 label = "SIGN UP",
                 isEnable = registerViewModel.allValidationPassed.value,
@@ -184,7 +195,6 @@ fun RegisterScreen(registerViewModel: RegisterViewModel = viewModel()) {
                 )
 
                 IconButton(onClick = {
-                    //TODO: Use LaunchedEffect
 //                    registerViewModel.onEventChange(event = RegisterUIEvent.GoogleSignUpClicked)
                 }) {
                     Icon(
@@ -200,12 +210,41 @@ fun RegisterScreen(registerViewModel: RegisterViewModel = viewModel()) {
                     .padding(top = 20.dp),
                 tryingToLogin = true,
                 onTextSelected = {
-                    ExpenseManagerRouter.navigateTo(destination = Screen.LoginScreen)
+//                    ExpenseManagerRouter.navigateTo(destination = Screen.LoginScreen)
+                    onLoginTextClicked()
                 })
 
+            if (signUpState.value?.isLoading == true) {
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .padding(top = 12.dp)
+                        .fillMaxWidth(),
+                    color = FABColor
+                )
+            }
 
         }
     }
+
+    LaunchedEffect(key1 = signUpState.value?.isSuccess) {
+        coroutineScope.launch {
+            val success = signUpState.value?.isSuccess
+            if (success != null && success == "Sign Up Success!") {
+                Log.d(TAG, "RegisterScreen/isSuccess: $success")
+                onRegistrationSuccessful()
+            }
+        }
+    }
+
+    LaunchedEffect(key1 = signUpState.value?.isError) {
+        coroutineScope.launch {
+            val error = signUpState.value?.isError
+            if (!error.isNullOrBlank()) {
+                Log.d(TAG, "RegisterScreen/isError: $error")
+            }
+        }
+    }
+
 
 }
 
@@ -508,12 +547,13 @@ fun ClickableLoginTextComponent(
 @Preview
 @Composable
 fun RegisterScreenPreview() {
-    RegisterScreen()
-    /*Column {
-        EmailTextField(onTextChanged = {})
-        PasswordTextFieldComponent(onTextChanged = {})
-        RegisterLoginButtonComponent {
+    RegisterScreen(
+        onLoginTextClicked = {
 
-        }
-    }*/
+        },
+        onRegistrationSuccessful = {
+
+        },
+    )
+
 }

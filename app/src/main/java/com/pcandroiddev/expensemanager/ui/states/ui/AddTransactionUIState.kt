@@ -1,4 +1,4 @@
-package com.pcandroiddev.expensemanager.ui.states
+package com.pcandroiddev.expensemanager.ui.states.ui
 
 import com.pcandroiddev.expensemanager.data.local.TransactionType
 import java.text.DateFormat

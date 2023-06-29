@@ -100,4 +100,7 @@ dependencies {
     implementation 'androidx.hilt:hilt-navigation-compose:1.0.0'
 
 
+    //Preferences Datastore
+    implementation 'androidx.datastore:datastore-preferences:1.0.0'
+
 }
