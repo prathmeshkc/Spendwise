@@ -66,6 +66,16 @@ fun NavigationGraph(
                 },
                 onTransactionListItemClicked = {
                     navController.navigate(Screen.TransactionDetailsScreen.route)
+                },
+                onLogOutButtonClicked = {
+                    navController.navigate(Screen.LoginScreen.route) {
+                        popUpTo(Screen.DashboardScreen.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onBackPressedCallback = {
+                    navController.popBackStack()
                 }
             )
         }

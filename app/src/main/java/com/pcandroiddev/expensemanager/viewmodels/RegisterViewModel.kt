@@ -41,7 +41,6 @@ class RegisterViewModel @Inject constructor(
     private val _signUpState = Channel<AuthState>()
     val signUpState = _signUpState.receiveAsFlow()
 
-    var token: String? = null
 
     fun onEventChange(event: RegisterUIEvent) {
         when (event) {
@@ -85,6 +84,8 @@ class RegisterViewModel @Inject constructor(
                     is NetworkResult.Success -> {
                         val tokenResult = authResult.data?.user?.getIdToken(false)?.await()
                         val token = tokenResult?.token
+                        val userId = tokenResult?.claims?.get("user_id")
+                        Log.d(TAG, "registerUserWithEmailPassword: $userId")
                         tokenManager.saveToken(token = token!!)
                         Log.d(TAG, "registerUserWithEmailPassword: ${tokenManager.getToken()}")
                         _signUpState.send(AuthState(isSuccess = "Sign Up Success!"))

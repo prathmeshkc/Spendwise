@@ -1,5 +1,6 @@
 package com.pcandroiddev.expensemanager.ui.components
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,16 +14,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Logout
+import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
@@ -161,8 +165,12 @@ fun FilterDropDown() {
 @Composable
 fun ExpensesSearchBar(
     modifier: Modifier = Modifier,
+    leadingIcon: ImageVector? = null,
     trailingIcon: ImageVector? = null,
+    leadingIconDesc: String = "",
     trailingIconDesc: String = "",
+    onLeadingIconClicked: () -> Unit = {},
+    onTrailingIconClicked: () -> Unit = {},
     isActive: (Boolean) -> Unit
 ) {
 
@@ -196,14 +204,7 @@ fun ExpensesSearchBar(
             )
         },
         leadingIcon = {
-            Icon(
-                imageVector = Icons.Outlined.Search,
-                tint = HeadingTextColor,
-                contentDescription = "Expenses Search Bar"
-            )
 
-        },
-        trailingIcon = {
             if (active) {
                 Icon(
                     modifier = Modifier.clickable {
@@ -214,40 +215,51 @@ fun ExpensesSearchBar(
                             isActive(false)
                         }
                     },
-                    imageVector = Icons.Outlined.Close,
-                    contentDescription = "Expenses Search Bar"
+                    imageVector = Icons.Outlined.ArrowBack,
+                    tint = HeadingTextColor,
+                    contentDescription = "Close search bar"
                 )
+            } else {
+                if (leadingIcon == null) {
+                    Icon(
+                        imageVector = Icons.Outlined.Search,
+                        tint = HeadingTextColor,
+                        contentDescription = "Expenses Search Bar"
+                    )
+                } else {
+                    Icon(
+                        modifier = Modifier.clickable { onLeadingIconClicked() },
+                        imageVector = leadingIcon,
+                        tint = HeadingTextColor,
+                        contentDescription = leadingIconDesc
+                    )
+                }
+            }
+
+
+        },
+        trailingIcon = {
+            if (active) {
+                if (queryText.isNotEmpty()) {
+                    Icon(
+                        modifier = Modifier.clickable {
+                            queryText = ""
+                        },
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = "Expenses Search Bar"
+                    )
+                }
+
             } else {
 
                 if (trailingIcon != null) {
                     Icon(
+                        modifier = Modifier.clickable { onTrailingIconClicked() },
                         imageVector = trailingIcon,
                         tint = HeadingTextColor,
                         contentDescription = trailingIconDesc
                     )
                 }
-
-                /*Row(
-                    modifier = modifier.padding(end = 2.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.BarChart,
-                        tint = HeadingTextColor,
-                        contentDescription = "Expenses Search Bar"
-                    )
-
-                    Icon(
-                        imageVector = Icons.Outlined.FilterAlt,
-                        tint = HeadingTextColor,
-                        contentDescription = "Expenses Search Bar"
-                    )
-                }*/
-                /*Icon(
-                    imageVector = Icons.Outlined.FilterAlt,
-                    tint = HeadingTextColor,
-                    contentDescription = "Expenses Search Bar"
-                )*/
 
             }
         },
@@ -261,6 +273,13 @@ fun ExpensesSearchBar(
     ) {
 
     }
+
+    BackHandler {
+        queryText = ""
+        active = false
+        isActive(false)
+    }
+
 }
 
 @Preview
@@ -273,8 +292,15 @@ fun DashboardTopBarPreview() {
         Spacer(modifier = Modifier.padding(12.dp))
         FilterDropDown()
         Spacer(modifier = Modifier.padding(12.dp))
-        ExpensesSearchBar(isActive = {
-            
-        })
+        ExpensesSearchBar(
+            isActive = {
+
+            })
+
+        ExpensesSearchBar(
+            leadingIcon = Icons.Outlined.Menu,
+            isActive = {
+
+            })
     }
 }

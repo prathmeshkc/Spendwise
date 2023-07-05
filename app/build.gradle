@@ -40,7 +40,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.0'
+        kotlinCompilerExtensionVersion '1.4.8'
     }
     packagingOptions {
         resources {
@@ -102,5 +102,11 @@ dependencies {
 
     //Preferences Datastore
     implementation 'androidx.datastore:datastore-preferences:1.0.0'
+
+    implementation 'androidx.compose.runtime:runtime-livedata:1.4.3'
+
+    // Retrofit for network requests
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
 
 }

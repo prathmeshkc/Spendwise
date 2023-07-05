@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -19,6 +20,9 @@ import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -41,6 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -66,6 +71,8 @@ import com.pcandroiddev.expensemanager.navigation.SystemBackButtonHandler
 import com.pcandroiddev.expensemanager.ui.components.SegmentedControl
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
+import com.pcandroiddev.expensemanager.ui.theme.DisabledButtonColor
+import com.pcandroiddev.expensemanager.ui.theme.DisabledTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
@@ -208,6 +215,7 @@ fun AddTransactionScreen(
 
 
                 SaveTransactionButton(
+                    isEnable = addTransactionViewModel.allValidationPassed.value,
                     onButtonClicked = {
                         //TODO: In the launched effect, call onSaveTransactionClicked() to navigate to Dashboard screen
                         addTransactionViewModel.onEventChange(event = AddTransactionUIEvent.SaveTransactionButtonClicked)
@@ -727,7 +735,9 @@ fun TransactionNoteComponent(
 
 }
 
-@Composable
+
+//TODO: Disable/Enable
+/*@Composable
 fun SaveTransactionButton(
     onButtonClicked: () -> Unit
 ) {
@@ -758,6 +768,47 @@ fun SaveTransactionButton(
         containerColor = FABColor
     )
 
+}*/
+
+@Composable
+fun SaveTransactionButton(
+    isEnable: Boolean = false,
+    onButtonClicked: () -> Unit
+) {
+    Button(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp),
+        onClick = { onButtonClicked() },
+        enabled = isEnable,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = FABColor,
+            disabledContainerColor = DisabledButtonColor,
+            contentColor = DetailsTextColor,
+            disabledContentColor = DisabledTextColor
+
+        ),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 12.dp
+        )
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                tint = Color.White,
+                contentDescription = "Save Transaction"
+            )
+            Text(
+                text = "SAVE TRANSACTION",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = DetailsTextColor
+            )
+        }
+    }
 }
 
 

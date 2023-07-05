@@ -17,6 +17,9 @@ class AddTransactionViewModel @Inject constructor() : ViewModel() {
 
     var addTransactionUIState = mutableStateOf(AddTransactionUIState())
 
+    var allValidationPassed = mutableStateOf(false)
+        private set
+
     fun onEventChange(event: AddTransactionUIEvent) {
         when (event) {
             is AddTransactionUIEvent.TitleChanged -> {
@@ -105,6 +108,9 @@ class AddTransactionViewModel @Inject constructor() : ViewModel() {
             categoryError = categoryResult.status,
             noteError = noteResult.status
         )
+
+        allValidationPassed.value =
+            titleResult.status && amountResult.status && categoryResult.status && noteResult.status
 
         printState()
 

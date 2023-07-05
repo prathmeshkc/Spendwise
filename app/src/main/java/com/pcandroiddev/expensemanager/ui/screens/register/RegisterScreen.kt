@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -166,37 +168,23 @@ fun RegisterScreen(
                     registerViewModel.onEventChange(event = RegisterUIEvent.RegisterButtonClicked)
                 })
 
-            Text(
+
+            DividerTextComponent(
                 modifier = Modifier
                     .padding(top = 20.dp)
-                    .align(alignment = Alignment.CenterHorizontally),
-                text = "OR",
-                style = TextStyle(
-                    color = DetailsTextColor,
-                    fontSize = 16.sp,
-                    fontFamily = FontFamily(Font(R.font.inter_light)),
-                )
             )
 
             Row(
                 modifier = Modifier
-                    .padding(top = 20.dp)
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(20.dp)
+                horizontalArrangement = Arrangement.Center
             ) {
-                Text(
-                    text = "SIGN UP WITH: ",
-                    style = TextStyle(
-                        color = DetailsTextColor,
-                        fontSize = 16.sp,
-                        fontFamily = FontFamily(Font(R.font.inter_light)),
-                    )
-                )
 
-                IconButton(onClick = {
+                IconButton(
+                    onClick = {
 //                    registerViewModel.onEventChange(event = RegisterUIEvent.GoogleSignUpClicked)
-                }) {
+                    }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_google),
                         contentDescription = "Sign Up with Google",
@@ -218,7 +206,8 @@ fun RegisterScreen(
                 LinearProgressIndicator(
                     modifier = Modifier
                         .padding(top = 12.dp)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .heightIn(min = 6.dp),
                     color = FABColor
                 )
             }
@@ -457,7 +446,8 @@ fun RegisterLoginButtonComponent(
     Button(
         modifier = Modifier
             .padding(top = 30.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .height(50.dp),
         enabled = isEnable,
         onClick = {
             onButtonClicked.invoke()
@@ -498,8 +488,8 @@ fun ClickableLoginTextComponent(
         withStyle(
             style = SpanStyle(
                 color = DetailsTextColor,
-                fontSize = 20.sp,
-                fontFamily = FontFamily(Font(R.font.inter_light))
+                fontSize = 16.sp,
+                fontFamily = FontFamily(Font(R.font.inter_medium))
             )
         ) {
             append(initialText)
@@ -508,8 +498,8 @@ fun ClickableLoginTextComponent(
         withStyle(
             style = SpanStyle(
                 color = LinkColor,
-                fontSize = 20.sp,
-                fontFamily = FontFamily(Font(R.font.inter_light))
+                fontSize = 16.sp,
+                fontFamily = FontFamily(Font(R.font.inter_medium))
             )
         ) {
             pushStringAnnotation(tag = loginText, annotation = loginText)
@@ -541,6 +531,38 @@ fun ClickableLoginTextComponent(
 
         },
     )
+}
+
+@Composable
+fun DividerTextComponent(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            color = HeadingTextColor,
+            thickness = 1.dp
+        )
+
+        Text(
+            modifier = Modifier.padding(8.dp),
+            text = "OR",
+            fontSize = 16.sp,
+            color = DetailsTextColor,
+            fontFamily = FontFamily(Font(R.font.inter_medium))
+        )
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            color = HeadingTextColor,
+            thickness = 1.dp
+        )
+    }
 }
 
 

@@ -3,20 +3,38 @@ package com.pcandroiddev.expensemanager.viewmodels
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.AuthResult
+import com.pcandroiddev.expensemanager.data.local.datastore.TokenManager
+import com.pcandroiddev.expensemanager.repository.auth.AuthRepository
 import com.pcandroiddev.expensemanager.ui.rules.Validator
+import com.pcandroiddev.expensemanager.ui.states.AuthState
 import com.pcandroiddev.expensemanager.ui.states.ui.LoginUIState
 import com.pcandroiddev.expensemanager.ui.uievents.LoginUIEvent
+import com.pcandroiddev.expensemanager.utils.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor() : ViewModel() {
+class LoginViewModel @Inject constructor(
+    private val authRepository: AuthRepository,
+    private val tokenManager: TokenManager
+) : ViewModel() {
 
     var loginUIState = mutableStateOf(LoginUIState())
         private set
 
     var allValidationPassed = mutableStateOf(false)
         private set
+
+    private val _signInState = Channel<AuthState>()
+    val singInState = _signInState.receiveAsFlow()
 
     fun onEventChange(event: LoginUIEvent) {
         when (event) {
@@ -34,7 +52,7 @@ class LoginViewModel @Inject constructor() : ViewModel() {
             }
 
             is LoginUIEvent.GoogleSignInClicked -> {
-
+                loginWithGoogleSignIn()
             }
         }
         validateWithRules()
@@ -43,6 +61,35 @@ class LoginViewModel @Inject constructor() : ViewModel() {
     private fun loginUserWithEmailPassword() {
         Log.d(TAG, "Inside_loginUserWithEmailPassword")
         printState()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            authRepository.loginUser(
+                email = loginUIState.value.email,
+                password = loginUIState.value.password
+            ).collect { authResult: NetworkResult<AuthResult> ->
+
+                when (authResult) {
+                    is NetworkResult.Loading -> {
+                        _signInState.send(AuthState(isLoading = true))
+                    }
+
+                    is NetworkResult.Success -> {
+                        val tokenResult = authResult.data?.user?.getIdToken(false)?.await()
+                        val token = tokenResult?.token
+                        tokenManager.saveToken(token = token!!)
+                        Log.d(TAG, "loginUserWithEmailPassword: ${tokenManager.getToken()}")
+                        _signInState.send(AuthState(isSuccess = "Sign In Success!"))
+                    }
+
+                    is NetworkResult.Error -> {
+                        _signInState.send(AuthState(isError = authResult.message))
+                    }
+                }
+
+
+            }
+        }
+
     }
 
     private fun loginWithGoogleSignIn() {
@@ -76,7 +123,7 @@ class LoginViewModel @Inject constructor() : ViewModel() {
 
 
     companion object {
-        private const val TAG = "RegisterViewModel"
+        private const val TAG = "LoginViewModel"
     }
 
 

@@ -1,7 +1,10 @@
 package com.pcandroiddev.expensemanager.ui.screens.dashboard
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,10 +17,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Logout
+import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Receipt
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -55,68 +60,28 @@ private const val TAG = "DashboardScreen"
 fun DashboardScreen(
     dashboardViewModel: DashboardViewModel = hiltViewModel(),
     onAddTransactionFABClicked: () -> Unit,
-    onTransactionListItemClicked: (Int) -> Unit
+    onTransactionListItemClicked: (Int) -> Unit,
+    onLogOutButtonClicked: () -> Unit,
+    onBackPressedCallback: () -> Unit
 ) {
 
     val context = LocalContext.current
-    /*val token = dashboardViewModel.getToken()
 
-    if (token != null) {
-        Toast.makeText(context, "Token: $token", Toast.LENGTH_SHORT).show()
-    }
-*/
+
     val listState = rememberLazyListState()
     var isSearchBarActive by remember {
         mutableStateOf(false)
     }
-    Scaffold(
+
+    Box(
         modifier = Modifier
-            .fillMaxSize(),
-        topBar = {
-//            DashboardTopBar(isDarkMode = true)
-        },
-        floatingActionButton = {
-            if (!isSearchBarActive) {
-                ExtendedFloatingActionButton(
-                    modifier = Modifier
-                        .padding(bottom = 30.dp, end = 30.dp),
-                    containerColor = FABColor,
-                    text = {
-                        Text(
-                            text = "Add Transaction",
-                            style = TextStyle(
-                                fontFamily = FontFamily(Font(R.font.inter_regular)),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.W500,
-                                color = DetailsTextColor
-                            ),
+            .fillMaxSize()
+            .background(SurfaceBackgroundColor),
 
-                            )
-                    },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Outlined.Receipt,
-                            contentDescription = "Add Transaction",
-                            tint = DetailsTextColor
-                        )
-                    },
-                    onClick = {
-//                        ExpenseManagerRouter.navigateTo(destination = Screen.AddTransactionScreen)
-
-                        onAddTransactionFABClicked()
-                    },
-                    expanded = listState.isScrollingUp()
-
-                )
-            }
-        },
-        containerColor = SurfaceBackgroundColor
-
-    ) { padding ->
+        ) {
 
         Column(
             modifier = Modifier
-                .padding(padding)
                 .fillMaxSize()
         ) {
 
@@ -124,7 +89,16 @@ fun DashboardScreen(
                 modifier = Modifier
                     .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 12.dp)
                     .fillMaxWidth(),
-                trailingIcon = Icons.Outlined.Logout
+                leadingIcon = Icons.Outlined.Menu,
+                trailingIcon = Icons.Outlined.Logout,
+                trailingIconDesc = "Logout Button",
+                onLeadingIconClicked = {
+
+                },
+                onTrailingIconClicked = {
+                    dashboardViewModel.deleteToken()
+                    onLogOutButtonClicked()
+                }
             ) { isActive ->
                 isSearchBarActive = isActive
             }
@@ -139,7 +113,7 @@ fun DashboardScreen(
 
             Row(
                 modifier = Modifier
-                    .padding(horizontal = 12.dp, vertical = 12.dp),
+                    .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 TotalIncomeCard(
@@ -158,13 +132,13 @@ fun DashboardScreen(
 
             Row(
                 modifier = Modifier
+                    .padding(start = 12.dp, end = 12.dp)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    modifier = Modifier.padding(top = 12.dp, start = 24.dp),
-                    text = "Recent Transaction",
+                    text = "Recent Transactions",
                     fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
                     fontStyle = FontStyle.Normal,
                     fontWeight = FontWeight.SemiBold,
@@ -174,7 +148,6 @@ fun DashboardScreen(
 
                 Icon(
                     modifier = Modifier
-                        .padding(end = 16.dp)
                         .clickable {
                             //TODO: Navigate to All Transaction Screen
                         },
@@ -190,16 +163,47 @@ fun DashboardScreen(
                     onTransactionListItemClicked(it)
                 })
 
+        }
 
+        if (!isSearchBarActive) {
+            ExtendedFloatingActionButton(
+                modifier = Modifier
+                    .padding(bottom = 40.dp, end = 30.dp)
+                    .align(alignment = Alignment.BottomEnd),
+                containerColor = FABColor,
+                text = {
+                    Text(
+                        text = "Add Transaction",
+                        style = TextStyle(
+                            fontFamily = FontFamily(Font(R.font.inter_regular)),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.W500,
+                            color = DetailsTextColor
+                        )
+                    )
+                },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Receipt,
+                        contentDescription = "Add Transaction",
+                        tint = DetailsTextColor
+                    )
+                },
+                onClick = {
+                    onAddTransactionFABClicked()
+                },
+                expanded = listState.isScrollingUp()
+
+            )
         }
     }
 
 
 //TODO: Change this back handler logic. Take a look at NoteWorthyApp navigation
 
-    /*BackHandler {
-        navController.popBackStack()
-    }*/
+    BackHandler {
+        onBackPressedCallback()
+    }
 }
 
 
@@ -227,7 +231,7 @@ fun TransactionList(
         })
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun DashboardScreenPreview() {
     DashboardScreen(
@@ -235,6 +239,12 @@ fun DashboardScreenPreview() {
 
         },
         onTransactionListItemClicked = {
+
+        },
+        onLogOutButtonClicked = {
+
+        },
+        onBackPressedCallback = {
 
         }
     )

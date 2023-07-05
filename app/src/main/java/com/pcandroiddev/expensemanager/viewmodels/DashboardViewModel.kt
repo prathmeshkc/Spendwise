@@ -15,16 +15,9 @@ class DashboardViewModel @Inject constructor(
     private val tokenManager: TokenManager
 ) : ViewModel() {
 
-    private var token: String? = null
 
-    /*init {
-        viewModelScope.launch {
-            token = tokenManager.getToken()
-        }
-    }
-*/
-    fun getToken(): String? {
-        return token
+    fun deleteToken() = viewModelScope.launch {
+        tokenManager.deleteToken()
     }
 
 

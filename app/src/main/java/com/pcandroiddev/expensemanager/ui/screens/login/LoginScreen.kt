@@ -1,10 +1,12 @@
 package com.pcandroiddev.expensemanager.ui.screens.login
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -12,9 +14,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,18 +38,24 @@ import com.pcandroiddev.expensemanager.ui.screens.register.PasswordTextFieldComp
 import com.pcandroiddev.expensemanager.ui.screens.register.RegisterLoginButtonComponent
 import com.pcandroiddev.expensemanager.ui.screens.register.SimpleTextField
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
+import com.pcandroiddev.expensemanager.ui.theme.FABColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 import com.pcandroiddev.expensemanager.ui.uievents.LoginUIEvent
 import com.pcandroiddev.expensemanager.viewmodels.LoginViewModel
+import kotlinx.coroutines.launch
 
 
 private const val TAG = "LoginScreen"
+
 @Composable
 fun LoginScreen(
     loginViewModel: LoginViewModel = hiltViewModel(),
     onRegisterTextClicked: () -> Unit,
     onLoginSuccessful: () -> Unit
 ) {
+
+    val signInState = loginViewModel.singInState.collectAsState(initial = null)
+    val coroutineScope = rememberCoroutineScope()
 
     Surface(
         modifier = Modifier
@@ -137,7 +149,7 @@ fun LoginScreen(
                 )
 
                 IconButton(onClick = {
-
+//                    loginViewModel.onEventChange(event = LoginUIEvent.GoogleSignInClicked)
                 }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_google),
@@ -155,30 +167,58 @@ fun LoginScreen(
                     onRegisterTextClicked()
                 })
 
+            if (signInState.value?.isLoading == true) {
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .padding(top = 12.dp)
+                        .fillMaxWidth()
+                        .heightIn(min = 6.dp),
+                    color = FABColor
+                )
+            }
+
 
         }
     }
 
-    //TODO: In the launched effect, call onLoginSuccessful()
 
-    /*BackHandler {
-        navController.navigate(Screen.RegisterScreen.route) {
-            popUpTo(route = Screen.LoginScreen.route) {
-                inclusive = true
+    LaunchedEffect(key1 = signInState.value?.isSuccess) {
+        coroutineScope.launch {
+            val success = signInState.value?.isSuccess
+            if (success != null && success == "Sign In Success!") {
+                Log.d(TAG, "LoginScreen/isSuccess: $success")
+                onLoginSuccessful()
             }
         }
-    }*/
+    }
+
+    LaunchedEffect(key1 = signInState.value?.isError) {
+        coroutineScope.launch {
+            val error = signInState.value?.isError
+            if (!error.isNullOrBlank()) {
+                Log.d(TAG, "RegisterScreen/isError: $error")
+            }
+        }
+    }
+
 }
 
 @Preview
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen(
+    /*LoginScreen(
         onRegisterTextClicked = {
 
         },
         onLoginSuccessful = {
 
         }
+    )*/
+    LinearProgressIndicator(
+        modifier = Modifier
+            .padding(top = 12.dp)
+            .fillMaxWidth()
+            .heightIn(min = 6.dp),
+        color = FABColor
     )
 }
