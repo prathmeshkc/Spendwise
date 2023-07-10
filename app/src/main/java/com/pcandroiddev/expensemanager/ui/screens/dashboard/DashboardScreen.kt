@@ -1,5 +1,6 @@
 package com.pcandroiddev.expensemanager.ui.screens.dashboard
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,18 +14,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Receipt
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.pcandroiddev.expensemanager.R
+import com.pcandroiddev.expensemanager.data.local.TransactionType
+import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
 import com.pcandroiddev.expensemanager.ui.components.ExpensesSearchBar
 import com.pcandroiddev.expensemanager.ui.components.TotalBalanceCard
 import com.pcandroiddev.expensemanager.ui.components.TotalExpenseCard
@@ -50,6 +54,7 @@ import com.pcandroiddev.expensemanager.ui.components.TransactionListItem
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
+import com.pcandroiddev.expensemanager.utils.NetworkResult
 import com.pcandroiddev.expensemanager.utils.isScrollingUp
 import com.pcandroiddev.expensemanager.viewmodels.DashboardViewModel
 
@@ -60,17 +65,64 @@ private const val TAG = "DashboardScreen"
 fun DashboardScreen(
     dashboardViewModel: DashboardViewModel = hiltViewModel(),
     onAddTransactionFABClicked: () -> Unit,
-    onTransactionListItemClicked: (Int) -> Unit,
+    onTransactionListItemClicked: (TransactionResponse) -> Unit,
     onLogOutButtonClicked: () -> Unit,
     onBackPressedCallback: () -> Unit
 ) {
 
     val context = LocalContext.current
 
-
     val listState = rememberLazyListState()
+
     var isSearchBarActive by remember {
         mutableStateOf(false)
+    }
+
+    var totalBalanceText by remember {
+        mutableStateOf(0.00)
+    }
+
+    var totalIncomeText by remember {
+        mutableStateOf(0.00)
+    }
+
+    var totalExpenseText by remember {
+        mutableStateOf(0.00)
+    }
+
+    var isLoading by remember {
+        mutableStateOf(false)
+    }
+
+    var transactionList by remember {
+        mutableStateOf(emptyList<TransactionResponse>())
+    }
+
+    val transactionResponseList by dashboardViewModel.transactionList.collectAsState()
+
+
+
+    when (transactionResponseList) {
+        is NetworkResult.Loading -> {
+            isLoading = true
+        }
+
+        is NetworkResult.Error -> {
+            isLoading = false
+            Toast.makeText(context, transactionResponseList.message.toString(), Toast.LENGTH_LONG)
+                .show()
+        }
+
+        is NetworkResult.Success -> {
+            isLoading = false
+            transactionList = transactionResponseList.data!!
+            val (totalIncomeList, totalExpenseList) = transactionList.partition { transactionResponse ->
+                transactionResponse.transactionType == TransactionType.INCOME.name
+            }
+             totalIncomeText = totalIncomeList.sumOf { it.amount }
+             totalExpenseText = totalExpenseList.sumOf { it.amount }
+             totalBalanceText = totalIncomeText - totalExpenseText
+        }
     }
 
     Box(
@@ -108,7 +160,7 @@ fun DashboardScreen(
                     .padding(horizontal = 12.dp)
                     .fillMaxWidth(),
                 labelText = "TOTAL BALANCE",
-                amountText = "1807"
+                amountText = totalBalanceText.toString()
             )
 
             Row(
@@ -120,13 +172,13 @@ fun DashboardScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(124.dp),
-                    amountText = "3574.00"
+                    amountText = totalIncomeText.toString()
                 )
                 TotalExpenseCard(
                     modifier = Modifier
                         .weight(1f)
                         .height(124.dp),
-                    amountText = "1767.00"
+                    amountText = totalExpenseText.toString()
                 )
             }
 
@@ -157,12 +209,21 @@ fun DashboardScreen(
                 )
             }
 
-            TransactionList(
-                listState = listState,
-                onTransactionListItemClicked = {
-                    onTransactionListItemClicked(it)
-                })
+            //TODO: Send list to this composable only when Success
 
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    color = FABColor
+                )
+            } else {
+                TransactionList(
+                    listState = listState,
+                    transactionList = transactionList,
+                    onTransactionListItemClicked = {
+                        onTransactionListItemClicked(it)
+                    })
+            }
         }
 
         if (!isSearchBarActive) {
@@ -216,19 +277,34 @@ which we can get from 'it' in the items lambda. Pass it
 @Composable
 fun TransactionList(
     listState: LazyListState,
-    onTransactionListItemClicked: (Int) -> Unit
+    transactionList: List<TransactionResponse>,
+    onTransactionListItemClicked: (TransactionResponse) -> Unit
 ) {
-    LazyColumn(
-        state = listState,
-        content = {
-            items(9) {
-                TransactionListItem(
-                    onTransactionListItemClicked = {
-                        onTransactionListItemClicked(it)
-                    }
-                )
-            }
-        })
+
+    if (transactionList.isEmpty()) {
+        Text(
+            text = "No Transactions Yet !",
+            fontFamily = FontFamily(Font(R.font.inter_light)),
+            fontStyle = FontStyle.Normal,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 20.sp,
+            color = DetailsTextColor
+        )
+    } else {
+        LazyColumn(
+            state = listState,
+            content = {
+                items(transactionList) {
+                    TransactionListItem(
+                        transactionResponse = it,
+                        onTransactionListItemClicked = {
+                            onTransactionListItemClicked(it)
+                        }
+                    )
+                }
+            })
+    }
+
 }
 
 @Preview(showBackground = true)

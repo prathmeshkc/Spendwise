@@ -216,22 +216,22 @@ fun RegisterScreen(
     }
 
     LaunchedEffect(key1 = signUpState.value?.isSuccess) {
-        coroutineScope.launch {
-            val success = signUpState.value?.isSuccess
-            if (success != null && success == "Sign Up Success!") {
-                Log.d(TAG, "RegisterScreen/isSuccess: $success")
-                onRegistrationSuccessful()
-            }
+
+        val success = signUpState.value?.isSuccess
+        if (success != null && success == "Sign Up Success!") {
+            Log.d(TAG, "RegisterScreen/isSuccess: $success")
+            onRegistrationSuccessful()
         }
+
     }
 
     LaunchedEffect(key1 = signUpState.value?.isError) {
-        coroutineScope.launch {
-            val error = signUpState.value?.isError
-            if (!error.isNullOrBlank()) {
-                Log.d(TAG, "RegisterScreen/isError: $error")
-            }
+
+        val error = signUpState.value?.isError
+        if (!error.isNullOrBlank()) {
+            Log.d(TAG, "RegisterScreen/isError: $error")
         }
+
     }
 
 

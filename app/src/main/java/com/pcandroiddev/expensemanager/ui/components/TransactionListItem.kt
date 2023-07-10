@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -24,20 +22,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pcandroiddev.expensemanager.R
-import com.pcandroiddev.expensemanager.navigation.ExpenseManagerRouter
-import com.pcandroiddev.expensemanager.navigation.Screen
+import com.pcandroiddev.expensemanager.data.local.TransactionType
+import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.GreenIncomeColor
+import com.pcandroiddev.expensemanager.ui.theme.RedExpenseColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
+import java.time.LocalDate
 
 /**
  * Variables required are
@@ -52,6 +54,7 @@ import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 //TODO: Pass current transaction item to the lambda
 @Composable
 fun TransactionListItem(
+    transactionResponse: TransactionResponse,
     onTransactionListItemClicked: () -> Unit
 ) {
     Card(
@@ -69,7 +72,9 @@ fun TransactionListItem(
         ) {
 
 
-            Row(modifier = Modifier.fillMaxSize()) {
+            Row(
+                modifier = Modifier.fillMaxSize(),
+            ) {
                 Box(
                     modifier = Modifier
                         .padding(top = 10.dp, start = 13.dp)
@@ -78,13 +83,57 @@ fun TransactionListItem(
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
-                        imageVector = Icons.Outlined.Home,
+                        painter = when (transactionResponse.category) {
+                            "Entertainment" -> {
+                                painterResource(id = R.drawable.ic_entertainment)
+                            }
+
+                            "Food" -> {
+                                painterResource(id = R.drawable.ic_food)
+                            }
+
+                            "Healthcare" -> {
+                                painterResource(id = R.drawable.ic_healthcare)
+                            }
+
+                            "Housing" -> {
+                                painterResource(id = R.drawable.ic_housing)
+                            }
+
+                            "Insurance" -> {
+                                painterResource(id = R.drawable.ic_insurance)
+                            }
+
+                            "Miscellaneous" -> {
+                                painterResource(id = R.drawable.ic_miscellaneous)
+                            }
+
+                            "Personal Spending" -> {
+                                painterResource(id = R.drawable.ic_personal_spending)
+                            }
+
+                            "Savings & Debts" -> {
+                                painterResource(id = R.drawable.ic_savings)
+                            }
+
+                            "Transportation" -> {
+                                painterResource(id = R.drawable.ic_transport)
+                            }
+
+                            "Utilities" -> {
+                                painterResource(id = R.drawable.ic_utilities)
+                            }
+
+                            else -> {
+                                painterResource(id = R.drawable.ic_miscellaneous)
+                            }
+                        },
                         colorFilter = ColorFilter.tint(Color.White),
                         contentDescription = "Transaction Category Image"
                     )
                 }
 
-                Spacer(modifier = Modifier.padding(21.dp))
+                Spacer(modifier = Modifier.padding(12.dp))
 
                 Column(
                     modifier = Modifier.fillMaxHeight(),
@@ -93,21 +142,25 @@ fun TransactionListItem(
 
                 ) {
                     Text(
-                        text = "Checkup",
+                        text = transactionResponse.title,
                         fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
                         fontStyle = FontStyle.Normal,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp,
-                        color = DetailsTextColor
+                        color = DetailsTextColor,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
 
                     Text(
-                        text = "Medical",
+                        text = transactionResponse.category,
                         fontFamily = FontFamily(Font(R.font.inter_regular)),
                         fontStyle = FontStyle.Normal,
                         fontWeight = FontWeight.W400,
                         fontSize = 12.sp,
-                        color = DetailsTextColor
+                        color = DetailsTextColor,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
@@ -123,21 +176,47 @@ fun TransactionListItem(
                     ) {
                     //TODO: Change the color of the text based on the transaction type
                     Text(
-                        text = "+$1750.0",
+                        text = when (transactionResponse.transactionType) {
+                            TransactionType.EXPENSE.name -> {
+                                "-$".plus(transactionResponse.amount.toString())
+                            }
+
+                            TransactionType.INCOME.name -> {
+                                "+$".plus(transactionResponse.amount.toString())
+                            }
+
+                            else -> {
+                                transactionResponse.amount.toString()
+                            }
+                        },
                         fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
                         fontStyle = FontStyle.Normal,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp,
-                        color = GreenIncomeColor
+                        color = when (transactionResponse.transactionType) {
+                            TransactionType.EXPENSE.name -> {
+                                RedExpenseColor
+                            }
+
+                            TransactionType.INCOME.name -> {
+                                GreenIncomeColor
+                            }
+
+                            else -> {
+                                DetailsTextColor
+                            }
+                        }
                     )
 
                     Text(
-                        text = "May 19, 2023",
+                        text = transactionResponse.transactionDate,
                         fontFamily = FontFamily(Font(R.font.inter_regular)),
                         fontStyle = FontStyle.Normal,
                         fontWeight = FontWeight.W400,
                         fontSize = 12.sp,
-                        color = DetailsTextColor
+                        color = DetailsTextColor,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
@@ -149,7 +228,18 @@ fun TransactionListItem(
 @Preview
 @Composable
 fun TransactionListItemPreview() {
-    TransactionListItem(onTransactionListItemClicked = {
+    TransactionListItem(
+        transactionResponse = TransactionResponse(
+            "",
+            "",
+            "Checkup",
+            1234.0,
+            "EXPENSE",
+            "Medical",
+            "2023-06-08",
+            ""
+        ),
+        onTransactionListItemClicked = {
 
-    })
+        })
 }

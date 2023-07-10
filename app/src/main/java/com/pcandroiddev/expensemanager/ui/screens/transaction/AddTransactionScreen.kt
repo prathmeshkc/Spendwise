@@ -1,6 +1,7 @@
 package com.pcandroiddev.expensemanager.ui.screens.transaction
 
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -40,6 +41,8 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -96,6 +100,12 @@ fun AddTransactionScreen(
     onNavigateUpClicked: () -> Unit,
     onSaveTransactionClicked: () -> Unit
 ) {
+
+    val context = LocalContext.current
+    val createTransactionState =
+        addTransactionViewModel.createTransactionState.collectAsState(initial = null)
+
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = SurfaceBackgroundColor
@@ -170,11 +180,21 @@ fun AddTransactionScreen(
                 TransactionAmountTextFieldComponent(
                     errorStatus = addTransactionViewModel.addTransactionUIState.value.amountError,
                     onTextChanged = { amount ->
-                        addTransactionViewModel.onEventChange(
-                            event = AddTransactionUIEvent.AmountChanged(
-                                amount
+
+                        if (amount.isNotBlank() || amount.isNotEmpty()) {
+                            addTransactionViewModel.onEventChange(
+                                event = AddTransactionUIEvent.AmountChanged(
+                                    amount.toDouble()
+                                )
                             )
-                        )
+                        } else {
+                            addTransactionViewModel.onEventChange(
+                                event = AddTransactionUIEvent.AmountChanged(
+                                    0.0
+                                )
+                            )
+                        }
+
                     }
                 )
 
@@ -214,10 +234,10 @@ fun AddTransactionScreen(
                 )
 
 
+                //TODO: Make it loading button
                 SaveTransactionButton(
                     isEnable = addTransactionViewModel.allValidationPassed.value,
                     onButtonClicked = {
-                        //TODO: In the launched effect, call onSaveTransactionClicked() to navigate to Dashboard screen
                         addTransactionViewModel.onEventChange(event = AddTransactionUIEvent.SaveTransactionButtonClicked)
                     }
                 )
@@ -226,7 +246,21 @@ fun AddTransactionScreen(
         }
     }
 
-    //TODO: In the launched effect, call onLoginSuccessful()
+    LaunchedEffect(key1 = createTransactionState.value?.isSuccess) {
+        val success = createTransactionState.value?.isSuccess
+        if (success != null && success == "Transaction Created!") {
+            Log.d(TAG, "AddTransactionScreen/isSuccess: $success")
+            onSaveTransactionClicked()
+        }
+    }
+
+    LaunchedEffect(key1 = createTransactionState.value?.isError) {
+        val error = createTransactionState.value?.isError
+        if (!error.isNullOrBlank()) {
+            Log.d(TAG, "AddTransactionScreen/isError: $error")
+            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+        }
+    }
 
     /*BackHandler {
 //        ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)

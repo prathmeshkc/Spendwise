@@ -28,7 +28,11 @@ import androidx.compose.ui.unit.sp
 import com.pcandroiddev.expensemanager.R
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
+import com.pcandroiddev.expensemanager.ui.theme.FABColor
+import com.pcandroiddev.expensemanager.ui.theme.GreenIncomeColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
+import com.pcandroiddev.expensemanager.ui.theme.RedExpenseColor
+import com.pcandroiddev.expensemanager.ui.theme.TotalBalanceColor
 
 @Composable
 fun TotalBalanceCard(
@@ -67,7 +71,7 @@ fun TotalBalanceCard(
                 fontStyle = FontStyle.Normal,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 25.sp,
-                color = DetailsTextColor
+                color = TotalBalanceColor
             )
         }
 
@@ -132,7 +136,7 @@ fun TotalIncomeCard(
                 fontStyle = FontStyle.Normal,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 25.sp,
-                color = DetailsTextColor
+                color = GreenIncomeColor
             )
         }
     }
@@ -194,7 +198,7 @@ fun TotalExpenseCard(
                 fontStyle = FontStyle.Normal,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 25.sp,
-                color = DetailsTextColor
+                color = RedExpenseColor
             )
         }
     }

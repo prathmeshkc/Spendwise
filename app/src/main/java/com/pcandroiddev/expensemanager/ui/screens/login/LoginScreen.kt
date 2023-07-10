@@ -181,24 +181,24 @@ fun LoginScreen(
         }
     }
 
-
+//TODO: See if there's any need for two coroutine scope in bot LE
     LaunchedEffect(key1 = signInState.value?.isSuccess) {
-        coroutineScope.launch {
-            val success = signInState.value?.isSuccess
-            if (success != null && success == "Sign In Success!") {
-                Log.d(TAG, "LoginScreen/isSuccess: $success")
-                onLoginSuccessful()
-            }
+
+        val success = signInState.value?.isSuccess
+        if (success != null && success == "Sign In Success!") {
+            Log.d(TAG, "LoginScreen/isSuccess: $success")
+            onLoginSuccessful()
         }
+
     }
 
     LaunchedEffect(key1 = signInState.value?.isError) {
-        coroutineScope.launch {
-            val error = signInState.value?.isError
-            if (!error.isNullOrBlank()) {
-                Log.d(TAG, "RegisterScreen/isError: $error")
-            }
+
+        val error = signInState.value?.isError
+        if (!error.isNullOrBlank()) {
+            Log.d(TAG, "LoginScreen/isError: $error")
         }
+
     }
 
 }

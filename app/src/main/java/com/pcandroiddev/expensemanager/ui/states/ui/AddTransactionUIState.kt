@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter
 
 data class AddTransactionUIState(
     var title: String = "",
-    var amount: String = "",
+    var amount: Double = 0.0,
     var transactionType: String = TransactionType.EXPENSE.name,
     var category: String = "",
     val date: String = DateTimeFormatter

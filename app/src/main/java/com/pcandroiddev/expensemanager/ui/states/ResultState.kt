@@ -1,6 +1,6 @@
 package com.pcandroiddev.expensemanager.ui.states
 
-data class AuthState(
+data class ResultState(
     val isLoading: Boolean = false,
     val isSuccess: String? = "",
     val isError: String? = ""

@@ -8,14 +8,13 @@ import com.google.firebase.auth.AuthResult
 import com.pcandroiddev.expensemanager.data.local.datastore.TokenManager
 import com.pcandroiddev.expensemanager.repository.auth.AuthRepository
 import com.pcandroiddev.expensemanager.ui.rules.Validator
-import com.pcandroiddev.expensemanager.ui.states.AuthState
+import com.pcandroiddev.expensemanager.ui.states.ResultState
 import com.pcandroiddev.expensemanager.ui.states.ui.LoginUIState
 import com.pcandroiddev.expensemanager.ui.uievents.LoginUIEvent
 import com.pcandroiddev.expensemanager.utils.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -33,7 +32,7 @@ class LoginViewModel @Inject constructor(
     var allValidationPassed = mutableStateOf(false)
         private set
 
-    private val _signInState = Channel<AuthState>()
+    private val _signInState = Channel<ResultState>()
     val singInState = _signInState.receiveAsFlow()
 
     fun onEventChange(event: LoginUIEvent) {
@@ -70,7 +69,7 @@ class LoginViewModel @Inject constructor(
 
                 when (authResult) {
                     is NetworkResult.Loading -> {
-                        _signInState.send(AuthState(isLoading = true))
+                        _signInState.send(ResultState(isLoading = true))
                     }
 
                     is NetworkResult.Success -> {
@@ -78,11 +77,11 @@ class LoginViewModel @Inject constructor(
                         val token = tokenResult?.token
                         tokenManager.saveToken(token = token!!)
                         Log.d(TAG, "loginUserWithEmailPassword: ${tokenManager.getToken()}")
-                        _signInState.send(AuthState(isSuccess = "Sign In Success!"))
+                        _signInState.send(ResultState(isSuccess = "Sign In Success!"))
                     }
 
                     is NetworkResult.Error -> {
-                        _signInState.send(AuthState(isError = authResult.message))
+                        _signInState.send(ResultState(isError = authResult.message))
                     }
                 }
 

@@ -2,23 +2,19 @@ package com.pcandroiddev.expensemanager.viewmodels
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.AuthResult
 import com.pcandroiddev.expensemanager.data.local.datastore.TokenManager
 import com.pcandroiddev.expensemanager.repository.auth.AuthRepository
 import com.pcandroiddev.expensemanager.ui.rules.Validator
-import com.pcandroiddev.expensemanager.ui.states.AuthState
+import com.pcandroiddev.expensemanager.ui.states.ResultState
 import com.pcandroiddev.expensemanager.ui.states.ui.RegisterUIState
 import com.pcandroiddev.expensemanager.ui.uievents.RegisterUIEvent
 import com.pcandroiddev.expensemanager.utils.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -38,7 +34,7 @@ class RegisterViewModel @Inject constructor(
     var allValidationPassed = mutableStateOf(false)
         private set
 
-    private val _signUpState = Channel<AuthState>()
+    private val _signUpState = Channel<ResultState>()
     val signUpState = _signUpState.receiveAsFlow()
 
 
@@ -78,7 +74,7 @@ class RegisterViewModel @Inject constructor(
             ).collect { authResult: NetworkResult<AuthResult> ->
                 when (authResult) {
                     is NetworkResult.Loading -> {
-                        _signUpState.send(AuthState(isLoading = true))
+                        _signUpState.send(ResultState(isLoading = true))
                     }
 
                     is NetworkResult.Success -> {
@@ -88,11 +84,11 @@ class RegisterViewModel @Inject constructor(
                         Log.d(TAG, "registerUserWithEmailPassword: $userId")
                         tokenManager.saveToken(token = token!!)
                         Log.d(TAG, "registerUserWithEmailPassword: ${tokenManager.getToken()}")
-                        _signUpState.send(AuthState(isSuccess = "Sign Up Success!"))
+                        _signUpState.send(ResultState(isSuccess = "Sign Up Success!"))
                     }
 
                     is NetworkResult.Error -> {
-                        _signUpState.send(AuthState(isError = authResult.message))
+                        _signUpState.send(ResultState(isError = authResult.message))
                     }
                 }
             }

@@ -3,22 +3,37 @@ package com.pcandroiddev.expensemanager.viewmodels
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.pcandroiddev.expensemanager.data.remote.TransactionRequest
+import com.pcandroiddev.expensemanager.repository.transaction.TransactionRepository
 import com.pcandroiddev.expensemanager.ui.rules.ValidationResult
 import com.pcandroiddev.expensemanager.ui.rules.Validator
+import com.pcandroiddev.expensemanager.ui.states.ResultState
 import com.pcandroiddev.expensemanager.ui.states.ui.AddTransactionUIState
 import com.pcandroiddev.expensemanager.ui.uievents.AddTransactionUIEvent
+import com.pcandroiddev.expensemanager.utils.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
 @HiltViewModel
-class AddTransactionViewModel @Inject constructor() : ViewModel() {
+class AddTransactionViewModel @Inject constructor(
+    private val transactionRepository: TransactionRepository
+) : ViewModel() {
 
 
     var addTransactionUIState = mutableStateOf(AddTransactionUIState())
 
     var allValidationPassed = mutableStateOf(false)
         private set
+
+    private val _createTransactionState = Channel<ResultState>()
+    val createTransactionState = _createTransactionState.receiveAsFlow()
 
     fun onEventChange(event: AddTransactionUIEvent) {
         when (event) {
@@ -67,21 +82,15 @@ class AddTransactionViewModel @Inject constructor() : ViewModel() {
 
     }
 
-    private fun saveTransaction() {
-        Log.d(TAG, "Inside_saveTransaction")
-        validateDataWithRules()
-        printState()
-    }
-
     private fun validateDataWithRules() {
 
         val titleResult = Validator.validateTitle(title = addTransactionUIState.value.title)
         val amountResult =
             try {
-                if (addTransactionUIState.value.amount.isEmpty() || addTransactionUIState.value.amount.isBlank()) {
+                if (addTransactionUIState.value.amount <= 0) {
                     ValidationResult(status = false)
                 } else {
-                    Validator.validateAmount(amount = addTransactionUIState.value.amount.toDouble())
+                    Validator.validateAmount(amount = addTransactionUIState.value.amount)
                 }
             } catch (numberFormatException: NumberFormatException) {
                 ValidationResult(status = false)
@@ -116,6 +125,44 @@ class AddTransactionViewModel @Inject constructor() : ViewModel() {
 
 
     }
+
+
+    //    TODO: Add method to make network call
+    private fun saveTransaction() {
+        Log.d(TAG, "Inside_saveTransaction")
+        validateDataWithRules()
+        printState()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            transactionRepository.createTransaction(
+                TransactionRequest(
+                    title = addTransactionUIState.value.title,
+                    amount = addTransactionUIState.value.amount,
+                    transactionType = addTransactionUIState.value.transactionType,
+                    category = addTransactionUIState.value.category,
+                    transactionDate = addTransactionUIState.value.date,
+                    note = addTransactionUIState.value.note
+                )
+            ).collect { createTransactionResult: NetworkResult<String> ->
+                when (createTransactionResult) {
+                    is NetworkResult.Loading -> {
+                        _createTransactionState.send(ResultState(isLoading = true))
+                    }
+
+                    is NetworkResult.Success -> {
+                        _createTransactionState.send(ResultState(isSuccess = createTransactionResult.data))
+                    }
+
+                    is NetworkResult.Error -> {
+                        _createTransactionState.send(ResultState(isError = createTransactionResult.message))
+                    }
+                }
+
+            }
+
+        }
+    }
+
 
     private fun printState() {
         Log.d(TAG, "Inside_printState")
