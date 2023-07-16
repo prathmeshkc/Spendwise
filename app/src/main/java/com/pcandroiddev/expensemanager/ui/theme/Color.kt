@@ -21,6 +21,12 @@ val FABColor = Color(75, 153, 255)
 val DisabledButtonColor = Color(178, 203, 230)
 val DisabledTextColor = Color(158, 158, 158)
 val LinkColor = Color(0, 102, 255)
+val SelectedChipContainerColor = Color(51, 58, 74)
+val UnSelectedChipContainerColor = Color(32, 33, 37)
+val SelectedChipTextColor = Color(232, 225, 248)
+val UnSelectedChipTextColor = Color(204, 201, 210)
+
+
 
 
 

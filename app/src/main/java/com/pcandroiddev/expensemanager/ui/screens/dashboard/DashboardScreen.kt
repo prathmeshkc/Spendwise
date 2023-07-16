@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Receipt
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -54,6 +55,8 @@ import com.pcandroiddev.expensemanager.ui.components.TransactionListItem
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
+import com.pcandroiddev.expensemanager.ui.uievents.SearchTransactionUIEvent
+import com.pcandroiddev.expensemanager.utils.Helper
 import com.pcandroiddev.expensemanager.utils.NetworkResult
 import com.pcandroiddev.expensemanager.utils.isScrollingUp
 import com.pcandroiddev.expensemanager.viewmodels.DashboardViewModel
@@ -61,11 +64,13 @@ import com.pcandroiddev.expensemanager.viewmodels.DashboardViewModel
 private const val TAG = "DashboardScreen"
 
 //TODO: Observe for transaction list changes to update the list
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     dashboardViewModel: DashboardViewModel = hiltViewModel(),
     onAddTransactionFABClicked: () -> Unit,
     onTransactionListItemClicked: (TransactionResponse) -> Unit,
+    onSearchedTransactionListItemClicked: (TransactionResponse) -> Unit,
     onLogOutButtonClicked: () -> Unit,
     onBackPressedCallback: () -> Unit
 ) {
@@ -119,9 +124,9 @@ fun DashboardScreen(
             val (totalIncomeList, totalExpenseList) = transactionList.partition { transactionResponse ->
                 transactionResponse.transactionType == TransactionType.INCOME.name
             }
-             totalIncomeText = totalIncomeList.sumOf { it.amount }
-             totalExpenseText = totalExpenseList.sumOf { it.amount }
-             totalBalanceText = totalIncomeText - totalExpenseText
+            totalIncomeText = totalIncomeList.sumOf { it.amount }
+            totalExpenseText = totalExpenseList.sumOf { it.amount }
+            totalBalanceText = totalIncomeText - totalExpenseText
         }
     }
 
@@ -137,22 +142,46 @@ fun DashboardScreen(
                 .fillMaxSize()
         ) {
 
+            /*
+               TODO: Add UiEvent when the query changes OR Search button is clicked.
+                In the viewModel call the API and observe the flow of List of Transaction here
+             */
+
             ExpensesSearchBar(
                 modifier = Modifier
                     .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 12.dp)
                     .fillMaxWidth(),
-                leadingIcon = Icons.Outlined.Menu,
                 trailingIcon = Icons.Outlined.Logout,
                 trailingIconDesc = "Logout Button",
-                onLeadingIconClicked = {
-
-                },
                 onTrailingIconClicked = {
-                    dashboardViewModel.deleteToken()
+                    dashboardViewModel.logout()
                     onLogOutButtonClicked()
+                },
+                isActive = { isActive ->
+                    isSearchBarActive = isActive
+                    if (!isSearchBarActive) {
+                        dashboardViewModel.resetSearchState()
+                    }
+                },
+                onSearchTextChanged = {
+                    dashboardViewModel.onEventChange(
+                        event = SearchTransactionUIEvent.SearchTextChanged(
+                            searchText = it
+                        )
+                    )
+                },
+                onSearchButtonClicked = {
+                    dashboardViewModel.onEventChange(
+                        event = SearchTransactionUIEvent.SearchTransactionButtonClicked
+                    )
                 }
-            ) { isActive ->
-                isSearchBarActive = isActive
+            ) {
+                SearchBarContentScreen(
+                    dashboardViewModel = dashboardViewModel,
+                    onSearchedTransactionListItemClicked = { transactionResponse ->
+                        onSearchedTransactionListItemClicked(transactionResponse)
+                    }
+                )
             }
 
             TotalBalanceCard(
@@ -160,7 +189,7 @@ fun DashboardScreen(
                     .padding(horizontal = 12.dp)
                     .fillMaxWidth(),
                 labelText = "TOTAL BALANCE",
-                amountText = totalBalanceText.toString()
+                amountText = Helper.stringifyTotalBalance(balance = totalBalanceText)
             )
 
             Row(
@@ -315,6 +344,9 @@ fun DashboardScreenPreview() {
 
         },
         onTransactionListItemClicked = {
+
+        },
+        onSearchedTransactionListItemClicked = {
 
         },
         onLogOutButtonClicked = {

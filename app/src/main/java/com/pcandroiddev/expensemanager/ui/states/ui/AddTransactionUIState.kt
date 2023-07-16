@@ -1,6 +1,7 @@
 package com.pcandroiddev.expensemanager.ui.states.ui
 
 import com.pcandroiddev.expensemanager.data.local.TransactionType
+import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
 import java.text.DateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -14,7 +15,6 @@ data class AddTransactionUIState(
         .ofPattern("MMM dd, yyyy")
         .format(LocalDate.now()),
     var note: String = "",
-    private var _createdAt: Long = System.currentTimeMillis(),
 
     var titleError: Boolean = false,
     var amountError: Boolean = false,
@@ -22,6 +22,12 @@ data class AddTransactionUIState(
     var noteError: Boolean = false
 
 ) {
-    val createdAt: String
-        get() = DateFormat.getDateTimeInstance().format(_createdAt)
+    constructor(transactionResponse: TransactionResponse) : this(
+        title = transactionResponse.title,
+        amount = transactionResponse.amount,
+        transactionType = transactionResponse.transactionType,
+        category = transactionResponse.category,
+        date = transactionResponse.transactionDate,
+        note = transactionResponse.note,
+    )
 }

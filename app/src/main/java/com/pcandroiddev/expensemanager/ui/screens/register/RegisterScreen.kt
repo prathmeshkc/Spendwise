@@ -183,7 +183,7 @@ fun RegisterScreen(
 
                 IconButton(
                     onClick = {
-//                    registerViewModel.onEventChange(event = RegisterUIEvent.GoogleSignUpClicked)
+                    registerViewModel.onEventChange(event = RegisterUIEvent.GoogleSignUpClicked)
                     }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_google),

@@ -34,6 +34,11 @@ class AuthRepositoryImpl @Inject constructor(
 
     }
 
+    override fun logout() {
+        firebaseAuth.signOut()
+    }
+
+
     /*override fun googleSignIn(credential: AuthCredential): Flow<NetworkResult<AuthResult>> {
         TODO("Not yet implemented")
     }*/

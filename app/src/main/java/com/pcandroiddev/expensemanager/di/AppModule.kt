@@ -2,6 +2,7 @@ package com.pcandroiddev.expensemanager.di
 
 import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
+import com.pcandroiddev.expensemanager.BuildConfig
 import com.pcandroiddev.expensemanager.data.local.datastore.TokenManager
 import com.pcandroiddev.expensemanager.repository.auth.AuthRepository
 import com.pcandroiddev.expensemanager.repository.auth.AuthRepositoryImpl
@@ -19,6 +20,11 @@ object AppModule {
     @Provides
     @Singleton
     fun providesFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+
+    @Provides
+    @Singleton
+    fun providesFirebaseClientId(): String = BuildConfig.CLIENT_ID
 
     @Provides
     @Singleton

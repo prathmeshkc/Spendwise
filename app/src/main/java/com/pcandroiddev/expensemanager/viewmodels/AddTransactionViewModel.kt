@@ -15,7 +15,6 @@ import com.pcandroiddev.expensemanager.utils.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,8 +28,8 @@ class AddTransactionViewModel @Inject constructor(
 
     var addTransactionUIState = mutableStateOf(AddTransactionUIState())
 
-    var allValidationPassed = mutableStateOf(false)
-        private set
+    private val _allValidationPassed = mutableStateOf(false)
+    val allValidationPassed get() = _allValidationPassed
 
     private val _createTransactionState = Channel<ResultState>()
     val createTransactionState = _createTransactionState.receiveAsFlow()
@@ -118,7 +117,7 @@ class AddTransactionViewModel @Inject constructor(
             noteError = noteResult.status
         )
 
-        allValidationPassed.value =
+        _allValidationPassed.value =
             titleResult.status && amountResult.status && categoryResult.status && noteResult.status
 
         printState()
@@ -127,7 +126,6 @@ class AddTransactionViewModel @Inject constructor(
     }
 
 
-    //    TODO: Add method to make network call
     private fun saveTransaction() {
         Log.d(TAG, "Inside_saveTransaction")
         validateDataWithRules()

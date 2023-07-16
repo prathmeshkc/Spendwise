@@ -39,4 +39,16 @@ interface TransactionService {
         @Query("endDate") endDate: String
     ): Response<List<TransactionResponse>>
 
+    @GET("/transaction/search")
+    suspend fun searchTransactionsByText(
+        @Query("searchQuery") searchText: String
+    ): Response<List<TransactionResponse>>
+
+    @GET("/transaction/search/type")
+    suspend fun searchTransactionByTypeAndText(
+        @Query("searchQuery") searchText: String,
+        @Query("type") transactionType: String
+    ): Response<List<TransactionResponse>>
+
+
 }

@@ -21,6 +21,12 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        Properties properties = new Properties()
+        properties.load(project.rootProject.file("local.properties").newDataInputStream())
+
+        buildConfigField "String", "CLIENT_ID", "\"${properties.getProperty("CLIENT_ID")}\""
+
     }
 
     buildTypes {
@@ -38,6 +44,7 @@ android {
     }
     buildFeatures {
         compose true
+        buildConfig true
     }
     composeOptions {
         kotlinCompilerExtensionVersion '1.4.8'
@@ -92,6 +99,9 @@ dependencies {
 
     //Firebase Auth
     implementation 'com.google.firebase:firebase-auth-ktx'
+
+    //add the dependency for the Google Play services library and specify its version
+    implementation 'com.google.android.gms:play-services-auth:20.6.0'
 
     // Dagger - Hilt
     implementation "com.google.dagger:hilt-android:2.44"

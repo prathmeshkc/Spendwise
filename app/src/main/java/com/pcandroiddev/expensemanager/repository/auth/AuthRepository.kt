@@ -9,5 +9,6 @@ interface AuthRepository {
     fun loginUser(email: String, password: String): Flow<NetworkResult<AuthResult>>
     fun registerUser(email: String, password: String): Flow<NetworkResult<AuthResult>>
 
-//    fun googleSignIn(credential: AuthCredential): Flow<NetworkResult<AuthResult>>
+    //    fun googleSignIn(credential: AuthCredential): Flow<NetworkResult<AuthResult>>
+    fun logout()
 }

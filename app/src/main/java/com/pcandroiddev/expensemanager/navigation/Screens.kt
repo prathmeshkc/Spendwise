@@ -11,12 +11,13 @@ sealed class Screen(val route: String) {
     object AddTransactionScreen : Screen(route = "addTransaction")
     object EditTransactionScreen : Screen(route = "editTransaction")
     object TransactionDetailsScreen : Screen(route = "transactionDetails")
-}
 
-object ExpenseManagerRouter {
-    var currentScreen: MutableState<Screen> = mutableStateOf(Screen.RegisterScreen)
-
-    fun navigateTo(destination: Screen) {
-        currentScreen.value = destination
+    fun withArgs(vararg args: String): String {
+        return buildString {
+            append(route)
+            args.forEach { arg ->
+                append("/$arg")
+            }
+        }
     }
 }

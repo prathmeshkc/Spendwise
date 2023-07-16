@@ -1,10 +1,17 @@
 package com.pcandroiddev.expensemanager.navigation
 
+import android.app.Activity
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.google.gson.Gson
+import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
 import com.pcandroiddev.expensemanager.ui.screens.dashboard.DashboardScreen
 import com.pcandroiddev.expensemanager.ui.screens.login.LoginScreen
 import com.pcandroiddev.expensemanager.ui.screens.register.RegisterScreen
@@ -19,6 +26,8 @@ fun NavigationGraph(
     navController: NavHostController = rememberNavController(),
     accessToken: String? = null
 ) {
+
+    val activity = (LocalContext.current as? Activity)
 
     NavHost(
         navController = navController,
@@ -64,8 +73,17 @@ fun NavigationGraph(
                 onAddTransactionFABClicked = {
                     navController.navigate(Screen.AddTransactionScreen.route)
                 },
-                onTransactionListItemClicked = {
-                    navController.navigate(Screen.TransactionDetailsScreen.route)
+                onTransactionListItemClicked = { transactionResponse ->
+                    val transactionResponseString = Gson().toJson(transactionResponse)
+                    navController.navigate(
+                        Screen.TransactionDetailsScreen.withArgs(transactionResponseString)
+                    )
+                },
+                onSearchedTransactionListItemClicked = { transactionResponse ->
+                    val transactionResponseString = Gson().toJson(transactionResponse)
+                    navController.navigate(
+                        Screen.TransactionDetailsScreen.withArgs(transactionResponseString)
+                    )
                 },
                 onLogOutButtonClicked = {
                     navController.navigate(Screen.LoginScreen.route) {
@@ -75,7 +93,81 @@ fun NavigationGraph(
                     }
                 },
                 onBackPressedCallback = {
-                    navController.popBackStack()
+                    activity?.finishAffinity()
+                    /*navController.popBackStack(
+                        route = Screen.DashboardScreen.route,
+                        inclusive = true
+                    )*/
+                }
+            )
+        }
+
+        composable(
+            route = Screen.TransactionDetailsScreen.route + "/{transactionResponse}",
+            arguments = listOf(
+                navArgument(name = "transactionResponse") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            )
+        ) { navBackStackEntry: NavBackStackEntry ->
+            val jsonTransactionResponse =
+                navBackStackEntry.arguments?.getString("transactionResponse")!!
+            TransactionDetailsScreen(
+                jsonTransactionResponse = jsonTransactionResponse,
+                onNavigateUpClicked = {
+                    navController.navigate(route = Screen.DashboardScreen.route) {
+                        popUpTo(Screen.TransactionDetailsScreen.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onEditFABClicked = {
+                    navController.navigate(
+                        Screen.EditTransactionScreen.withArgs(
+                            jsonTransactionResponse
+                        )
+                    )
+                },
+                onShareButtonClicked = {
+                    //TODO: Create a function here to share note
+                },
+                onDeleteTransactionButtonClicked = {
+                    navController.navigate(route = Screen.DashboardScreen.route) {
+                        popUpTo(Screen.TransactionDetailsScreen.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
+
+        composable(
+            route = Screen.EditTransactionScreen.route + "/{transactionResponse}",
+            arguments = listOf(
+                navArgument(name = "transactionResponse") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            )
+        ) { navBackStackEntry: NavBackStackEntry ->
+
+            val transactionResponseJsonString =
+                navBackStackEntry.arguments?.getString("transactionResponse")!!
+
+            val transactionResponse =
+                Gson().fromJson(transactionResponseJsonString, TransactionResponse::class.java)
+
+            EditTransactionScreen(
+                onNavigateUpClicked = {
+                    navController.navigateUp()
+                },
+                onSuccessfulUpdateCallback = {
+                    navController.navigate(Screen.DashboardScreen.route) {
+                        popUpTo(route = Screen.EditTransactionScreen.route) {
+                            inclusive = true
+                        }
+                    }
                 }
             )
         }
@@ -95,41 +187,6 @@ fun NavigationGraph(
             )
         }
 
-        composable(
-            route = Screen.EditTransactionScreen.route
-        ) {
-            EditTransactionScreen(
-                onNavigateUpClicked = {
-                    navController.navigateUp()
-                },
-                onSaveTransactionClicked = {
-                    navController.navigate(Screen.DashboardScreen.route) {
-                        popUpTo(route = Screen.EditTransactionScreen.route) {
-                            inclusive = true
-                        }
-                    }
-                }
-            )
-        }
 
-        //TODO: Modify to Accept arguments of type Transaction or else multiple args
-        composable(
-            route = Screen.TransactionDetailsScreen.route
-        ) {
-            TransactionDetailsScreen(
-                onNavigateUpClicked = {
-                    navController.navigateUp()
-                },
-                onEditFABClicked = {
-                    navController.navigate(Screen.EditTransactionScreen.route)
-                },
-                onShareButtonClicked = {
-                    //TODO: Create a function here to share note
-                },
-                onDeleteTransactionButtonClicked = {
-                    //TODO: Modify this lambda to take appropriate transaction object
-                }
-            )
-        }
     }
 }

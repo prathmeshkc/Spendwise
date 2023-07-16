@@ -24,7 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val firebaseClientId: String
 ) : ViewModel() {
 
 
@@ -98,6 +99,7 @@ class RegisterViewModel @Inject constructor(
     private fun registerWithGoogleSignUp() {
         Log.d(TAG, "Inside_registerWithGoogleSignUp")
         printState()
+
     }
 
 

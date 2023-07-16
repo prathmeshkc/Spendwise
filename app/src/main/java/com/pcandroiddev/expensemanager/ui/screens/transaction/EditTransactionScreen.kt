@@ -1,7 +1,7 @@
 package com.pcandroiddev.expensemanager.ui.screens.transaction
 
 import android.util.Log
-import androidx.activity.compose.BackHandler
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,33 +18,46 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.pcandroiddev.expensemanager.navigation.ExpenseManagerRouter
-import com.pcandroiddev.expensemanager.navigation.Screen
-import com.pcandroiddev.expensemanager.navigation.SystemBackButtonHandler
-import com.pcandroiddev.expensemanager.ui.components.SegmentedControl
+import com.google.gson.Gson
+import com.pcandroiddev.expensemanager.data.local.TransactionType
+import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
+import com.pcandroiddev.expensemanager.ui.uievents.EditTransactionUIEvent
+import com.pcandroiddev.expensemanager.utils.Helper
 import com.pcandroiddev.expensemanager.viewmodels.EditTransactionViewModel
 
 private const val TAG = "EditTransactionScreen"
-//TODO: Pass in the ViewModel, which will provide the Transaction object.
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditTransactionScreen(
     editTransactionViewModel: EditTransactionViewModel = hiltViewModel(),
     onNavigateUpClicked: () -> Unit,
-    onSaveTransactionClicked: () -> Unit
+    onSuccessfulUpdateCallback: () -> Unit
 ) {
+
+    Log.d(
+        TAG,
+        "EditTransactionScreen: ${editTransactionViewModel.editTransactionUIState.value}"
+    )
+
+    val context = LocalContext.current
+    val updateTransactionState =
+        editTransactionViewModel.updateTransactionState.collectAsState(initial = null)
+
+
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -66,9 +79,7 @@ fun EditTransactionScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = {
-//                        ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)
                         //TODO: Reset the respective UI State
-//                        navController.navigateUp()
                         onNavigateUpClicked()
                     }) {
                         Icon(
@@ -88,15 +99,28 @@ fun EditTransactionScreen(
                     .padding(horizontal = 70.dp, vertical = 16.dp)
                     .fillMaxWidth(),
             ) {
-                val transactionType = listOf("INCOME", "EXPENSE")
-                SegmentedControl(
-                    items = transactionType,
-                    defaultSelectedItemIndex = 1,
-                    useFixedWidth = true,
-                    itemWidth = 120.dp
-                ) {
-                    Log.e("CustomToggle", "Selected item : ${transactionType[it]}")
-                }
+                TransactionTypeSegmentedButton(
+                    defaultSelectedItemIndex = when (editTransactionViewModel.editTransactionUIState.value.transactionType) {
+                        TransactionType.INCOME.name -> {
+                            0
+                        }
+
+                        TransactionType.EXPENSE.name -> {
+                            1
+                        }
+
+                        else -> {
+                            1
+                        }
+                    },
+                    onSelectionChange = { transactionType ->
+                        editTransactionViewModel.onEventChange(
+                            event = EditTransactionUIEvent.TransactionTypeChanged(
+                                transactionType = transactionType
+                            )
+                        )
+                    }
+                )
 
 
             }
@@ -108,53 +132,109 @@ fun EditTransactionScreen(
 
             ) {
                 TransactionTitleTextFieldComponent(
+                    defaultTitle = editTransactionViewModel.editTransactionUIState.value.title,
+                    errorStatus = editTransactionViewModel.editTransactionUIState.value.titleError,
                     onTextChanged = { title ->
-
+                        editTransactionViewModel.onEventChange(
+                            event = EditTransactionUIEvent.TitleChanged(
+                                title
+                            )
+                        )
                     }
                 )
 
 
                 TransactionAmountTextFieldComponent(
+                    defaultAmount = editTransactionViewModel.editTransactionUIState.value.amount.toString(),
+                    errorStatus = editTransactionViewModel.editTransactionUIState.value.amountError,
                     onTextChanged = { amount ->
-
+                        if (amount.isNotBlank() || amount.isNotEmpty()) {
+                            editTransactionViewModel.onEventChange(
+                                event = EditTransactionUIEvent.AmountChanged(
+                                    amount.toDouble()
+                                )
+                            )
+                        } else {
+                            editTransactionViewModel.onEventChange(
+                                event = EditTransactionUIEvent.AmountChanged(
+                                    0.0
+                                )
+                            )
+                        }
                     }
                 )
 
 
                 TransactionCategoryMenuComponent(
+                    defaultSelectedCategory = editTransactionViewModel.editTransactionUIState.value.category,
+                    errorStatus = editTransactionViewModel.editTransactionUIState.value.categoryError,
                     onSelectionChanged = { category ->
-
+                        editTransactionViewModel.onEventChange(
+                            event = EditTransactionUIEvent.CategoryChanged(
+                                category
+                            )
+                        )
                     }
                 )
 
-
+//              TODO: Remember to change the defaultDate to LocalDate format
                 TransactionDateComponent(
+                    defaultSelectedDate = Helper.stringToLocalDate(editTransactionViewModel.editTransactionUIState.value.date),
                     onDateChanged = { date ->
-
+                        editTransactionViewModel.onEventChange(
+                            event = EditTransactionUIEvent.DateChanged(
+                                date
+                            )
+                        )
                     }
                 )
 
 
                 TransactionNoteComponent(
+                    defaultNote = editTransactionViewModel.editTransactionUIState.value.note,
+                    errorStatus = editTransactionViewModel.editTransactionUIState.value.noteError,
                     onTextChanged = { note ->
-
+                        editTransactionViewModel.onEventChange(
+                            event = EditTransactionUIEvent.NoteChanged(
+                                note
+                            )
+                        )
                     }
                 )
 
 
+                //TODO: Make it a loading button
                 SaveTransactionButton(
+                    isEnable = true,
                     onButtonClicked = {
-                        //TODO: In the launched effect, call onSaveTransactionClicked() to navigate to Dashboard screen
-                        //Add event
+                        editTransactionViewModel.onEventChange(
+                            event = EditTransactionUIEvent.EditTransactionButtonClicked
+                        )
                     }
+
                 )
 
             }
 
         }
-
-
     }
+
+    LaunchedEffect(key1 = updateTransactionState.value?.isSuccess) {
+        val success = updateTransactionState.value?.isSuccess
+        if (success != null && success == "Transaction Updated!") {
+            Log.d(TAG, "EditTransactionScreen/isSuccess: $success")
+            onSuccessfulUpdateCallback()
+        }
+    }
+
+    LaunchedEffect(key1 = updateTransactionState.value?.isError) {
+        val error = updateTransactionState.value?.isError
+        if (!error.isNullOrBlank()) {
+            Log.d(TAG, "EditTransactionScreen/isError: $error")
+            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+        }
+    }
+
 
     /* BackHandler {
  //        ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)
@@ -170,7 +250,7 @@ fun EditTransactionScreenPreview() {
         onNavigateUpClicked = {
 
         },
-        onSaveTransactionClicked = {
+        onSuccessfulUpdateCallback = {
 
         }
     )

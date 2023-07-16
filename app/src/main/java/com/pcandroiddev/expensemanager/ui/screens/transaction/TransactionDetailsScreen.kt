@@ -2,6 +2,8 @@
 
 package com.pcandroiddev.expensemanager.ui.screens.transaction
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,9 +24,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -32,24 +37,39 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.rememberNavController
+import com.google.gson.Gson
 import com.pcandroiddev.expensemanager.R
+import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
+import com.pcandroiddev.expensemanager.ui.uievents.TransactionDetailsUIEvent
 import com.pcandroiddev.expensemanager.viewmodels.DetailsViewModel
 
 
+private const val TAG = "TransactionDetailsScreen"
+
 @Composable
 fun TransactionDetailsScreen(
+    jsonTransactionResponse: String,
     detailsViewModel: DetailsViewModel = hiltViewModel(),
     onNavigateUpClicked: () -> Unit,
     onEditFABClicked: () -> Unit,
     onShareButtonClicked: () -> Unit,
     onDeleteTransactionButtonClicked: () -> Unit
 ) {
+
+    val context = LocalContext.current
+
+    val transactionResponse =
+        Gson().fromJson(jsonTransactionResponse, TransactionResponse::class.java)
+
+    val deleteTransactionState =
+        detailsViewModel.deleteTransactionState.collectAsState(initial = null)
+
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = SurfaceBackgroundColor
@@ -61,8 +81,12 @@ fun TransactionDetailsScreen(
                     onNavigateUpClicked()
                 },
                 onDeleteButtonClicked = {
-                    //TODO: Modify this lambda to take the appropriate object
-                    onDeleteTransactionButtonClicked()
+                    //TODO: Call viewModel.delete()
+                    detailsViewModel.onEventChange(
+                        event = TransactionDetailsUIEvent.DeleteTransactionButtonClicked(
+                            transactionId = transactionResponse.transactionId
+                        )
+                    )
                 },
                 onShareButtonClicked = {
                     onShareButtonClicked()
@@ -75,13 +99,17 @@ fun TransactionDetailsScreen(
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                DetailComponent(heading = "Title", value = "Phone bill")
-                DetailComponent(heading = "Amount", value = "15.94")
-                DetailComponent(heading = "Transaction Type", value = "Expense")
-                DetailComponent(heading = "Category", value = "Utilities")
-                DetailComponent(heading = "When", value = "05/01/2023")
-                DetailComponent(heading = "Note", value = "T-Mobile Prepaid Recharge")
-                DetailComponent(heading = "Created At", value = "May 19, 2023, 5:10 PM")
+                DetailComponent(heading = "Title", value = transactionResponse.title)
+                DetailComponent(heading = "Amount", value = transactionResponse.amount.toString())
+                DetailComponent(
+                    heading = "Transaction Type",
+                    value = transactionResponse.transactionType
+                )
+                DetailComponent(heading = "Category", value = transactionResponse.category)
+                DetailComponent(heading = "When", value = transactionResponse.transactionDate)
+                if (transactionResponse.note.isNotEmpty()) {
+                    DetailComponent(heading = "Note", value = transactionResponse.note)
+                }
                 EditFAB(
                     modifier = Modifier
                         .padding(bottom = 31.dp, end = 16.dp, top = 50.dp)
@@ -95,6 +123,23 @@ fun TransactionDetailsScreen(
         }
 
     }
+
+    LaunchedEffect(key1 = deleteTransactionState.value?.isSuccess) {
+        val success = deleteTransactionState.value?.isSuccess
+        if (success != null && success == "Transaction Deleted!") {
+            Log.d(TAG, "TransactionDetailsScreen/isSuccess: $success")
+            onDeleteTransactionButtonClicked()
+        }
+    }
+
+    LaunchedEffect(key1 = deleteTransactionState.value?.isError) {
+        val error = deleteTransactionState.value?.isError
+        if (!error.isNullOrBlank()) {
+            Log.d(TAG, "TransactionDetailsScreen/isError: $error")
+            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+        }
+    }
+
 
     /*BackHandler {
 //        ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)
@@ -121,9 +166,7 @@ fun DetailsTopAppBar(
         },
         navigationIcon = {
             IconButton(onClick = {
-//                ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)
                 onBackButtonClicked()
-
             }) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
@@ -207,7 +250,20 @@ fun EditFAB(
 @Preview
 @Composable
 fun TransactionDetailsPreview() {
-    TransactionDetailsScreen(
+    DetailsTopAppBar(onBackButtonClicked = {}, onDeleteButtonClicked = {}) {
+
+    }
+    /*TransactionDetailsScreen(
+        jsonTransactionResponse = TransactionResponse(
+            "",
+            "",
+            "T-Mobile Phone Bill",
+            15.94,
+            "EXPENSE",
+            "Utilities",
+            "Jul 01, 2023",
+            "Monthly Phone Recharge"
+        ).toString(),
         onNavigateUpClicked = {
 
         },
@@ -220,5 +276,5 @@ fun TransactionDetailsPreview() {
         onDeleteTransactionButtonClicked = {
 
         }
-    )
+    )*/
 }

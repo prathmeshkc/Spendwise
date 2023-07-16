@@ -72,6 +72,10 @@ object Validator {
         return Pair(first = true, second = "")
     }
 
+    fun validateSearchText(searchText: String): ValidationResult {
+        return ValidationResult(status = searchText.isNotBlank() && searchText.isNotEmpty())
+    }
+
 
 }
 

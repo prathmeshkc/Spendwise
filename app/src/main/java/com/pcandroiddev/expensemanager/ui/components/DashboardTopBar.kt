@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +19,6 @@ import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.LightMode
-import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DropdownMenuItem
@@ -26,7 +26,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
@@ -161,6 +160,11 @@ fun FilterDropDown() {
 
 }
 
+
+/*
+               TODO: Add UiEvent when the query changes OR Search button is clicked.
+                In the viewModel call the API and observe the flow of List of Transaction here
+             */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpensesSearchBar(
@@ -171,7 +175,10 @@ fun ExpensesSearchBar(
     trailingIconDesc: String = "",
     onLeadingIconClicked: () -> Unit = {},
     onTrailingIconClicked: () -> Unit = {},
-    isActive: (Boolean) -> Unit
+    isActive: (Boolean) -> Unit,
+    onSearchTextChanged: (String) -> Unit,
+    onSearchButtonClicked: () -> Unit,
+    content: @Composable() (ColumnScope.() -> Unit)
 ) {
 
     var queryText by remember { mutableStateOf("") }
@@ -183,16 +190,16 @@ fun ExpensesSearchBar(
         query = queryText,
         onQueryChange = { query ->
             queryText = query
+            onSearchTextChanged(queryText)
         },
         onSearch = {
-            active = false
-            queryText = ""
-            isActive(false)
+            onSearchButtonClicked()
+
         },
         active = active,
         onActiveChange = {
             active = it
-            isActive(it)
+            isActive(active)
         },
         placeholder = {
             Text(
@@ -204,15 +211,17 @@ fun ExpensesSearchBar(
             )
         },
         leadingIcon = {
-
             if (active) {
                 Icon(
                     modifier = Modifier.clickable {
                         if (queryText.isNotEmpty()) {
                             queryText = ""
+                            onSearchTextChanged(queryText)
+                            active = false
+                            isActive(active)
                         } else {
                             active = false
-                            isActive(false)
+                            isActive(active)
                         }
                     },
                     imageVector = Icons.Outlined.ArrowBack,
@@ -244,6 +253,7 @@ fun ExpensesSearchBar(
                     Icon(
                         modifier = Modifier.clickable {
                             queryText = ""
+                            onSearchTextChanged(queryText)
                         },
                         imageVector = Icons.Outlined.Close,
                         contentDescription = "Expenses Search Bar"
@@ -271,16 +281,26 @@ fun ExpensesSearchBar(
 
         )
     ) {
-
+        content()
     }
 
     BackHandler {
         queryText = ""
+        onSearchTextChanged(queryText)
         active = false
-        isActive(false)
+        isActive(active)
     }
-
 }
+
+
+/*@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchFilters(
+    selectedIndex: (Int) -> Unit
+) {
+
+
+}*/
 
 @Preview
 @Composable
@@ -295,12 +315,32 @@ fun DashboardTopBarPreview() {
         ExpensesSearchBar(
             isActive = {
 
+            },
+            onSearchTextChanged = {
+
+            },
+            onSearchButtonClicked = {
+
+            },
+            content = {
+
             })
 
         ExpensesSearchBar(
             leadingIcon = Icons.Outlined.Menu,
             isActive = {
 
+            },
+            onSearchTextChanged = {
+
+            },
+            onSearchButtonClicked = {
+
+            },
+            content = {
+
             })
+
+
     }
 }

@@ -72,7 +72,7 @@ class TransactionRepository @Inject constructor(
             if (response.isSuccessful && response.body() != null) {
                 emit(NetworkResult.Success(data = response.body()!!))
                 Log.d(TAG, "getAllTransactionBetweenDates: $response")
-            } else if ((response.code() == 404 || response.code() == 500) && response.body() != null) {
+            } else if ((response.code() == 400 || response.code() == 500) && response.body() != null) {
                 val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
                 emit(NetworkResult.Error(message = errorObj.getString("message")))
             } else {
@@ -80,6 +80,50 @@ class TransactionRepository @Inject constructor(
                 emit(NetworkResult.Error(message = errorObj.getString("Something Went Wrong!")))
             }
 
+        }
+    }
+
+    suspend fun searchTransactionsByText(searchText: String): Flow<NetworkResult<List<TransactionResponse>>> {
+        return flow {
+            emit(NetworkResult.Loading())
+
+            val response = transactionService.searchTransactionsByText(searchText)
+
+            if (response.isSuccessful && response.body() != null) {
+                emit(NetworkResult.Success(data = response.body()!!))
+                Log.d(TAG, "searchTransactionsByText: $response")
+            } else if ((response.code() == 400 || response.code() == 500) && response.body() != null) {
+                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                emit(NetworkResult.Error(message = errorObj.getString("message")))
+            } else {
+                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                emit(NetworkResult.Error(message = errorObj.getString("Something Went Wrong!")))
+            }
+        }
+    }
+
+    suspend fun searchTransactionByTypeAndText(
+        searchText: String,
+        transactionType: String
+    ): Flow<NetworkResult<List<TransactionResponse>>> {
+        return flow {
+            emit(NetworkResult.Loading())
+
+            val response = transactionService.searchTransactionByTypeAndText(
+                searchText = searchText,
+                transactionType = transactionType
+            )
+
+            if (response.isSuccessful && response.body() != null) {
+                emit(NetworkResult.Success(data = response.body()!!))
+                Log.d(TAG, "searchTransactionByTypeAndText: $response")
+            } else if ((response.code() == 400 || response.code() == 500) && response.body() != null) {
+                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                emit(NetworkResult.Error(message = errorObj.getString("message")))
+            } else {
+                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                emit(NetworkResult.Error(message = errorObj.getString("Something Went Wrong!")))
+            }
         }
     }
 

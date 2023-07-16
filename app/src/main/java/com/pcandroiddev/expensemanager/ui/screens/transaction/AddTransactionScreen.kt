@@ -2,7 +2,6 @@ package com.pcandroiddev.expensemanager.ui.screens.transaction
 
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -21,14 +19,12 @@ import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -65,13 +61,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import com.pcandroiddev.expensemanager.R
 import com.pcandroiddev.expensemanager.data.local.TransactionType
-import com.pcandroiddev.expensemanager.navigation.ExpenseManagerRouter
-import com.pcandroiddev.expensemanager.navigation.Screen
-import com.pcandroiddev.expensemanager.navigation.SystemBackButtonHandler
 import com.pcandroiddev.expensemanager.ui.components.SegmentedControl
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
@@ -149,6 +140,7 @@ fun AddTransactionScreen(
                 horizontalArrangement = Arrangement.Center
             ) {
                 TransactionTypeSegmentedButton(
+                    defaultSelectedItemIndex = 1,
                     onSelectionChange = { transactionType ->
                         addTransactionViewModel.onEventChange(
                             event = AddTransactionUIEvent.TransactionTypeChanged(
@@ -234,7 +226,7 @@ fun AddTransactionScreen(
                 )
 
 
-                //TODO: Make it loading button
+                //TODO: Make it a loading button
                 SaveTransactionButton(
                     isEnable = addTransactionViewModel.allValidationPassed.value,
                     onButtonClicked = {
@@ -270,13 +262,14 @@ fun AddTransactionScreen(
 
 @Composable
 fun TransactionTypeSegmentedButton(
+    defaultSelectedItemIndex: Int,
     onSelectionChange: (String) -> Unit
 ) {
 
     val transactionTypeItems = listOf("INCOME", "EXPENSE")
     SegmentedControl(
         items = transactionTypeItems,
-        defaultSelectedItemIndex = 1,
+        defaultSelectedItemIndex = defaultSelectedItemIndex,
         useFixedWidth = true,
         itemWidth = 120.dp
     ) {
@@ -292,13 +285,14 @@ fun TransactionTypeSegmentedButton(
 
 @Composable
 fun TransactionTitleTextFieldComponent(
+    defaultTitle: String = "",
     errorStatus: Boolean = false,
     onTextChanged: (String) -> Unit
 ) {
 
 
     var transactionTitle by remember {
-        mutableStateOf("")
+        mutableStateOf(defaultTitle)
     }
 
     var isFocused by remember {
@@ -386,12 +380,13 @@ fun TransactionTitleTextFieldComponent(
 
 @Composable
 fun TransactionAmountTextFieldComponent(
+    defaultAmount: String = "",
     errorStatus: Boolean = false,
     onTextChanged: (String) -> Unit
 ) {
 
     var transactionAmount by remember {
-        mutableStateOf("")
+        mutableStateOf(defaultAmount)
     }
 
     var isFocused by remember {
@@ -492,6 +487,7 @@ fun TransactionAmountTextFieldComponent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionCategoryMenuComponent(
+    defaultSelectedCategory: String = "",
     errorStatus: Boolean = false,
     onSelectionChanged: (String) -> Unit
 ) {
@@ -508,7 +504,7 @@ fun TransactionCategoryMenuComponent(
 
     var isExpanded by remember { mutableStateOf(false) }
 
-    var selectedCategory by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf(defaultSelectedCategory) }
 
     ExposedDropdownMenuBox(
         modifier = Modifier
@@ -599,11 +595,12 @@ fun TransactionCategoryMenuComponent(
 
 @Composable
 fun TransactionDateComponent(
+    defaultSelectedDate: LocalDate = LocalDate.now(),
     onDateChanged: (String) -> Unit
 ) {
 
     var selectedDate by remember {
-        mutableStateOf(LocalDate.now())
+        mutableStateOf(defaultSelectedDate)
     }
 
     val formattedDate by remember {
@@ -700,6 +697,7 @@ fun TransactionDateComponent(
 
 @Composable
 fun TransactionNoteComponent(
+    defaultNote: String = "",
     errorStatus: Boolean = false,
     onTextChanged: (String) -> Unit
 ) {
@@ -707,7 +705,7 @@ fun TransactionNoteComponent(
     val localFocusManager = LocalFocusManager.current
 
     var transactionNote by remember {
-        mutableStateOf("")
+        mutableStateOf(defaultNote)
     }
 
     var isFocused by remember {
@@ -867,6 +865,7 @@ fun AddTransactionScreenPreview() {
         horizontalArrangement = Arrangement.Center
     ) {
         TransactionTypeSegmentedButton(
+            defaultSelectedItemIndex = 1,
             onSelectionChange = { transactionType ->
 
             }
