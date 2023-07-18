@@ -80,6 +80,7 @@ dependencies {
     implementation "androidx.compose.material:material-icons-extended"
     // System UI Controller - Accompanist
     implementation "com.google.accompanist:accompanist-systemuicontroller:0.28.0"
+    implementation "com.google.accompanist:accompanist-swiperefresh:0.28.0"
 
 
     implementation "io.github.vanpra.compose-material-dialogs:datetime:0.8.1-rc"

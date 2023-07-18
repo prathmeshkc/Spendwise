@@ -1,6 +1,7 @@
 package com.pcandroiddev.expensemanager.ui.screens.login
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,6 +25,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -34,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.pcandroiddev.expensemanager.R
 import com.pcandroiddev.expensemanager.ui.screens.register.ClickableLoginTextComponent
+import com.pcandroiddev.expensemanager.ui.screens.register.DividerTextComponent
 import com.pcandroiddev.expensemanager.ui.screens.register.PasswordTextFieldComponent
 import com.pcandroiddev.expensemanager.ui.screens.register.RegisterLoginButtonComponent
 import com.pcandroiddev.expensemanager.ui.screens.register.SimpleTextField
@@ -55,7 +58,7 @@ fun LoginScreen(
 ) {
 
     val signInState = loginViewModel.singInState.collectAsState(initial = null)
-    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Surface(
         modifier = Modifier
@@ -120,16 +123,9 @@ fun LoginScreen(
                     loginViewModel.onEventChange(event = LoginUIEvent.LoginButtonClicked)
                 })
 
-            Text(
+            /*DividerTextComponent(
                 modifier = Modifier
                     .padding(top = 20.dp)
-                    .align(alignment = Alignment.CenterHorizontally),
-                text = "OR",
-                style = TextStyle(
-                    color = DetailsTextColor,
-                    fontSize = 16.sp,
-                    fontFamily = FontFamily(Font(R.font.inter_light)),
-                )
             )
 
             Row(
@@ -158,7 +154,7 @@ fun LoginScreen(
                     )
                 }
             }
-
+*/
             ClickableLoginTextComponent(
                 modifier = Modifier
                     .padding(top = 20.dp),
@@ -197,6 +193,7 @@ fun LoginScreen(
         val error = signInState.value?.isError
         if (!error.isNullOrBlank()) {
             Log.d(TAG, "LoginScreen/isError: $error")
+            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
         }
 
     }

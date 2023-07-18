@@ -1,6 +1,8 @@
 package com.pcandroiddev.expensemanager.navigation
 
 import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavBackStackEntry
@@ -18,6 +20,7 @@ import com.pcandroiddev.expensemanager.ui.screens.register.RegisterScreen
 import com.pcandroiddev.expensemanager.ui.screens.transaction.AddTransactionScreen
 import com.pcandroiddev.expensemanager.ui.screens.transaction.EditTransactionScreen
 import com.pcandroiddev.expensemanager.ui.screens.transaction.TransactionDetailsScreen
+import java.lang.StringBuilder
 
 
 //TODO: Add arguments to required screens
@@ -45,6 +48,9 @@ fun NavigationGraph(
                             inclusive = true
                         }
                     }
+                },
+                onBackPressedCallback = {
+                    activity?.finishAffinity()
                 }
             )
         }
@@ -111,6 +117,10 @@ fun NavigationGraph(
                 }
             )
         ) { navBackStackEntry: NavBackStackEntry ->
+
+            val context = LocalContext.current
+
+
             val jsonTransactionResponse =
                 navBackStackEntry.arguments?.getString("transactionResponse")!!
             TransactionDetailsScreen(
@@ -129,8 +139,9 @@ fun NavigationGraph(
                         )
                     )
                 },
-                onShareButtonClicked = {
+                onShareButtonClicked = { transactionResponse ->
                     //TODO: Create a function here to share note
+                    shareTransaction(context, transactionResponse)
                 },
                 onDeleteTransactionButtonClicked = {
                     navController.navigate(route = Screen.DashboardScreen.route) {
@@ -150,13 +161,7 @@ fun NavigationGraph(
                     nullable = false
                 }
             )
-        ) { navBackStackEntry: NavBackStackEntry ->
-
-            val transactionResponseJsonString =
-                navBackStackEntry.arguments?.getString("transactionResponse")!!
-
-            val transactionResponse =
-                Gson().fromJson(transactionResponseJsonString, TransactionResponse::class.java)
+        ) {
 
             EditTransactionScreen(
                 onNavigateUpClicked = {
@@ -190,3 +195,37 @@ fun NavigationGraph(
 
     }
 }
+
+private fun shareTransaction(
+    context: Context,
+    transactionResponse: TransactionResponse
+) {
+
+    val sharedContent = StringBuilder()
+    sharedContent.append("Title: ").append(transactionResponse.title).append("\n\n")
+    sharedContent.append("Amount: $").append(transactionResponse.amount.toString()).append("\n\n")
+    sharedContent.append("Transaction Type: ").append(transactionResponse.transactionType)
+        .append("\n\n")
+    sharedContent.append("Category: ").append(transactionResponse.category).append("\n\n")
+    sharedContent.append("Transaction Date: ").append(transactionResponse.transactionDate)
+        .append("\n\n")
+    sharedContent.append("Note: ").append(transactionResponse.note).append("\n\n")
+
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "plain/text"
+        putExtra(
+            Intent.EXTRA_SUBJECT,
+            "${transactionResponse.transactionType} - ${transactionResponse.title}"
+        )
+        putExtra(Intent.EXTRA_TEXT, sharedContent.toString())
+    }
+
+    context.startActivity(
+        Intent.createChooser(
+            intent,
+            "Share Transaction"
+        )
+    )
+}
+
+

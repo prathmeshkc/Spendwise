@@ -2,7 +2,6 @@ package com.pcandroiddev.expensemanager.api
 
 import com.pcandroiddev.expensemanager.data.remote.TransactionRequest
 import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
-import com.pcandroiddev.expensemanager.utils.NetworkResult
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE

@@ -11,7 +11,7 @@ import com.pcandroiddev.expensemanager.ui.rules.Validator
 import com.pcandroiddev.expensemanager.ui.states.ResultState
 import com.pcandroiddev.expensemanager.ui.states.ui.LoginUIState
 import com.pcandroiddev.expensemanager.ui.uievents.LoginUIEvent
-import com.pcandroiddev.expensemanager.utils.NetworkResult
+import com.pcandroiddev.expensemanager.utils.ApiResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -65,14 +65,14 @@ class LoginViewModel @Inject constructor(
             authRepository.loginUser(
                 email = loginUIState.value.email,
                 password = loginUIState.value.password
-            ).collect { authResult: NetworkResult<AuthResult> ->
+            ).collect { authResult: ApiResult<AuthResult> ->
 
                 when (authResult) {
-                    is NetworkResult.Loading -> {
+                    is ApiResult.Loading -> {
                         _signInState.send(ResultState(isLoading = true))
                     }
 
-                    is NetworkResult.Success -> {
+                    is ApiResult.Success -> {
                         val tokenResult = authResult.data?.user?.getIdToken(false)?.await()
                         val token = tokenResult?.token
                         tokenManager.saveToken(token = token!!)
@@ -80,7 +80,7 @@ class LoginViewModel @Inject constructor(
                         _signInState.send(ResultState(isSuccess = "Sign In Success!"))
                     }
 
-                    is NetworkResult.Error -> {
+                    is ApiResult.Error -> {
                         _signInState.send(ResultState(isError = authResult.message))
                     }
                 }

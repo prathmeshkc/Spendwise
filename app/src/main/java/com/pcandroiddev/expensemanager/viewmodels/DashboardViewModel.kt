@@ -12,14 +12,13 @@ import com.pcandroiddev.expensemanager.repository.transaction.TransactionReposit
 import com.pcandroiddev.expensemanager.ui.rules.Validator
 import com.pcandroiddev.expensemanager.ui.states.ui.SearchUIState
 import com.pcandroiddev.expensemanager.ui.uievents.SearchTransactionUIEvent
-import com.pcandroiddev.expensemanager.utils.NetworkResult
+import com.pcandroiddev.expensemanager.utils.ApiResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,16 +29,13 @@ class DashboardViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    private val _transactionList = MutableStateFlow<NetworkResult<List<TransactionResponse>>>(
-        NetworkResult.Success(
-            emptyList()
-        )
-    )
-    val transactionList: StateFlow<NetworkResult<List<TransactionResponse>>> get() = _transactionList
+    private val _transactionList =
+        MutableStateFlow<ApiResult<List<TransactionResponse>>>(ApiResult.Success(emptyList()))
+    val transactionList: MutableStateFlow<ApiResult<List<TransactionResponse>>> get() = _transactionList
 
     private val _searchedTransactionList =
-        MutableStateFlow<NetworkResult<List<TransactionResponse>>>(NetworkResult.Success(emptyList()))
-    val searchedTransactionList: StateFlow<NetworkResult<List<TransactionResponse>>> get() = _searchedTransactionList
+        MutableStateFlow<ApiResult<List<TransactionResponse>>>(ApiResult.Success(emptyList()))
+    val searchedTransactionList: StateFlow<ApiResult<List<TransactionResponse>>> get() = _searchedTransactionList
 
     var searchTransactionUIState = mutableStateOf(SearchUIState())
 
@@ -52,9 +48,9 @@ class DashboardViewModel @Inject constructor(
     }
 
 
-    private fun getAllTransaction() = viewModelScope.launch {
+     fun getAllTransaction() = viewModelScope.launch {
         transactionRepository.getAllTransaction()
-            .collect { result: NetworkResult<List<TransactionResponse>> ->
+            .collect { result: ApiResult<List<TransactionResponse>> ->
                 _transactionList.value = result
             }
     }
@@ -92,7 +88,7 @@ class DashboardViewModel @Inject constructor(
             if (event is SearchTransactionUIEvent.SearchTextChanged) {
                 searchJob?.cancel()
                 searchJob = viewModelScope.launch {
-                    delay(500)
+                    delay(250)
                     searchTransactions()
                 }
             } else {
@@ -121,7 +117,7 @@ class DashboardViewModel @Inject constructor(
             when (searchTransactionUIState.value.filterType) {
                 SearchFilters.All.name -> {
                     transactionRepository.searchTransactionsByText(searchText = searchTransactionUIState.value.searchText)
-                        .collect { result: NetworkResult<List<TransactionResponse>> ->
+                        .collect { result: ApiResult<List<TransactionResponse>> ->
                             _searchedTransactionList.value = result
                         }
                 }
@@ -130,7 +126,7 @@ class DashboardViewModel @Inject constructor(
                     transactionRepository.searchTransactionByTypeAndText(
                         searchText = searchTransactionUIState.value.searchText,
                         transactionType = searchTransactionUIState.value.filterType
-                    ).collect { result: NetworkResult<List<TransactionResponse>> ->
+                    ).collect { result: ApiResult<List<TransactionResponse>> ->
                         _searchedTransactionList.value = result
                     }
                 }
@@ -139,7 +135,7 @@ class DashboardViewModel @Inject constructor(
                     transactionRepository.searchTransactionByTypeAndText(
                         searchText = searchTransactionUIState.value.searchText,
                         transactionType = searchTransactionUIState.value.filterType
-                    ).collect { result: NetworkResult<List<TransactionResponse>> ->
+                    ).collect { result: ApiResult<List<TransactionResponse>> ->
                         _searchedTransactionList.value = result
                     }
                 }
@@ -150,15 +146,15 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun resetSearchState() {
-        _searchedTransactionList.value = NetworkResult.Success(emptyList())
+        _searchedTransactionList.value = ApiResult.Success(emptyList())
         searchJob?.cancel()
     }
 
-/*
-    fun deleteToken() = viewModelScope.launch {
-        tokenManager.deleteToken()
-    }
-*/
+    /*
+        fun deleteToken() = viewModelScope.launch {
+            tokenManager.deleteToken()
+        }
+    */
 
     fun logout() = viewModelScope.launch {
         tokenManager.deleteToken()

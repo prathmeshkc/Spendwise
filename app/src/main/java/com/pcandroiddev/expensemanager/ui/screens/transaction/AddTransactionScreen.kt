@@ -767,41 +767,6 @@ fun TransactionNoteComponent(
 
 }
 
-
-//TODO: Disable/Enable
-/*@Composable
-fun SaveTransactionButton(
-    onButtonClicked: () -> Unit
-) {
-    ExtendedFloatingActionButton(
-        modifier = Modifier
-            .padding(top = 30.dp)
-            .fillMaxWidth(),
-        text = {
-            Text(
-                text = "SAVE TRANSACTION",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = DetailsTextColor
-            )
-        },
-        icon = {
-            Icon(
-                imageVector = Icons.Default.Check,
-                tint = Color.White,
-                contentDescription = "Save Transaction"
-            )
-        },
-        onClick = {
-            onButtonClicked.invoke()
-//            ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)
-            Log.d(TAG, "SaveTransactionButton: Save Transaction Button Clicked")
-        },
-        containerColor = FABColor
-    )
-
-}*/
-
 @Composable
 fun SaveTransactionButton(
     isEnable: Boolean = false,

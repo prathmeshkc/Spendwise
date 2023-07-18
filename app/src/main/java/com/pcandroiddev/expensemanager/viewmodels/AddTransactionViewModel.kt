@@ -11,7 +11,7 @@ import com.pcandroiddev.expensemanager.ui.rules.Validator
 import com.pcandroiddev.expensemanager.ui.states.ResultState
 import com.pcandroiddev.expensemanager.ui.states.ui.AddTransactionUIState
 import com.pcandroiddev.expensemanager.ui.uievents.AddTransactionUIEvent
-import com.pcandroiddev.expensemanager.utils.NetworkResult
+import com.pcandroiddev.expensemanager.utils.ApiResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -141,17 +141,17 @@ class AddTransactionViewModel @Inject constructor(
                     transactionDate = addTransactionUIState.value.date,
                     note = addTransactionUIState.value.note
                 )
-            ).collect { createTransactionResult: NetworkResult<String> ->
+            ).collect { createTransactionResult: ApiResult<String> ->
                 when (createTransactionResult) {
-                    is NetworkResult.Loading -> {
+                    is ApiResult.Loading -> {
                         _createTransactionState.send(ResultState(isLoading = true))
                     }
 
-                    is NetworkResult.Success -> {
+                    is ApiResult.Success -> {
                         _createTransactionState.send(ResultState(isSuccess = createTransactionResult.data))
                     }
 
-                    is NetworkResult.Error -> {
+                    is ApiResult.Error -> {
                         _createTransactionState.send(ResultState(isError = createTransactionResult.message))
                     }
                 }

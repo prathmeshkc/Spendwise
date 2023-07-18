@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.pcandroiddev.expensemanager.R
 import com.pcandroiddev.expensemanager.data.local.SearchFilters
@@ -49,7 +50,7 @@ import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.UnSelectedChipContainerColor
 import com.pcandroiddev.expensemanager.ui.theme.UnSelectedChipTextColor
 import com.pcandroiddev.expensemanager.ui.uievents.SearchTransactionUIEvent
-import com.pcandroiddev.expensemanager.utils.NetworkResult
+import com.pcandroiddev.expensemanager.utils.ApiResult
 import com.pcandroiddev.expensemanager.viewmodels.DashboardViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,11 +74,11 @@ fun SearchBarContentScreen(
     }
 
     when (searchedTransactionResponseList) {
-        is NetworkResult.Loading -> {
+        is ApiResult.Loading -> {
             isLoading = true
         }
 
-        is NetworkResult.Error -> {
+        is ApiResult.Error -> {
             isLoading = false
             Toast.makeText(
                 context,
@@ -86,7 +87,7 @@ fun SearchBarContentScreen(
             ).show()
         }
 
-        is NetworkResult.Success -> {
+        is ApiResult.Success -> {
             isLoading = false
             searchedTransactionList = searchedTransactionResponseList.data!!
         }
@@ -212,7 +213,20 @@ fun SearchBarContentScreen(
             modifier = Modifier.fillMaxSize(),
         ) {
 
-            if (searchedTransactionList.isEmpty()) {
+            if (dashboardViewModel.searchTransactionUIState.value.searchText.isEmpty()) {
+                val composition by rememberLottieComposition(
+                    spec = LottieCompositionSpec.RawRes(
+                        R.raw.cards_animation
+                    )
+                )
+                LottieAnimation(
+                    modifier = Modifier.align(Alignment.Center),
+                    composition = composition,
+                    isPlaying = true,
+                    iterations = LottieConstants.IterateForever
+                )
+
+            } else if (dashboardViewModel.searchTransactionUIState.value.searchText.isNotEmpty() && searchedTransactionList.isEmpty()) {
                 Text(
                     modifier = Modifier.align(Alignment.Center),
                     text = "No search results",
@@ -222,7 +236,6 @@ fun SearchBarContentScreen(
                     fontSize = 20.sp,
                     color = DetailsTextColor
                 )
-
             } else {
                 SearchedTransactionList(
                     transactionList = searchedTransactionList,

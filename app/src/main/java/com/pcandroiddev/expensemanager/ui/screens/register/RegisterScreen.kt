@@ -2,6 +2,7 @@ package com.pcandroiddev.expensemanager.ui.screens.register
 
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -87,10 +88,10 @@ fun RegisterScreen(
     registerViewModel: RegisterViewModel = hiltViewModel(),
     onLoginTextClicked: () -> Unit,
     onRegistrationSuccessful: () -> Unit,
-
-    ) {
+    onBackPressedCallback: () -> Unit
+) {
     val signUpState = registerViewModel.signUpState.collectAsState(initial = null)
-    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Surface(
         modifier = Modifier
@@ -169,7 +170,7 @@ fun RegisterScreen(
                 })
 
 
-            DividerTextComponent(
+            /*DividerTextComponent(
                 modifier = Modifier
                     .padding(top = 20.dp)
             )
@@ -183,7 +184,8 @@ fun RegisterScreen(
 
                 IconButton(
                     onClick = {
-                    registerViewModel.onEventChange(event = RegisterUIEvent.GoogleSignUpClicked)
+                        //TODO: Implement Google Sign-In
+//                    registerViewModel.onEventChange(event = RegisterUIEvent.GoogleSignUpClicked)
                     }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_google),
@@ -191,7 +193,7 @@ fun RegisterScreen(
                         tint = Color.Unspecified
                     )
                 }
-            }
+            }*/
 
             ClickableLoginTextComponent(
                 modifier = Modifier
@@ -213,6 +215,8 @@ fun RegisterScreen(
             }
 
         }
+
+
     }
 
     LaunchedEffect(key1 = signUpState.value?.isSuccess) {
@@ -230,8 +234,13 @@ fun RegisterScreen(
         val error = signUpState.value?.isError
         if (!error.isNullOrBlank()) {
             Log.d(TAG, "RegisterScreen/isError: $error")
+            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
         }
 
+    }
+
+    BackHandler {
+        onBackPressedCallback()
     }
 
 
@@ -459,7 +468,6 @@ fun RegisterLoginButtonComponent(
             disabledContainerColor = DisabledButtonColor,
             contentColor = DetailsTextColor,
             disabledContentColor = DisabledTextColor
-
         ),
         elevation = ButtonDefaults.buttonElevation(
             defaultElevation = 12.dp
@@ -576,6 +584,9 @@ fun RegisterScreenPreview() {
         onRegistrationSuccessful = {
 
         },
+        onBackPressedCallback = {
+
+        }
     )
 
 }

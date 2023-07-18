@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.pcandroiddev.expensemanager.repository.transaction.TransactionRepository
 import com.pcandroiddev.expensemanager.ui.states.ResultState
 import com.pcandroiddev.expensemanager.ui.uievents.TransactionDetailsUIEvent
-import com.pcandroiddev.expensemanager.utils.NetworkResult
+import com.pcandroiddev.expensemanager.utils.ApiResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -35,17 +35,17 @@ class DetailsViewModel @Inject constructor(
         Log.d(TAG, "deleteTransaction")
         viewModelScope.launch(Dispatchers.IO) {
             transactionRepository.deleteTransaction(transactionId = transactionId)
-                .collect { deleteTransactionResult: NetworkResult<String> ->
+                .collect { deleteTransactionResult: ApiResult<String> ->
                     when (deleteTransactionResult) {
-                        is NetworkResult.Loading -> {
+                        is ApiResult.Loading -> {
                             _deleteTransactionState.send(ResultState(isLoading = true))
                         }
 
-                        is NetworkResult.Success -> {
+                        is ApiResult.Success -> {
                             _deleteTransactionState.send(ResultState(isSuccess = deleteTransactionResult.data))
                         }
 
-                        is NetworkResult.Error -> {
+                        is ApiResult.Error -> {
                             _deleteTransactionState.send(ResultState(isError = deleteTransactionResult.message))
                         }
                     }

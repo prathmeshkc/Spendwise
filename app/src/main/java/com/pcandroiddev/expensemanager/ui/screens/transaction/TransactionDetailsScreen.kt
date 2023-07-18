@@ -57,7 +57,7 @@ fun TransactionDetailsScreen(
     detailsViewModel: DetailsViewModel = hiltViewModel(),
     onNavigateUpClicked: () -> Unit,
     onEditFABClicked: () -> Unit,
-    onShareButtonClicked: () -> Unit,
+    onShareButtonClicked: (TransactionResponse) -> Unit,
     onDeleteTransactionButtonClicked: () -> Unit
 ) {
 
@@ -77,11 +77,9 @@ fun TransactionDetailsScreen(
         Column {
             DetailsTopAppBar(
                 onBackButtonClicked = {
-                    //TODO: Reset the respective UI State
                     onNavigateUpClicked()
                 },
                 onDeleteButtonClicked = {
-                    //TODO: Call viewModel.delete()
                     detailsViewModel.onEventChange(
                         event = TransactionDetailsUIEvent.DeleteTransactionButtonClicked(
                             transactionId = transactionResponse.transactionId
@@ -89,7 +87,7 @@ fun TransactionDetailsScreen(
                     )
                 },
                 onShareButtonClicked = {
-                    onShareButtonClicked()
+                    onShareButtonClicked(transactionResponse)
                 }
             )
 
@@ -176,15 +174,6 @@ fun DetailsTopAppBar(
             }
         },
         actions = {
-            IconButton(onClick = {
-                onDeleteButtonClicked()
-            }) {
-                Icon(
-                    imageVector = Icons.Outlined.Delete,
-                    tint = DetailsTextColor,
-                    contentDescription = "Delete Transaction Button"
-                )
-            }
 
             IconButton(onClick = {
                 onShareButtonClicked()
@@ -193,6 +182,16 @@ fun DetailsTopAppBar(
                     imageVector = Icons.Outlined.Share,
                     tint = DetailsTextColor,
                     contentDescription = "Share Transaction Button"
+                )
+            }
+
+            IconButton(onClick = {
+                onDeleteButtonClicked()
+            }) {
+                Icon(
+                    imageVector = Icons.Outlined.Delete,
+                    tint = DetailsTextColor,
+                    contentDescription = "Delete Transaction Button"
                 )
             }
         },

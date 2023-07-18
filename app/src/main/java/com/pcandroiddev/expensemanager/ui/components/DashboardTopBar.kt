@@ -14,18 +14,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.LightMode
-import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material.icons.outlined.Logout
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
@@ -39,12 +43,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pcandroiddev.expensemanager.R
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
@@ -161,20 +167,11 @@ fun FilterDropDown() {
 }
 
 
-/*
-               TODO: Add UiEvent when the query changes OR Search button is clicked.
-                In the viewModel call the API and observe the flow of List of Transaction here
-             */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExpensesSearchBar(
+fun DashboardExpensesSearchBar(
     modifier: Modifier = Modifier,
-    leadingIcon: ImageVector? = null,
-    trailingIcon: ImageVector? = null,
-    leadingIconDesc: String = "",
-    trailingIconDesc: String = "",
-    onLeadingIconClicked: () -> Unit = {},
-    onTrailingIconClicked: () -> Unit = {},
+    onLogoutOptionClicked: () -> Unit = {},
     isActive: (Boolean) -> Unit,
     onSearchTextChanged: (String) -> Unit,
     onSearchButtonClicked: () -> Unit,
@@ -203,7 +200,7 @@ fun ExpensesSearchBar(
         },
         placeholder = {
             Text(
-                text = "Search your expenses",
+                text = "Search your transactions",
                 style = TextStyle(
                     color = HeadingTextColor,
 
@@ -229,20 +226,11 @@ fun ExpensesSearchBar(
                     contentDescription = "Close search bar"
                 )
             } else {
-                if (leadingIcon == null) {
-                    Icon(
-                        imageVector = Icons.Outlined.Search,
-                        tint = HeadingTextColor,
-                        contentDescription = "Expenses Search Bar"
-                    )
-                } else {
-                    Icon(
-                        modifier = Modifier.clickable { onLeadingIconClicked() },
-                        imageVector = leadingIcon,
-                        tint = HeadingTextColor,
-                        contentDescription = leadingIconDesc
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Outlined.Search,
+                    tint = HeadingTextColor,
+                    contentDescription = "Expenses Search Bar"
+                )
             }
 
 
@@ -262,14 +250,11 @@ fun ExpensesSearchBar(
 
             } else {
 
-                if (trailingIcon != null) {
-                    Icon(
-                        modifier = Modifier.clickable { onTrailingIconClicked() },
-                        imageVector = trailingIcon,
-                        tint = HeadingTextColor,
-                        contentDescription = trailingIconDesc
-                    )
-                }
+                DashboardSearchBarOptionsMenu(
+                    onLogoutOptionClicked = {
+                        onLogoutOptionClicked()
+                    }
+                )
 
             }
         },
@@ -292,15 +277,51 @@ fun ExpensesSearchBar(
     }
 }
 
-
-/*@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchFilters(
-    selectedIndex: (Int) -> Unit
+fun DashboardSearchBarOptionsMenu(
+    onLogoutOptionClicked: () -> Unit
 ) {
 
+    var expanded by remember {
+        mutableStateOf(false)
+    }
+    Box(modifier = Modifier.wrapContentSize()) {
 
-}*/
+        IconButton(onClick = { expanded = true }) {
+            Icon(
+                imageVector = Icons.Outlined.MoreVert,
+                contentDescription = "More Options",
+                tint = HeadingTextColor
+            )
+        }
+
+        DropdownMenu(
+            modifier = Modifier.background(SurfaceBackgroundColor),
+            expanded = expanded, onDismissRequest = { expanded = false }
+        ) {
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = "Logout",
+                        color = HeadingTextColor,
+                        fontFamily = FontFamily(Font(R.font.inter_regular))
+                    )
+                },
+                onClick = {
+                    expanded = false
+                    onLogoutOptionClicked()
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Logout,
+                        contentDescription = "More Option Menu",
+                        tint = HeadingTextColor
+                    )
+                }
+            )
+        }
+    }
+}
 
 @Preview
 @Composable
@@ -312,7 +333,7 @@ fun DashboardTopBarPreview() {
         Spacer(modifier = Modifier.padding(12.dp))
         FilterDropDown()
         Spacer(modifier = Modifier.padding(12.dp))
-        ExpensesSearchBar(
+        DashboardExpensesSearchBar(
             isActive = {
 
             },
@@ -326,8 +347,7 @@ fun DashboardTopBarPreview() {
 
             })
 
-        ExpensesSearchBar(
-            leadingIcon = Icons.Outlined.Menu,
+        DashboardExpensesSearchBar(
             isActive = {
 
             },
@@ -340,6 +360,10 @@ fun DashboardTopBarPreview() {
             content = {
 
             })
+
+        DashboardSearchBarOptionsMenu(onLogoutOptionClicked = {
+
+        })
 
 
     }

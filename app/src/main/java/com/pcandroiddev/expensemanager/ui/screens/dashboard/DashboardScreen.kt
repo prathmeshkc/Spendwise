@@ -3,7 +3,6 @@ package com.pcandroiddev.expensemanager.ui.screens.dashboard
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,9 +16,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowForward
-import androidx.compose.material.icons.outlined.Logout
-import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Receipt
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,10 +40,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.pcandroiddev.expensemanager.R
 import com.pcandroiddev.expensemanager.data.local.TransactionType
 import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
-import com.pcandroiddev.expensemanager.ui.components.ExpensesSearchBar
+import com.pcandroiddev.expensemanager.ui.components.DashboardExpensesSearchBar
 import com.pcandroiddev.expensemanager.ui.components.TotalBalanceCard
 import com.pcandroiddev.expensemanager.ui.components.TotalExpenseCard
 import com.pcandroiddev.expensemanager.ui.components.TotalIncomeCard
@@ -57,7 +59,7 @@ import com.pcandroiddev.expensemanager.ui.theme.FABColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 import com.pcandroiddev.expensemanager.ui.uievents.SearchTransactionUIEvent
 import com.pcandroiddev.expensemanager.utils.Helper
-import com.pcandroiddev.expensemanager.utils.NetworkResult
+import com.pcandroiddev.expensemanager.utils.ApiResult
 import com.pcandroiddev.expensemanager.utils.isScrollingUp
 import com.pcandroiddev.expensemanager.viewmodels.DashboardViewModel
 
@@ -99,6 +101,9 @@ fun DashboardScreen(
         mutableStateOf(false)
     }
 
+    val swipeToRefreshState = rememberSwipeRefreshState(isRefreshing = isLoading)
+
+
     var transactionList by remember {
         mutableStateOf(emptyList<TransactionResponse>())
     }
@@ -108,17 +113,17 @@ fun DashboardScreen(
 
 
     when (transactionResponseList) {
-        is NetworkResult.Loading -> {
+        is ApiResult.Loading -> {
             isLoading = true
         }
 
-        is NetworkResult.Error -> {
+        is ApiResult.Error -> {
             isLoading = false
             Toast.makeText(context, transactionResponseList.message.toString(), Toast.LENGTH_LONG)
                 .show()
         }
 
-        is NetworkResult.Success -> {
+        is ApiResult.Success -> {
             isLoading = false
             transactionList = transactionResponseList.data!!
             val (totalIncomeList, totalExpenseList) = transactionList.partition { transactionResponse ->
@@ -142,18 +147,11 @@ fun DashboardScreen(
                 .fillMaxSize()
         ) {
 
-            /*
-               TODO: Add UiEvent when the query changes OR Search button is clicked.
-                In the viewModel call the API and observe the flow of List of Transaction here
-             */
-
-            ExpensesSearchBar(
+            DashboardExpensesSearchBar(
                 modifier = Modifier
                     .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 12.dp)
                     .fillMaxWidth(),
-                trailingIcon = Icons.Outlined.Logout,
-                trailingIconDesc = "Logout Button",
-                onTrailingIconClicked = {
+                onLogoutOptionClicked = {
                     dashboardViewModel.logout()
                     onLogOutButtonClicked()
                 },
@@ -227,15 +225,17 @@ fun DashboardScreen(
                     color = DetailsTextColor
                 )
 
-                Icon(
-                    modifier = Modifier
-                        .clickable {
-                            //TODO: Navigate to All Transaction Screen
-                        },
-                    imageVector = Icons.Outlined.ArrowForward,
-                    contentDescription = "View All Transactions",
-                    tint = FABColor
-                )
+                //TODO: Navigate to All Transaction Screen
+
+                /* Icon(
+                     modifier = Modifier
+                         .clickable {
+                             //TODO: Navigate to All Transaction Screen
+                         },
+                     imageVector = Icons.Outlined.ArrowForward,
+                     contentDescription = "View All Transactions",
+                     tint = FABColor
+                 )*/
             }
 
             //TODO: Send list to this composable only when Success
@@ -246,12 +246,59 @@ fun DashboardScreen(
                     color = FABColor
                 )
             } else {
-                TransactionList(
-                    listState = listState,
-                    transactionList = transactionList,
-                    onTransactionListItemClicked = {
-                        onTransactionListItemClicked(it)
-                    })
+
+                Box(modifier = Modifier.fillMaxSize()) {
+
+                    SwipeRefresh(
+                        modifier = Modifier.fillMaxSize(),
+                        state = swipeToRefreshState,
+                        onRefresh = { dashboardViewModel.getAllTransaction() }) {
+                        if (transactionList.isEmpty()) {
+
+                            val composition by rememberLottieComposition(
+                                spec = LottieCompositionSpec.RawRes(
+                                    R.raw.cards_animation
+                                )
+                            )
+                            LottieAnimation(
+                                modifier = Modifier.align(Alignment.Center),
+                                composition = composition,
+                                isPlaying = true,
+                                iterations = LottieConstants.IterateForever
+                            )
+
+                        } else {
+                            TransactionList(
+                                listState = listState,
+                                transactionList = transactionList,
+                                onTransactionListItemClicked = {
+                                    onTransactionListItemClicked(it)
+                                })
+                        }
+                    }
+                    /*if (transactionList.isEmpty()) {
+
+                        val composition by rememberLottieComposition(
+                            spec = LottieCompositionSpec.RawRes(
+                                R.raw.cards_animation
+                            )
+                        )
+                        LottieAnimation(
+                            modifier = Modifier.align(Alignment.Center),
+                            composition = composition,
+                            isPlaying = true,
+                            iterations = LottieConstants.IterateForever
+                        )
+
+                    } else {
+                        TransactionList(
+                            listState = listState,
+                            transactionList = transactionList,
+                            onTransactionListItemClicked = {
+                                onTransactionListItemClicked(it)
+                            })
+                    }*/
+                }
             }
         }
 
@@ -289,19 +336,12 @@ fun DashboardScreen(
     }
 
 
-//TODO: Change this back handler logic. Take a look at NoteWorthyApp navigation
 
     BackHandler {
         onBackPressedCallback()
     }
 }
 
-
-//TODO: Pass current transaction item to the lambda
-/**
-Make the onTransactionListItemClicked lambda take the respective transaction item
-which we can get from 'it' in the items lambda. Pass it
- */
 
 @Composable
 fun TransactionList(
@@ -310,30 +350,18 @@ fun TransactionList(
     onTransactionListItemClicked: (TransactionResponse) -> Unit
 ) {
 
-    if (transactionList.isEmpty()) {
-        Text(
-            text = "No Transactions Yet !",
-            fontFamily = FontFamily(Font(R.font.inter_light)),
-            fontStyle = FontStyle.Normal,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 20.sp,
-            color = DetailsTextColor
-        )
-    } else {
-        LazyColumn(
-            state = listState,
-            content = {
-                items(transactionList) {
-                    TransactionListItem(
-                        transactionResponse = it,
-                        onTransactionListItemClicked = {
-                            onTransactionListItemClicked(it)
-                        }
-                    )
-                }
-            })
-    }
-
+    LazyColumn(
+        state = listState,
+        content = {
+            items(transactionList) {
+                TransactionListItem(
+                    transactionResponse = it,
+                    onTransactionListItemClicked = {
+                        onTransactionListItemClicked(it)
+                    }
+                )
+            }
+        })
 }
 
 @Preview(showBackground = true)

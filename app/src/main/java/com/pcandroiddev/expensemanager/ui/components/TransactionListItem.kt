@@ -41,17 +41,8 @@ import com.pcandroiddev.expensemanager.ui.theme.RedExpenseColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 import java.time.LocalDate
 
-/**
- * Variables required are
- * 1. Transaction Category Image
- * 2. Transaction Title
- * 3. Transaction Category
- * 4. Transaction Amount
- * 5. Transaction is Income/Expense
- * 6. Transaction Data
- */
 
-//TODO: Pass current transaction item to the lambda
+
 @Composable
 fun TransactionListItem(
     transactionResponse: TransactionResponse,

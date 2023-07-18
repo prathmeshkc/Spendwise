@@ -11,7 +11,7 @@ import com.pcandroiddev.expensemanager.ui.rules.Validator
 import com.pcandroiddev.expensemanager.ui.states.ResultState
 import com.pcandroiddev.expensemanager.ui.states.ui.RegisterUIState
 import com.pcandroiddev.expensemanager.ui.uievents.RegisterUIEvent
-import com.pcandroiddev.expensemanager.utils.NetworkResult
+import com.pcandroiddev.expensemanager.utils.ApiResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -72,14 +72,14 @@ class RegisterViewModel @Inject constructor(
             authRepository.registerUser(
                 email = registerUIState.value.email,
                 password = registerUIState.value.password
-            ).collect { authResult: NetworkResult<AuthResult> ->
+            ).collect { authResult: ApiResult<AuthResult> ->
                 when (authResult) {
-                    is NetworkResult.Loading -> {
+                    is ApiResult.Loading -> {
                         _signUpState.send(ResultState(isLoading = true))
                     }
 
-                    is NetworkResult.Success -> {
-                        val tokenResult = authResult.data?.user?.getIdToken(false)?.await()
+                    is ApiResult.Success -> {
+                        val tokenResult = authResult.data?.user?.getIdToken(true)?.await()
                         val token = tokenResult?.token
                         val userId = tokenResult?.claims?.get("user_id")
                         Log.d(TAG, "registerUserWithEmailPassword: $userId")
@@ -88,7 +88,7 @@ class RegisterViewModel @Inject constructor(
                         _signUpState.send(ResultState(isSuccess = "Sign Up Success!"))
                     }
 
-                    is NetworkResult.Error -> {
+                    is ApiResult.Error -> {
                         _signUpState.send(ResultState(isError = authResult.message))
                     }
                 }
