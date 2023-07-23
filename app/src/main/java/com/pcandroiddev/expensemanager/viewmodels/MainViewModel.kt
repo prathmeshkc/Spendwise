@@ -16,7 +16,7 @@ class MainViewModel @Inject constructor(networkManager: NetworkManager) : ViewMo
     val networkState: StateFlow<NetworkState> = networkManager.getNetworkState().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(2000L),
-        initialValue = NetworkState.Unavailable
+        initialValue = NetworkState.Available
     )
 
 }

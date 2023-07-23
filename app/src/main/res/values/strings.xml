@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ExpenseManager</string>
+    <string name="app_name">SpendWise</string>
     <string name="hide_password">Hide Password</string>
     <string name="show_password">Show Password</string>
 </resources>

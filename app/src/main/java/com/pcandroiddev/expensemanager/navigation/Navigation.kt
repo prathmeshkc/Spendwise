@@ -23,11 +23,11 @@ import com.pcandroiddev.expensemanager.ui.screens.transaction.TransactionDetails
 import java.lang.StringBuilder
 
 
-//TODO: Add arguments to required screens
 @Composable
 fun NavigationGraph(
     navController: NavHostController = rememberNavController(),
-    accessToken: String? = null
+    accessToken: String? = null,
+    symbol: String
 ) {
 
     val activity = (LocalContext.current as? Activity)
@@ -76,6 +76,7 @@ fun NavigationGraph(
 
         composable(route = Screen.DashboardScreen.route) {
             DashboardScreen(
+                symbol = symbol,
                 onAddTransactionFABClicked = {
                     navController.navigate(Screen.AddTransactionScreen.route)
                 },
@@ -140,7 +141,6 @@ fun NavigationGraph(
                     )
                 },
                 onShareButtonClicked = { transactionResponse ->
-                    //TODO: Create a function here to share note
                     shareTransaction(context, transactionResponse)
                 },
                 onDeleteTransactionButtonClicked = {
@@ -202,6 +202,8 @@ private fun shareTransaction(
 ) {
 
     val sharedContent = StringBuilder()
+    sharedContent.append("${transactionResponse.transactionType} - ${transactionResponse.title}")
+        .append("\n\n")
     sharedContent.append("Title: ").append(transactionResponse.title).append("\n\n")
     sharedContent.append("Amount: $").append(transactionResponse.amount.toString()).append("\n\n")
     sharedContent.append("Transaction Type: ").append(transactionResponse.transactionType)
@@ -212,18 +214,19 @@ private fun shareTransaction(
     sharedContent.append("Note: ").append(transactionResponse.note).append("\n\n")
 
     val intent = Intent(Intent.ACTION_SEND).apply {
-        type = "plain/text"
         putExtra(
             Intent.EXTRA_SUBJECT,
             "${transactionResponse.transactionType} - ${transactionResponse.title}"
         )
         putExtra(Intent.EXTRA_TEXT, sharedContent.toString())
+        type = "text/plain"
     }
+
 
     context.startActivity(
         Intent.createChooser(
             intent,
-            "Share Transaction"
+            "Share Transaction To:"
         )
     )
 }

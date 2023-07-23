@@ -9,30 +9,42 @@ Returns true if validation is successful
  */
 object Validator {
 
-    fun validateTitle(title: String): ValidationResult {
+    fun validateTitle(title: String): Pair<Boolean, String> {
         Log.d("Validator", "validateTitle: $title")
-        return ValidationResult(
-            status = (title.isNotEmpty() && title.isNotBlank())
-        )
+        if (title.isEmpty() || title.isBlank()) {
+            return Pair(false, "Title must not be empty!")
+        }
+
+        return Pair(true, "")
+
     }
 
-    fun validateAmount(amount: Double): ValidationResult {
-        return ValidationResult(
-            status = (amount >= 0)
-        )
+    fun validateAmount(amount: Double): Pair<Boolean, String> {
+
+        if (amount < 0) {
+            return Pair(first = false, second = "Amount cannot be less than 0!")
+        }
+
+        return Pair(first = true, second = "")
     }
 
-    fun validateCategory(category: String): ValidationResult {
-        return ValidationResult(
-            status = (category.isNotEmpty() || category.isNotBlank())
-        )
+    fun validateCategory(category: String): Pair<Boolean, String> {
+
+        if (category.isEmpty() || category.isBlank()) {
+            return Pair(first = false, second = "")
+        }
+
+        return Pair(first = true, second = "")
     }
 
 
-    fun validateNote(note: String): ValidationResult {
-        return ValidationResult(
-            status = note.isNotBlank()
-        )
+    fun validateNote(note: String): Pair<Boolean, String> {
+
+        if (note.isBlank()) {
+            return Pair(first = false, second = "Only whitespaces not allowed!")
+        }
+
+        return Pair(first = true, second = "")
     }
 
     fun validateName(name: String): Pair<Boolean, String> {

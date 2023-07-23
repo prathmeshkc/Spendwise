@@ -136,7 +136,7 @@ fun AddTransactionScreen(
             Row(
                 modifier = Modifier
                     .padding(top = 12.dp, bottom = 12.dp)
-                    .fillMaxWidth(),
+                    .align(Alignment.CenterHorizontally),
                 horizontalArrangement = Arrangement.Center
             ) {
                 TransactionTypeSegmentedButton(
@@ -174,9 +174,10 @@ fun AddTransactionScreen(
                     onTextChanged = { amount ->
 
                         if (amount.isNotBlank() || amount.isNotEmpty()) {
+                            val parsedAmount = amount.toDoubleOrNull() ?: 0.0
                             addTransactionViewModel.onEventChange(
                                 event = AddTransactionUIEvent.AmountChanged(
-                                    amount.toDouble()
+                                    parsedAmount
                                 )
                             )
                         } else {
@@ -286,7 +287,7 @@ fun TransactionTypeSegmentedButton(
 @Composable
 fun TransactionTitleTextFieldComponent(
     defaultTitle: String = "",
-    errorStatus: Boolean = false,
+    errorStatus: Pair<Boolean, String> = Pair(false, ""),
     onTextChanged: (String) -> Unit
 ) {
 
@@ -343,20 +344,20 @@ fun TransactionTitleTextFieldComponent(
             )
         },
         supportingText = {
-            if (isFocused && !errorStatus) {
+            if (isFocused && !errorStatus.first) {
                 Text(
-                    text = "Title must not be empty!",
+                    text = errorStatus.second,
                     fontFamily = FontFamily(Font(R.font.inter_regular))
                 )
             }
         },
-        isError = isFocused && !errorStatus,
+        isError = isFocused && !errorStatus.first,
         trailingIcon = {
-            if (isFocused && !errorStatus) {
+            if (isFocused && !errorStatus.first) {
                 Icon(
                     imageVector = Icons.Filled.Error,
                     tint = MaterialTheme.colorScheme.error,
-                    contentDescription = "Title Empty Error!"
+                    contentDescription = errorStatus.second
                 )
             }
         },
@@ -381,7 +382,7 @@ fun TransactionTitleTextFieldComponent(
 @Composable
 fun TransactionAmountTextFieldComponent(
     defaultAmount: String = "",
-    errorStatus: Boolean = false,
+    errorStatus: Pair<Boolean, String> = Pair(false, ""),
     onTextChanged: (String) -> Unit
 ) {
 
@@ -437,20 +438,20 @@ fun TransactionAmountTextFieldComponent(
             )
         },
         supportingText = {
-            if (isFocused && !errorStatus) {
+            if (isFocused && !errorStatus.first) {
                 Text(
-                    text = "Amount must not be empty",
+                    text = errorStatus.second,
                     fontFamily = FontFamily(Font(R.font.inter_regular))
                 )
             }
         },
-        isError = isFocused && !errorStatus,
+        isError = isFocused && !errorStatus.first,
         trailingIcon = {
-            if (isFocused && !errorStatus) {
+            if (isFocused && !errorStatus.first) {
                 Icon(
                     imageVector = Icons.Filled.Error,
                     tint = MaterialTheme.colorScheme.error,
-                    contentDescription = "Amount Empty Error"
+                    contentDescription = errorStatus.second
                 )
             }
         },
@@ -488,7 +489,7 @@ fun TransactionAmountTextFieldComponent(
 @Composable
 fun TransactionCategoryMenuComponent(
     defaultSelectedCategory: String = "",
-    errorStatus: Boolean = false,
+    errorStatus: Pair<Boolean, String> = Pair(false, ""),
     onSelectionChanged: (String) -> Unit
 ) {
     val transactionCategory = listOf(
@@ -530,7 +531,7 @@ fun TransactionCategoryMenuComponent(
                     fontFamily = FontFamily(Font(R.font.inter_regular))
                 )
             },
-            isError = isFocused && !errorStatus,
+            isError = isFocused && !errorStatus.first,
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
             },
@@ -698,7 +699,7 @@ fun TransactionDateComponent(
 @Composable
 fun TransactionNoteComponent(
     defaultNote: String = "",
-    errorStatus: Boolean = false,
+    errorStatus: Pair<Boolean, String> = Pair(false, ""),
     onTextChanged: (String) -> Unit
 ) {
 
@@ -738,11 +739,11 @@ fun TransactionNoteComponent(
                 fontFamily = FontFamily(Font(R.font.inter_regular))
             )
         },
-        isError = isFocused && !errorStatus,
+        isError = isFocused && !errorStatus.first,
         supportingText = {
-            if (isFocused && !errorStatus) {
+            if (isFocused && !errorStatus.first) {
                 Text(
-                    text = "Only whitespaces not allowed!",
+                    text = errorStatus.second,
                     fontFamily = FontFamily(Font(R.font.inter_regular))
                 )
             }

@@ -10,7 +10,6 @@ import com.google.gson.Gson
 import com.pcandroiddev.expensemanager.data.remote.TransactionRequest
 import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
 import com.pcandroiddev.expensemanager.repository.transaction.TransactionRepository
-import com.pcandroiddev.expensemanager.ui.rules.ValidationResult
 import com.pcandroiddev.expensemanager.ui.rules.Validator
 import com.pcandroiddev.expensemanager.ui.states.ResultState
 import com.pcandroiddev.expensemanager.ui.states.ui.AddTransactionUIState
@@ -32,8 +31,8 @@ class EditTransactionViewModel @Inject constructor(
     var editTransactionUIState: MutableState<AddTransactionUIState> = mutableStateOf(
         AddTransactionUIState()
     )
-    var allValidationPassed = mutableStateOf(false)
-        private set
+    private val _allValidationPassed = mutableStateOf(false)
+    val allValidationPassed get() = _allValidationPassed
 
     private val _updateTransactionState = Channel<ResultState>()
     val updateTransactionState = _updateTransactionState.receiveAsFlow()
@@ -48,6 +47,7 @@ class EditTransactionViewModel @Inject constructor(
             Log.d(TAG, "EditTransactionViewModel init: $transactionResponse")
             transactionId = transactionResponse.transactionId
             editTransactionUIState.value = AddTransactionUIState(transactionResponse)
+            validateDataWithRules()
         } else {
             Log.d(TAG, "EditTransactionViewModel init: transactionResponse == null")
         }
@@ -102,12 +102,14 @@ class EditTransactionViewModel @Inject constructor(
         val titleResult = Validator.validateTitle(title = editTransactionUIState.value.title)
         val amountResult = try {
             if (editTransactionUIState.value.amount <= 0) {
-                ValidationResult(status = false)
+                /*ValidationResult(status = false)*/
+                Pair(first = false, second = "Amount cannot be less than or equal to 0!")
             } else {
                 Validator.validateAmount(amount = editTransactionUIState.value.amount)
             }
         } catch (numberFormatException: NumberFormatException) {
-            ValidationResult(status = false)
+            /*ValidationResult(status = false)*/
+            Pair(first = false, second = "Enter numbers only!")
         }
         val categoryResult =
             Validator.validateCategory(category = editTransactionUIState.value.category)
@@ -126,14 +128,14 @@ class EditTransactionViewModel @Inject constructor(
          */
 
         editTransactionUIState.value = editTransactionUIState.value.copy(
-            titleError = titleResult.status,
-            amountError = amountResult.status,
-            categoryError = categoryResult.status,
-            noteError = noteResult.status
+            titleError = titleResult,
+            amountError = amountResult,
+            categoryError = categoryResult,
+            noteError = noteResult
         )
 
-        allValidationPassed.value =
-            titleResult.status && amountResult.status && categoryResult.status && noteResult.status
+        _allValidationPassed.value =
+            titleResult.first && amountResult.first && categoryResult.first && noteResult.first
 
         printState()
 

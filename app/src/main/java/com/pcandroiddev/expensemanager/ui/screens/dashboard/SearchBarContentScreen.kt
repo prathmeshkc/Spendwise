@@ -52,11 +52,13 @@ import com.pcandroiddev.expensemanager.ui.theme.UnSelectedChipTextColor
 import com.pcandroiddev.expensemanager.ui.uievents.SearchTransactionUIEvent
 import com.pcandroiddev.expensemanager.utils.ApiResult
 import com.pcandroiddev.expensemanager.viewmodels.DashboardViewModel
+import java.text.DateFormatSymbols
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBarContentScreen(
     dashboardViewModel: DashboardViewModel,
+    symbol: String,
     onSearchedTransactionListItemClicked: (TransactionResponse) -> Unit
 ) {
 
@@ -238,6 +240,7 @@ fun SearchBarContentScreen(
                 )
             } else {
                 SearchedTransactionList(
+                    symbol = symbol,
                     transactionList = searchedTransactionList,
                     onTransactionListItemClicked = { transactionResponse ->
                         onSearchedTransactionListItemClicked(transactionResponse)
@@ -263,6 +266,7 @@ fun SearchBarContentScreen(
 
 @Composable
 fun SearchedTransactionList(
+    symbol: String,
     transactionList: List<TransactionResponse>,
     onTransactionListItemClicked: (TransactionResponse) -> Unit
 ) {
@@ -272,6 +276,7 @@ fun SearchedTransactionList(
     ) {
         items(transactionList) {
             TransactionListItem(
+                symbol = symbol,
                 transactionResponse = it,
                 onTransactionListItemClicked = {
                     onTransactionListItemClicked(it)

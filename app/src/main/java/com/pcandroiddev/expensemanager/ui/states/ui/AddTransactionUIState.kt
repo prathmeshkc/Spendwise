@@ -16,10 +16,10 @@ data class AddTransactionUIState(
         .format(LocalDate.now()),
     var note: String = "",
 
-    var titleError: Boolean = false,
-    var amountError: Boolean = false,
-    var categoryError: Boolean = false,
-    var noteError: Boolean = false
+    var titleError: Pair<Boolean, String> = Pair(false, "Name must not be empty"),
+    var amountError: Pair<Boolean, String> = Pair(false, "Please enter some amount!"),
+    var categoryError: Pair<Boolean, String> = Pair(false, "Select a category!"),
+    var noteError: Pair<Boolean, String> = Pair(false, "Only whitespaces not allowed!")
 
 ) {
     constructor(transactionResponse: TransactionResponse) : this(

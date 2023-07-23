@@ -20,6 +20,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -27,9 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.gson.Gson
 import com.pcandroiddev.expensemanager.data.local.TransactionType
-import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
@@ -96,8 +95,9 @@ fun EditTransactionScreen(
 
             Row(
                 modifier = Modifier
-                    .padding(horizontal = 70.dp, vertical = 16.dp)
-                    .fillMaxWidth(),
+                    .padding(top = 12.dp, bottom = 12.dp)
+                    .align(Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.Center
             ) {
                 TransactionTypeSegmentedButton(
                     defaultSelectedItemIndex = when (editTransactionViewModel.editTransactionUIState.value.transactionType) {
@@ -149,9 +149,10 @@ fun EditTransactionScreen(
                     errorStatus = editTransactionViewModel.editTransactionUIState.value.amountError,
                     onTextChanged = { amount ->
                         if (amount.isNotBlank() || amount.isNotEmpty()) {
+                            val parsedAmount = amount.toDoubleOrNull() ?: 0.0
                             editTransactionViewModel.onEventChange(
                                 event = EditTransactionUIEvent.AmountChanged(
-                                    amount.toDouble()
+                                    parsedAmount
                                 )
                             )
                         } else {
@@ -205,7 +206,7 @@ fun EditTransactionScreen(
 
                 //TODO: Make it a loading button
                 SaveTransactionButton(
-                    isEnable = true,
+                    isEnable = editTransactionViewModel.allValidationPassed.value,
                     onButtonClicked = {
                         editTransactionViewModel.onEventChange(
                             event = EditTransactionUIEvent.EditTransactionButtonClicked

@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pcandroiddev.expensemanager.data.local.datastore.TokenManager
 import com.pcandroiddev.expensemanager.navigation.NavigationGraph
 import com.pcandroiddev.expensemanager.ui.screens.network.NetworkStateScreen
@@ -19,6 +20,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
+import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -41,21 +44,20 @@ class MainActivity : ComponentActivity() {
 
             ExpenseManagerTheme {
 
-                val networkState by mainViewModel.networkState.collectAsState()
+
+                val networkState by mainViewModel.networkState.collectAsStateWithLifecycle()
                 when (networkState) {
                     NetworkState.Available -> {
-                        NavigationGraph(accessToken = token)
+                        val numberFormat = NumberFormat.getCurrencyInstance(Locale.getDefault())
+                        val symbol = numberFormat.currency?.symbol
+                        NavigationGraph(accessToken = token, symbol = symbol ?: "$")
                     }
-
                     NetworkState.Losing -> {
                         NetworkStateScreen(networkState = "Losing Network")
                     }
-
                     NetworkState.Lost -> {
                         NetworkStateScreen(networkState = "Network Lost")
-
                     }
-
                     NetworkState.Unavailable -> {
                         NetworkStateScreen(networkState = "Network Unavailable")
                     }

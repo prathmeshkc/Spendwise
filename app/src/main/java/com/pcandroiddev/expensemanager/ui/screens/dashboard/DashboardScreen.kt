@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Receipt
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -54,12 +53,13 @@ import com.pcandroiddev.expensemanager.ui.components.TotalBalanceCard
 import com.pcandroiddev.expensemanager.ui.components.TotalExpenseCard
 import com.pcandroiddev.expensemanager.ui.components.TotalIncomeCard
 import com.pcandroiddev.expensemanager.ui.components.TransactionListItem
+import com.pcandroiddev.expensemanager.ui.components.TransactionListItemShimmerEffect
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 import com.pcandroiddev.expensemanager.ui.uievents.SearchTransactionUIEvent
-import com.pcandroiddev.expensemanager.utils.Helper
 import com.pcandroiddev.expensemanager.utils.ApiResult
+import com.pcandroiddev.expensemanager.utils.Helper
 import com.pcandroiddev.expensemanager.utils.isScrollingUp
 import com.pcandroiddev.expensemanager.viewmodels.DashboardViewModel
 
@@ -70,6 +70,7 @@ private const val TAG = "DashboardScreen"
 @Composable
 fun DashboardScreen(
     dashboardViewModel: DashboardViewModel = hiltViewModel(),
+    symbol: String,
     onAddTransactionFABClicked: () -> Unit,
     onTransactionListItemClicked: (TransactionResponse) -> Unit,
     onSearchedTransactionListItemClicked: (TransactionResponse) -> Unit,
@@ -176,6 +177,7 @@ fun DashboardScreen(
             ) {
                 SearchBarContentScreen(
                     dashboardViewModel = dashboardViewModel,
+                    symbol = symbol,
                     onSearchedTransactionListItemClicked = { transactionResponse ->
                         onSearchedTransactionListItemClicked(transactionResponse)
                     }
@@ -187,7 +189,8 @@ fun DashboardScreen(
                     .padding(horizontal = 12.dp)
                     .fillMaxWidth(),
                 labelText = "TOTAL BALANCE",
-                amountText = Helper.stringifyTotalBalance(balance = totalBalanceText)
+                amountText = Helper.stringifyTotalBalance(balance = totalBalanceText),
+                symbol = symbol
             )
 
             Row(
@@ -199,13 +202,15 @@ fun DashboardScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(124.dp),
-                    amountText = totalIncomeText.toString()
+                    amountText = totalIncomeText.toString(),
+                    symbol = symbol
                 )
                 TotalExpenseCard(
                     modifier = Modifier
                         .weight(1f)
                         .height(124.dp),
-                    amountText = totalExpenseText.toString()
+                    amountText = totalExpenseText.toString(),
+                    symbol = symbol
                 )
             }
 
@@ -241,10 +246,16 @@ fun DashboardScreen(
             //TODO: Send list to this composable only when Success
 
             if (isLoading) {
-                CircularProgressIndicator(
+                /*CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     color = FABColor
-                )
+                )*/
+                LazyColumn(content = {
+                    items(count = 7) {
+                        TransactionListItemShimmerEffect()
+                    }
+                })
+
             } else {
 
                 Box(modifier = Modifier.fillMaxSize()) {
@@ -269,6 +280,7 @@ fun DashboardScreen(
 
                         } else {
                             TransactionList(
+                                symbol = symbol,
                                 listState = listState,
                                 transactionList = transactionList,
                                 onTransactionListItemClicked = {
@@ -345,6 +357,7 @@ fun DashboardScreen(
 
 @Composable
 fun TransactionList(
+    symbol: String,
     listState: LazyListState,
     transactionList: List<TransactionResponse>,
     onTransactionListItemClicked: (TransactionResponse) -> Unit
@@ -355,6 +368,7 @@ fun TransactionList(
         content = {
             items(transactionList) {
                 TransactionListItem(
+                    symbol = symbol,
                     transactionResponse = it,
                     onTransactionListItemClicked = {
                         onTransactionListItemClicked(it)
@@ -368,6 +382,7 @@ fun TransactionList(
 @Composable
 fun DashboardScreenPreview() {
     DashboardScreen(
+        symbol = "$",
         onAddTransactionFABClicked = {
 
         },

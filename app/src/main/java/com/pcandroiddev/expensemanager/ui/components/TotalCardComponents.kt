@@ -1,5 +1,6 @@
 package com.pcandroiddev.expensemanager.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,14 +34,20 @@ import com.pcandroiddev.expensemanager.ui.theme.GreenIncomeColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
 import com.pcandroiddev.expensemanager.ui.theme.RedExpenseColor
 import com.pcandroiddev.expensemanager.ui.theme.TotalBalanceColor
+import java.text.NumberFormat
+import java.util.Locale
+
+//TODO: Make a single Composable for Income/Expense Card
+
 
 @Composable
 fun TotalBalanceCard(
     modifier: Modifier = Modifier,
     labelText: String,
-    amountText: String
+    amountText: String,
+    symbol: String = "$"
 ) {
-
+    Log.d("DashboardScreen", "TotalBalanceCard: $symbol")
     Card(
         modifier = modifier
             .height(120.dp),
@@ -66,7 +73,7 @@ fun TotalBalanceCard(
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "$".plus(amountText),
+                text = symbol.plus(amountText),
                 fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
                 fontStyle = FontStyle.Normal,
                 fontWeight = FontWeight.SemiBold,
@@ -83,8 +90,11 @@ fun TotalBalanceCard(
 @Composable
 fun TotalIncomeCard(
     modifier: Modifier = Modifier,
-    amountText: String
+    amountText: String,
+    symbol: String = "$"
 ) {
+    Log.d("DashboardScreen", "TotalIncomeCard: $symbol")
+
     Card(
         modifier = modifier,
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
@@ -131,7 +141,7 @@ fun TotalIncomeCard(
                 modifier = Modifier
                     .padding(start = 20.dp)
                     .fillMaxWidth(),
-                text = "+ $".plus(amountText),
+                text = "+ $symbol".plus(amountText),
                 fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
                 fontStyle = FontStyle.Normal,
                 fontWeight = FontWeight.SemiBold,
@@ -145,8 +155,10 @@ fun TotalIncomeCard(
 @Composable
 fun TotalExpenseCard(
     modifier: Modifier = Modifier,
-    amountText: String
+    amountText: String,
+    symbol: String = "$"
 ) {
+    Log.d("DashboardScreen", "TotalExpenseCard: $symbol")
     Card(
         modifier = modifier,
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
@@ -193,7 +205,7 @@ fun TotalExpenseCard(
                 modifier = Modifier
                     .padding(start = 20.dp)
                     .fillMaxWidth(),
-                text = "- $".plus(amountText),
+                text = "- $symbol".plus(amountText),
                 fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
                 fontStyle = FontStyle.Normal,
                 fontWeight = FontWeight.SemiBold,
@@ -203,7 +215,6 @@ fun TotalExpenseCard(
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable

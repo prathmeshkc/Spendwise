@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import com.pcandroiddev.expensemanager.R
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
+import com.pcandroiddev.expensemanager.ui.theme.FABColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 
@@ -261,12 +262,19 @@ fun DashboardExpensesSearchBar(
         colors = SearchBarDefaults.colors(
             containerColor = ComponentsBackgroundColor,
             inputFieldColors = TextFieldDefaults.colors(
-                focusedTextColor = HeadingTextColor
+                focusedTextColor = HeadingTextColor,
+                cursorColor = FABColor
             )
 
         )
     ) {
         content()
+        BackHandler {
+            queryText = ""
+            onSearchTextChanged(queryText)
+            active = false
+            isActive(active)
+        }
     }
 
     BackHandler {

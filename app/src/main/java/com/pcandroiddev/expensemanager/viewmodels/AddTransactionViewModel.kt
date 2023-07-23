@@ -87,12 +87,14 @@ class AddTransactionViewModel @Inject constructor(
         val amountResult =
             try {
                 if (addTransactionUIState.value.amount <= 0) {
-                    ValidationResult(status = false)
+                    /*ValidationResult(status = false)*/
+                    Pair(first = false, second = "Amount cannot be less than or equal to 0!")
                 } else {
                     Validator.validateAmount(amount = addTransactionUIState.value.amount)
                 }
             } catch (numberFormatException: NumberFormatException) {
-                ValidationResult(status = false)
+                /*ValidationResult(status = false)*/
+                Pair(first = false, second = "Enter numbers only!")
             }
         val categoryResult =
             Validator.validateCategory(category = addTransactionUIState.value.category)
@@ -111,14 +113,14 @@ class AddTransactionViewModel @Inject constructor(
          */
 
         addTransactionUIState.value = addTransactionUIState.value.copy(
-            titleError = titleResult.status,
-            amountError = amountResult.status,
-            categoryError = categoryResult.status,
-            noteError = noteResult.status
+            titleError = titleResult,
+            amountError = amountResult,
+            categoryError = categoryResult,
+            noteError = noteResult
         )
 
         _allValidationPassed.value =
-            titleResult.status && amountResult.status && categoryResult.status && noteResult.status
+            titleResult.first && amountResult.first && categoryResult.first && noteResult.first
 
         printState()
 
