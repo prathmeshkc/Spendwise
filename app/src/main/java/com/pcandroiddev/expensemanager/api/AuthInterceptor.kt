@@ -20,12 +20,13 @@ class AuthInterceptor @Inject constructor(
 ) : Interceptor {
 
 
-    override fun intercept(chain: Interceptor.Chain): Response {
+    /*override fun intercept(chain: Interceptor.Chain): Response {
         val token: String? = runBlocking { tokenManager.getToken() }
         val request = chain.request()
         if (token != null) {
             val jwt = JWT(token)
             val exp = jwt.claims["exp"]
+            Log.d("AuthInterceptor", "${isTokenExpired(exp?.asLong()!!)}")
             return if (isTokenExpired(exp?.asLong()!!)) {
                 Log.d("AuthInterceptor", "exp: true")
                 refreshToken(chain, request)
@@ -35,11 +36,36 @@ class AuthInterceptor @Inject constructor(
                     .header("Authorization", "Bearer $token")
                     .build()
 
+                Log.d("AuthInterceptor", "intercept: $newRequest")
                 val response = chain.proceed(newRequest)
                 Log.d("AuthInterceptor", "intercept: $token")
                 response
             }
 
+        } else {
+            return refreshToken(chain, request)
+        }
+    }*/
+
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val token: String? = runBlocking { tokenManager.getToken() }
+        val request = chain.request()
+        if (token != null) {
+            val newRequest = request
+                .newBuilder()
+                .header("Authorization", "Bearer $token")
+                .build()
+            Log.d("AuthInterceptor", "intercept: $newRequest")
+
+            val response = chain.proceed(newRequest)
+
+            return if (response.code() == 401) {
+                response.close()
+                refreshToken(chain, request)
+            } else {
+                Log.d("AuthInterceptor", "intercept: $token")
+                response
+            }
         } else {
             return refreshToken(chain, request)
         }
@@ -58,6 +84,7 @@ class AuthInterceptor @Inject constructor(
                 .addHeader("Authorization", "Bearer $newToken")
                 .build()
             Log.d("AuthInterceptor", "intercept: $newToken")
+            Log.d("AuthInterceptor", "intercept: $newRequest")
             chain.proceed(newRequest)
         } else {
             chain.proceed(request)

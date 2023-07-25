@@ -13,37 +13,37 @@ import retrofit2.http.Query
 
 interface TransactionService {
 
-    @POST("/transaction/")
+    @POST("transaction")
     suspend fun createTransaction(
         @Body transactionRequest: TransactionRequest
     ): Response<TransactionResponse>
 
-    @GET("/transaction/")
+    @GET("transaction")
     suspend fun getAllTransaction(): Response<List<TransactionResponse>>
 
-    @PUT("/transaction/{transactionId}")
+    @PUT("transaction/{transactionId}")
     suspend fun updateTransaction(
         @Path("transactionId") transactionId: String,
         @Body transactionRequest: TransactionRequest
     ): Response<TransactionResponse>
 
-    @DELETE("/transaction/{transactionId}")
+    @DELETE("transaction/{transactionId}")
     suspend fun deleteTransaction(
         @Path("transactionId") transactionId: String
     ): Response<TransactionResponse>
 
-    @GET("/transaction/filter")
+    @GET("transaction/filter")
     suspend fun getAllTransactionBetweenDates(
         @Query("startDate") startDate: String,
         @Query("endDate") endDate: String
     ): Response<List<TransactionResponse>>
 
-    @GET("/transaction/search")
+    @GET("transaction/search")
     suspend fun searchTransactionsByText(
         @Query("searchQuery") searchText: String
     ): Response<List<TransactionResponse>>
 
-    @GET("/transaction/search/type")
+    @GET("transaction/search/type")
     suspend fun searchTransactionByTypeAndText(
         @Query("searchQuery") searchText: String,
         @Query("type") transactionType: String

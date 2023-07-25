@@ -8,6 +8,7 @@ import com.pcandroiddev.expensemanager.utils.ApiResult
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import org.json.JSONException
 import org.json.JSONObject
 import javax.inject.Inject
 
@@ -22,18 +23,22 @@ class TransactionRepository @Inject constructor(
 
     suspend fun createTransaction(transactionRequest: TransactionRequest): Flow<ApiResult<String>> {
         return flow {
-            emit(ApiResult.Loading())
-            val response =
-                transactionService.createTransaction(transactionRequest = transactionRequest)
-            if (response.isSuccessful && response.body() != null) {
-                emit(ApiResult.Success(data = "Transaction Created!"))
-                Log.d(TAG, "createTransaction: $response")
-            } else if ((response.code() == 400 || response.code() == 500) && response.body() != null) {
-                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                emit(ApiResult.Error(message = errorObj.getString("message")))
-            } else {
-                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                emit(ApiResult.Error(message = errorObj.getString("Something Went Wrong!")))
+            try {
+                emit(ApiResult.Loading())
+                val response =
+                    transactionService.createTransaction(transactionRequest = transactionRequest)
+                if (response.isSuccessful && response.body() != null) {
+                    emit(ApiResult.Success(data = "Transaction Created!"))
+                    Log.d(TAG, "createTransaction: $response")
+                } else if ((response.code() == 400 || response.code() == 500) && response.body() != null) {
+                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                    emit(ApiResult.Error(message = errorObj.getString("message")))
+                } else {
+                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                    emit(ApiResult.Error(message = errorObj.getString("Something Went Wrong!")))
+                }
+            } catch (exception: JSONException) {
+                emit(ApiResult.Error(message = "Something Went Wrong!"))
             }
         }
     }
@@ -41,18 +46,22 @@ class TransactionRepository @Inject constructor(
     suspend fun getAllTransaction(): Flow<ApiResult<List<TransactionResponse>>> {
         return flow {
 
-            emit(ApiResult.Loading())
-            val response = transactionService.getAllTransaction()
+            try {
+                emit(ApiResult.Loading())
+                val response = transactionService.getAllTransaction()
 
-            if (response.isSuccessful && response.body() != null) {
-                emit(ApiResult.Success(data = response.body()!!))
-                Log.d(TAG, "getAllTransaction: $response")
-            } else if ((response.code() == 404 || response.code() == 500) && response.body() != null) {
-                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                emit(ApiResult.Error(message = errorObj.getString("message")))
-            } else {
-                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                emit(ApiResult.Error(message = errorObj.getString("Something Went Wrong!")))
+                if (response.isSuccessful && response.body() != null) {
+                    emit(ApiResult.Success(data = response.body()!!))
+                    Log.d(TAG, "getAllTransaction: $response")
+                } else if ((response.code() == 404 || response.code() == 500) && response.body() != null) {
+                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                    emit(ApiResult.Error(message = errorObj.getString("message")))
+                } else {
+                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                    emit(ApiResult.Error(message = errorObj.getString("Something Went Wrong!")))
+                }
+            } catch (exception: JSONException) {
+                emit(ApiResult.Error(message = "Something Went Wrong!"))
             }
         }
     }
@@ -62,22 +71,26 @@ class TransactionRepository @Inject constructor(
         endDate: String
     ): Flow<ApiResult<List<TransactionResponse>>> {
         return flow {
-            emit(ApiResult.Loading())
+            try {
+                emit(ApiResult.Loading())
 
-            val response = transactionService.getAllTransactionBetweenDates(
-                startDate = startDate,
-                endDate = endDate
-            )
+                val response = transactionService.getAllTransactionBetweenDates(
+                    startDate = startDate,
+                    endDate = endDate
+                )
 
-            if (response.isSuccessful && response.body() != null) {
-                emit(ApiResult.Success(data = response.body()!!))
-                Log.d(TAG, "getAllTransactionBetweenDates: $response")
-            } else if ((response.code() == 400 || response.code() == 500) && response.body() != null) {
-                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                emit(ApiResult.Error(message = errorObj.getString("message")))
-            } else {
-                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                emit(ApiResult.Error(message = errorObj.getString("Something Went Wrong!")))
+                if (response.isSuccessful && response.body() != null) {
+                    emit(ApiResult.Success(data = response.body()!!))
+                    Log.d(TAG, "getAllTransactionBetweenDates: $response")
+                } else if ((response.code() == 400 || response.code() == 500) && response.body() != null) {
+                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                    emit(ApiResult.Error(message = errorObj.getString("message")))
+                } else {
+                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                    emit(ApiResult.Error(message = errorObj.getString("Something Went Wrong!")))
+                }
+            } catch (exception: JSONException) {
+                emit(ApiResult.Error(message = "Something Went Wrong!"))
             }
 
         }
@@ -85,19 +98,23 @@ class TransactionRepository @Inject constructor(
 
     suspend fun searchTransactionsByText(searchText: String): Flow<ApiResult<List<TransactionResponse>>> {
         return flow {
-            emit(ApiResult.Loading())
+            try {
+                emit(ApiResult.Loading())
 
-            val response = transactionService.searchTransactionsByText(searchText)
+                val response = transactionService.searchTransactionsByText(searchText)
 
-            if (response.isSuccessful && response.body() != null) {
-                emit(ApiResult.Success(data = response.body()!!))
-                Log.d(TAG, "searchTransactionsByText: $response")
-            } else if ((response.code() == 400 || response.code() == 500) && response.body() != null) {
-                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                emit(ApiResult.Error(message = errorObj.getString("message")))
-            } else {
-                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                emit(ApiResult.Error(message = errorObj.getString("Something Went Wrong!")))
+                if (response.isSuccessful && response.body() != null) {
+                    emit(ApiResult.Success(data = response.body()!!))
+                    Log.d(TAG, "searchTransactionsByText: $response")
+                } else if ((response.code() == 400 || response.code() == 500) && response.body() != null) {
+                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                    emit(ApiResult.Error(message = errorObj.getString("message")))
+                } else {
+                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                    emit(ApiResult.Error(message = errorObj.getString("Something Went Wrong!")))
+                }
+            } catch (exception: JSONException) {
+                emit(ApiResult.Error(message = "Something Went Wrong!"))
             }
         }
     }
@@ -107,22 +124,26 @@ class TransactionRepository @Inject constructor(
         transactionType: String
     ): Flow<ApiResult<List<TransactionResponse>>> {
         return flow {
-            emit(ApiResult.Loading())
+            try {
+                emit(ApiResult.Loading())
 
-            val response = transactionService.searchTransactionByTypeAndText(
-                searchText = searchText,
-                transactionType = transactionType
-            )
+                val response = transactionService.searchTransactionByTypeAndText(
+                    searchText = searchText,
+                    transactionType = transactionType
+                )
 
-            if (response.isSuccessful && response.body() != null) {
-                emit(ApiResult.Success(data = response.body()!!))
-                Log.d(TAG, "searchTransactionByTypeAndText: $response")
-            } else if ((response.code() == 400 || response.code() == 500) && response.body() != null) {
-                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                emit(ApiResult.Error(message = errorObj.getString("message")))
-            } else {
-                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                emit(ApiResult.Error(message = errorObj.getString("Something Went Wrong!")))
+                if (response.isSuccessful && response.body() != null) {
+                    emit(ApiResult.Success(data = response.body()!!))
+                    Log.d(TAG, "searchTransactionByTypeAndText: $response")
+                } else if ((response.code() == 400 || response.code() == 500) && response.body() != null) {
+                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                    emit(ApiResult.Error(message = errorObj.getString("message")))
+                } else {
+                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                    emit(ApiResult.Error(message = errorObj.getString("Something Went Wrong!")))
+                }
+            } catch (exception: JSONException) {
+                emit(ApiResult.Error(message = "Something Went Wrong!"))
             }
         }
     }
@@ -132,22 +153,26 @@ class TransactionRepository @Inject constructor(
         transactionRequest: TransactionRequest
     ): Flow<ApiResult<String>> {
         return flow {
-            emit(ApiResult.Loading())
+            try {
+                emit(ApiResult.Loading())
 
-            val response = transactionService.updateTransaction(
-                transactionId = transactionId,
-                transactionRequest = transactionRequest
-            )
+                val response = transactionService.updateTransaction(
+                    transactionId = transactionId,
+                    transactionRequest = transactionRequest
+                )
 
-            if (response.isSuccessful && response.body() != null) {
-                emit(ApiResult.Success(data = "Transaction Updated!"))
-                Log.d(TAG, "updateTransaction: $response")
-            } else if ((response.code() == 400 || response.code() == 500) && response.body() != null) {
-                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                emit(ApiResult.Error(message = errorObj.getString("message")))
-            } else {
-                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                emit(ApiResult.Error(message = errorObj.getString("Something Went Wrong!")))
+                if (response.isSuccessful && response.body() != null) {
+                    emit(ApiResult.Success(data = "Transaction Updated!"))
+                    Log.d(TAG, "updateTransaction: $response")
+                } else if ((response.code() == 400 || response.code() == 500) && response.body() != null) {
+                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                    emit(ApiResult.Error(message = errorObj.getString("message")))
+                } else {
+                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                    emit(ApiResult.Error(message = errorObj.getString("Something Went Wrong!")))
+                }
+            } catch (exception: JSONException) {
+                emit(ApiResult.Error(message = "Something Went Wrong!"))
             }
         }
     }
@@ -156,19 +181,23 @@ class TransactionRepository @Inject constructor(
         transactionId: String
     ): Flow<ApiResult<String>> {
         return flow {
-            emit(ApiResult.Loading())
+            try {
+                emit(ApiResult.Loading())
 
-            val response = transactionService.deleteTransaction(transactionId = transactionId)
+                val response = transactionService.deleteTransaction(transactionId = transactionId)
 
-            if (response.isSuccessful && response.body() != null) {
-                emit(ApiResult.Success(data = "Transaction Deleted!"))
-                Log.d(TAG, "deleteTransaction: $response")
-            } else if ((response.code() == 400 || response.code() == 500) && response.body() != null) {
-                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                emit(ApiResult.Error(message = errorObj.getString("message")))
-            } else {
-                val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
-                emit(ApiResult.Error(message = errorObj.getString("Something Went Wrong!")))
+                if (response.isSuccessful && response.body() != null) {
+                    emit(ApiResult.Success(data = "Transaction Deleted!"))
+                    Log.d(TAG, "deleteTransaction: $response")
+                } else if ((response.code() == 400 || response.code() == 500) && response.body() != null) {
+                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                    emit(ApiResult.Error(message = errorObj.getString("message")))
+                } else {
+                    val errorObj = JSONObject(response.errorBody()!!.charStream().readText())
+                    emit(ApiResult.Error(message = errorObj.getString("Something Went Wrong!")))
+                }
+            } catch (exception: JSONException) {
+                emit(ApiResult.Error(message = "Something Went Wrong!"))
             }
         }
     }

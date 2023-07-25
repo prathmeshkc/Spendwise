@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -27,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pcandroiddev.expensemanager.R
+import com.pcandroiddev.expensemanager.data.local.TransactionType
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
@@ -216,13 +218,108 @@ fun TotalExpenseCard(
     }
 }
 
+
+@Composable
+fun TotalIncomeExpenseCard(
+    modifier: Modifier = Modifier,
+    type: TransactionType,
+    amountText: String,
+    symbol: String = "$",
+) {
+
+    Log.d("DashboardScreen", "TotalExpenseCard: $symbol")
+    Card(
+        modifier = modifier,
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = ComponentsBackgroundColor),
+        shape = RoundedCornerShape(2.dp)
+    ) {
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize(),
+        ) {
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.Top,
+            ) {
+                Image(
+                    modifier = Modifier
+                        .padding(top = 12.dp, end = 12.dp)
+                        .width(32.dp)
+                        .height(32.dp),
+                    painter = painterResource(
+                        id = when (type) {
+                            TransactionType.EXPENSE -> {
+                                R.drawable.transaction_type_expense
+                            }
+
+                            TransactionType.INCOME -> {
+                                R.drawable.transaction_type_income
+                            }
+                        }
+                    ),
+                    contentDescription = "Total Expense"
+                )
+            }
+
+
+            Text(
+                modifier = Modifier
+                    .padding(start = 21.dp)
+                    .fillMaxWidth(),
+                text = if (type == TransactionType.EXPENSE) "TOTAL EXPENSE" else "TOTAL INCOME",
+                fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                fontStyle = FontStyle.Normal,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 12.sp,
+                color = HeadingTextColor
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                modifier = Modifier
+                    .padding(start = 20.dp)
+                    .fillMaxWidth(),
+                text = when (type) {
+                    TransactionType.EXPENSE -> {
+                        "- $symbol".plus(amountText)
+                    }
+
+                    TransactionType.INCOME -> {
+                        "+ $symbol".plus(amountText)
+                    }
+                },
+                fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                fontStyle = FontStyle.Normal,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 25.sp,
+                color = when (type) {
+                    TransactionType.EXPENSE -> {
+                        RedExpenseColor
+                    }
+
+                    TransactionType.INCOME -> {
+                        GreenIncomeColor
+                    }
+                }
+            )
+        }
+    }
+
+
+}
+
 @Preview(showBackground = true)
 @Composable
 fun TotalCardsPreview() {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         TotalBalanceCard(
             labelText = "TOTAL BALANCE",
@@ -244,6 +341,30 @@ fun TotalCardsPreview() {
                 amountText = "1767.00"
             )
         }
+        Text(text = "Single Card Component")
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            TotalIncomeExpenseCard(
+                type = TransactionType.INCOME,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(124.dp),
+                amountText = "3574.00",
+            )
+
+
+            TotalIncomeExpenseCard(
+                type = TransactionType.EXPENSE,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(124.dp),
+                amountText = "1767.00",
+            )
+
+        }
+
+
     }
 
 
