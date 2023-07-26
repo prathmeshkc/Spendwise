@@ -1,8 +1,7 @@
 package com.pcandroiddev.expensemanager.api
 
 import android.util.Log
-import com.auth0.android.jwt.JWT
-import com.pcandroiddev.expensemanager.data.local.datastore.TokenManager
+import com.pcandroiddev.expensemanager.data.local.datastore.UserPreferencesManager
 import com.pcandroiddev.expensemanager.repository.auth.AuthRepository
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
@@ -15,7 +14,7 @@ const val TAG = "AuthInterceptor"
 
 
 class AuthInterceptor @Inject constructor(
-    private val tokenManager: TokenManager,
+    private val userPreferencesManager: UserPreferencesManager,
     private val authRepository: AuthRepository
 ) : Interceptor {
 
@@ -48,7 +47,7 @@ class AuthInterceptor @Inject constructor(
     }*/
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        val token: String? = runBlocking { tokenManager.getToken() }
+        val token: String? = runBlocking { userPreferencesManager.getToken() }
         val request = chain.request()
         if (token != null) {
             val newRequest = request
@@ -76,8 +75,8 @@ class AuthInterceptor @Inject constructor(
 
         return if (!newToken.isNullOrEmpty()) {
             runBlocking {
-                tokenManager.deleteToken()
-                tokenManager.saveToken(newToken)
+                userPreferencesManager.deleteToken()
+                userPreferencesManager.saveToken(newToken)
             }
             val newRequest = request
                 .newBuilder()

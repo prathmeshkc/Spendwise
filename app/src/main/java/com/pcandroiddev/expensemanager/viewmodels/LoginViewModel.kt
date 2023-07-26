@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.AuthResult
-import com.pcandroiddev.expensemanager.data.local.datastore.TokenManager
+import com.pcandroiddev.expensemanager.data.local.datastore.UserPreferencesManager
 import com.pcandroiddev.expensemanager.repository.auth.AuthRepository
 import com.pcandroiddev.expensemanager.ui.rules.Validator
 import com.pcandroiddev.expensemanager.ui.states.ResultState
@@ -23,7 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val tokenManager: TokenManager
+    private val userPreferencesManager: UserPreferencesManager
 ) : ViewModel() {
 
     var loginUIState = mutableStateOf(LoginUIState())
@@ -75,8 +75,8 @@ class LoginViewModel @Inject constructor(
                     is ApiResult.Success -> {
                         val tokenResult = authResult.data?.user?.getIdToken(false)?.await()
                         val token = tokenResult?.token
-                        tokenManager.saveToken(token = token!!)
-                        Log.d(TAG, "loginUserWithEmailPassword: ${tokenManager.getToken()}")
+                        userPreferencesManager.saveToken(token = token!!)
+                        Log.d(TAG, "loginUserWithEmailPassword: ${userPreferencesManager.getToken()}")
                         _signInState.send(ResultState(isSuccess = "Sign In Success!"))
                     }
 

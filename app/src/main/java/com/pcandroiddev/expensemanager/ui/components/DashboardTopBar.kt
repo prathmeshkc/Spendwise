@@ -15,10 +15,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.MoreVert
@@ -30,9 +32,13 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -50,7 +56,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.pcandroiddev.expensemanager.R
+import com.pcandroiddev.expensemanager.ui.theme.BottomNavigationBarItemSelectedColor
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
@@ -173,6 +181,7 @@ fun FilterDropDown() {
 fun DashboardExpensesSearchBar(
     modifier: Modifier = Modifier,
     onLogoutOptionClicked: () -> Unit = {},
+    onTransactionFilterClicked: (String) -> Unit,
     isActive: (Boolean) -> Unit,
     onSearchTextChanged: (String) -> Unit,
     onSearchButtonClicked: () -> Unit,
@@ -237,6 +246,7 @@ fun DashboardExpensesSearchBar(
 
         },
         trailingIcon = {
+
             if (active) {
                 if (queryText.isNotEmpty()) {
                     Icon(
@@ -250,14 +260,23 @@ fun DashboardExpensesSearchBar(
                 }
 
             } else {
+                Row {
 
-                DashboardSearchBarOptionsMenu(
-                    onLogoutOptionClicked = {
-                        onLogoutOptionClicked()
-                    }
-                )
+                    //TODO: Add a filter icon button
 
+                    DashboardSearchBarFilterButton(onTransactionFilterClicked = { selectedTransactionFilter ->
+                        onTransactionFilterClicked(selectedTransactionFilter)
+                    })
+
+                    DashboardSearchBarOptionsMenu(
+                        onLogoutOptionClicked = {
+                            onLogoutOptionClicked()
+                        }
+                    )
+                }
             }
+
+
         },
         colors = SearchBarDefaults.colors(
             containerColor = ComponentsBackgroundColor,
@@ -282,6 +301,102 @@ fun DashboardExpensesSearchBar(
         onSearchTextChanged(queryText)
         active = false
         isActive(active)
+    }
+}
+
+@Composable
+fun DashboardSearchBarFilterButton(
+    onTransactionFilterClicked: (String) -> Unit
+) {
+    var openDialog by remember {
+        mutableStateOf(false)
+    }
+
+    val transactionFiltersList = listOf("Daily", "Weekly", "Monthly", "Yearly")
+    var selectedTransactionFilter by remember {
+        mutableStateOf(transactionFiltersList[0])
+    }
+
+    IconButton(onClick = { openDialog = true }) {
+        Icon(
+            imageVector = Icons.Outlined.FilterAlt,
+            contentDescription = "Filter Transactions",
+            tint = HeadingTextColor
+        )
+    }
+
+    if (openDialog) {
+        Dialog(onDismissRequest = { openDialog = false }) {
+            Surface(
+                color = ComponentsBackgroundColor
+            ) {
+                Column(
+                    modifier = Modifier.padding(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+
+                ) {
+                    Text(
+                        modifier = Modifier.padding(top = 8.dp),
+                        text = "Show Transactions",
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                            color = DetailsTextColor
+                        )
+                    )
+                    transactionFiltersList.forEach { transactionFilter ->
+                        Row(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .selectable(
+                                    selected = selectedTransactionFilter == transactionFilter,
+                                    onClick = {
+                                        selectedTransactionFilter = transactionFilter
+                                        onTransactionFilterClicked(selectedTransactionFilter)
+                                        openDialog = false
+                                    }
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedTransactionFilter == transactionFilter,
+                                onClick = {
+                                    selectedTransactionFilter = transactionFilter
+                                    onTransactionFilterClicked(selectedTransactionFilter)
+                                    openDialog = false
+                                },
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = BottomNavigationBarItemSelectedColor,
+
+                                    )
+                            )
+                            Text(
+                                modifier = Modifier.padding(start = 16.dp),
+                                text = transactionFilter,
+                                style = TextStyle(
+                                    color = DetailsTextColor,
+                                    fontFamily = FontFamily(Font(R.font.inter_semi_bold))
+                                )
+                            )
+                        }
+                    }
+
+                    TextButton(
+                        modifier = Modifier.align(Alignment.End),
+                        onClick = { openDialog = false }) {
+                        Text(
+                            text = "CANCEL",
+                            style = TextStyle(
+                                color = BottomNavigationBarItemSelectedColor,
+                            )
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -345,6 +460,9 @@ fun DashboardTopBarPreview() {
             isActive = {
 
             },
+            onTransactionFilterClicked = {
+
+            },
             onSearchTextChanged = {
 
             },
@@ -359,6 +477,9 @@ fun DashboardTopBarPreview() {
             isActive = {
 
             },
+            onTransactionFilterClicked = {
+
+            },
             onSearchTextChanged = {
 
             },
@@ -370,6 +491,10 @@ fun DashboardTopBarPreview() {
             })
 
         DashboardSearchBarOptionsMenu(onLogoutOptionClicked = {
+
+        })
+
+        DashboardSearchBarFilterButton(onTransactionFilterClicked = {
 
         })
 

@@ -1,15 +1,12 @@
 package com.pcandroiddev.expensemanager.di
 
-import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.pcandroiddev.expensemanager.BuildConfig
-import com.pcandroiddev.expensemanager.data.local.datastore.TokenManager
 import com.pcandroiddev.expensemanager.repository.auth.AuthRepository
 import com.pcandroiddev.expensemanager.repository.auth.AuthRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 

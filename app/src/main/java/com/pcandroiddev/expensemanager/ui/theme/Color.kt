@@ -25,7 +25,10 @@ val SelectedChipContainerColor = Color(51, 58, 74)
 val UnSelectedChipContainerColor = Color(32, 33, 37)
 val SelectedChipTextColor = Color(232, 225, 248)
 val UnSelectedChipTextColor = Color(204, 201, 210)
-
+val BottomNavigationBarColor = Color(32, 33, 37)
+val BottomNavigationBarItemIndicatorColor = Color(51, 58, 74)
+val BottomNavigationBarItemUnselectedColor = Color(150, 149, 154)
+val BottomNavigationBarItemSelectedColor = Color(139, 178, 251)
 
 
 

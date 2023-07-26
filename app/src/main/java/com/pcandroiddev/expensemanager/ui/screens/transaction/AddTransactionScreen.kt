@@ -30,6 +30,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -97,144 +98,148 @@ fun AddTransactionScreen(
         addTransactionViewModel.createTransactionState.collectAsState(initial = null)
 
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = SurfaceBackgroundColor
-    ) {
-
-        Column(
-            modifier = Modifier.fillMaxSize()
+    Scaffold { innerPadding ->
+        Surface(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            color = SurfaceBackgroundColor
         ) {
-            TopAppBar(
-                modifier = Modifier.fillMaxWidth(),
-                title = {
-                    Text(
-                        text = "Add Transaction",
-                        color = DetailsTextColor,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 20.sp
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = {
-//                        ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)
-                        //TODO: Reset the respective UI State
-                        onNavigateUpClicked()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            tint = HeadingTextColor,
-                            contentDescription = "Back Button"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = ComponentsBackgroundColor
-                )
-            )
-
-            Row(
-                modifier = Modifier
-                    .padding(top = 12.dp, bottom = 12.dp)
-                    .align(Alignment.CenterHorizontally),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                TransactionTypeSegmentedButton(
-                    defaultSelectedItemIndex = 1,
-                    onSelectionChange = { transactionType ->
-                        addTransactionViewModel.onEventChange(
-                            event = AddTransactionUIEvent.TransactionTypeChanged(
-                                transactionType = transactionType
-                            )
-                        )
-                    }
-                )
-            }
 
             Column(
-                modifier = Modifier
-                    .padding(horizontal = 20.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
-
+                modifier = Modifier.fillMaxSize()
             ) {
-                TransactionTitleTextFieldComponent(
-                    errorStatus = addTransactionViewModel.addTransactionUIState.value.titleError,
-                    onTextChanged = { title ->
-                        addTransactionViewModel.onEventChange(
-                            event = AddTransactionUIEvent.TitleChanged(
-                                title
-                            )
+                TopAppBar(
+                    modifier = Modifier.fillMaxWidth(),
+                    title = {
+                        Text(
+                            text = "Add Transaction",
+                            color = DetailsTextColor,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 20.sp
                         )
-                    }
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = {
+//                        ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)
+                            //TODO: Reset the respective UI State
+                            onNavigateUpClicked()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                tint = HeadingTextColor,
+                                contentDescription = "Back Button"
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = ComponentsBackgroundColor
+                    )
                 )
 
-
-                TransactionAmountTextFieldComponent(
-                    errorStatus = addTransactionViewModel.addTransactionUIState.value.amountError,
-                    onTextChanged = { amount ->
-
-                        if (amount.isNotBlank() || amount.isNotEmpty()) {
-                            val parsedAmount = amount.toDoubleOrNull() ?: 0.0
+                Row(
+                    modifier = Modifier
+                        .padding(top = 12.dp, bottom = 12.dp)
+                        .align(Alignment.CenterHorizontally),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    TransactionTypeSegmentedButton(
+                        defaultSelectedItemIndex = 1,
+                        onSelectionChange = { transactionType ->
                             addTransactionViewModel.onEventChange(
-                                event = AddTransactionUIEvent.AmountChanged(
-                                    parsedAmount
-                                )
-                            )
-                        } else {
-                            addTransactionViewModel.onEventChange(
-                                event = AddTransactionUIEvent.AmountChanged(
-                                    0.0
+                                event = AddTransactionUIEvent.TransactionTypeChanged(
+                                    transactionType = transactionType
                                 )
                             )
                         }
+                    )
+                }
 
-                    }
-                )
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
 
-
-                TransactionCategoryMenuComponent(
-                    errorStatus = addTransactionViewModel.addTransactionUIState.value.categoryError,
-                    onSelectionChanged = { category ->
-                        addTransactionViewModel.onEventChange(
-                            event = AddTransactionUIEvent.CategoryChanged(
-                                category
+                ) {
+                    TransactionTitleTextFieldComponent(
+                        errorStatus = addTransactionViewModel.addTransactionUIState.value.titleError,
+                        onTextChanged = { title ->
+                            addTransactionViewModel.onEventChange(
+                                event = AddTransactionUIEvent.TitleChanged(
+                                    title
+                                )
                             )
-                        )
-                    }
-                )
+                        }
+                    )
 
 
-                TransactionDateComponent(
-                    onDateChanged = { date ->
-                        addTransactionViewModel.onEventChange(
-                            event = AddTransactionUIEvent.DateChanged(
-                                date
+                    TransactionAmountTextFieldComponent(
+                        errorStatus = addTransactionViewModel.addTransactionUIState.value.amountError,
+                        onTextChanged = { amount ->
+
+                            if (amount.isNotBlank() || amount.isNotEmpty()) {
+                                val parsedAmount = amount.toDoubleOrNull() ?: 0.0
+                                addTransactionViewModel.onEventChange(
+                                    event = AddTransactionUIEvent.AmountChanged(
+                                        parsedAmount
+                                    )
+                                )
+                            } else {
+                                addTransactionViewModel.onEventChange(
+                                    event = AddTransactionUIEvent.AmountChanged(
+                                        0.0
+                                    )
+                                )
+                            }
+
+                        }
+                    )
+
+
+                    TransactionCategoryMenuComponent(
+                        errorStatus = addTransactionViewModel.addTransactionUIState.value.categoryError,
+                        onSelectionChanged = { category ->
+                            addTransactionViewModel.onEventChange(
+                                event = AddTransactionUIEvent.CategoryChanged(
+                                    category
+                                )
                             )
-                        )
-                    }
-                )
+                        }
+                    )
 
 
-                TransactionNoteComponent(
-                    errorStatus = addTransactionViewModel.addTransactionUIState.value.noteError,
-                    onTextChanged = { note ->
-                        addTransactionViewModel.onEventChange(
-                            event = AddTransactionUIEvent.NoteChanged(
-                                note
+                    TransactionDateComponent(
+                        onDateChanged = { date ->
+                            addTransactionViewModel.onEventChange(
+                                event = AddTransactionUIEvent.DateChanged(
+                                    date
+                                )
                             )
-                        )
-                    }
-                )
+                        }
+                    )
 
 
-                //TODO: Make it a loading button
-                SaveTransactionButton(
-                    isEnable = addTransactionViewModel.allValidationPassed.value,
-                    onButtonClicked = {
-                        addTransactionViewModel.onEventChange(event = AddTransactionUIEvent.SaveTransactionButtonClicked)
-                    }
-                )
+                    TransactionNoteComponent(
+                        errorStatus = addTransactionViewModel.addTransactionUIState.value.noteError,
+                        onTextChanged = { note ->
+                            addTransactionViewModel.onEventChange(
+                                event = AddTransactionUIEvent.NoteChanged(
+                                    note
+                                )
+                            )
+                        }
+                    )
 
+
+                    //TODO: Make it a loading button
+                    SaveTransactionButton(
+                        isEnable = addTransactionViewModel.allValidationPassed.value,
+                        onButtonClicked = {
+                            addTransactionViewModel.onEventChange(event = AddTransactionUIEvent.SaveTransactionButtonClicked)
+                        }
+                    )
+
+                }
             }
         }
     }

@@ -12,13 +12,32 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class TokenManager @Inject constructor(@ApplicationContext private val context: Context) {
+class UserPreferencesManager @Inject constructor(@ApplicationContext private val context: Context) {
     private val Context.tokenDataStore: DataStore<Preferences> by preferencesDataStore(name = "TOKEN_DATASTORE")
+    private val Context.filterDataStore: DataStore<Preferences> by preferencesDataStore(name = "FILTER_DATASTORE")
 
     companion object {
         val TOKEN_KEY = stringPreferencesKey(name = "TOKEN")
         val EMAIL = stringPreferencesKey(name = "EMAIL")
         val PASSWORD = stringPreferencesKey(name = "PASSWORD")
+        val SELECTED_FILTER = stringPreferencesKey(name = "SELECTED_FILTER")
+    }
+
+    suspend fun saveSelectedFilter(filter: String) {
+        context.filterDataStore.edit {
+            it[SELECTED_FILTER] = filter
+        }
+    }
+
+    suspend fun getSelectedFilter(): String? {
+        val preferences = context.filterDataStore.data.first()
+        return preferences[SELECTED_FILTER]
+    }
+
+    suspend fun deleteSelectedFilter() {
+        context.filterDataStore.edit { preferences ->
+            preferences.remove(SELECTED_FILTER)
+        }
     }
 
     suspend fun saveToken(token: String) {

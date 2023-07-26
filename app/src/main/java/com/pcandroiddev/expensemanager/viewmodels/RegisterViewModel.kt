@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.AuthResult
-import com.pcandroiddev.expensemanager.data.local.datastore.TokenManager
+import com.pcandroiddev.expensemanager.data.local.datastore.UserPreferencesManager
 import com.pcandroiddev.expensemanager.repository.auth.AuthRepository
 import com.pcandroiddev.expensemanager.ui.rules.Validator
 import com.pcandroiddev.expensemanager.ui.states.ResultState
@@ -24,7 +24,7 @@ import javax.inject.Inject
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val tokenManager: TokenManager,
+    private val userPreferencesManager: UserPreferencesManager,
     private val firebaseClientId: String
 ) : ViewModel() {
 
@@ -83,8 +83,8 @@ class RegisterViewModel @Inject constructor(
                         val token = tokenResult?.token
                         val userId = tokenResult?.claims?.get("user_id")
                         Log.d(TAG, "registerUserWithEmailPassword: $userId")
-                        tokenManager.saveToken(token = token!!)
-                        Log.d(TAG, "registerUserWithEmailPassword: ${tokenManager.getToken()}")
+                        userPreferencesManager.saveToken(token = token!!)
+                        Log.d(TAG, "registerUserWithEmailPassword: ${userPreferencesManager.getToken()}")
                         _signUpState.send(ResultState(isSuccess = "Sign Up Success!"))
                     }
 

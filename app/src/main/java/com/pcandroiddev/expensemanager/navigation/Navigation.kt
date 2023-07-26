@@ -3,14 +3,15 @@ package com.pcandroiddev.expensemanager.navigation
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.google.gson.Gson
 import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
@@ -18,6 +19,7 @@ import com.pcandroiddev.expensemanager.ui.screens.dashboard.DashboardScreen
 import com.pcandroiddev.expensemanager.ui.screens.login.LoginScreen
 import com.pcandroiddev.expensemanager.ui.screens.register.RegisterScreen
 import com.pcandroiddev.expensemanager.ui.screens.transaction.AddTransactionScreen
+import com.pcandroiddev.expensemanager.ui.screens.transaction.AllTransactions
 import com.pcandroiddev.expensemanager.ui.screens.transaction.EditTransactionScreen
 import com.pcandroiddev.expensemanager.ui.screens.transaction.TransactionDetailsScreen
 import java.lang.StringBuilder
@@ -25,14 +27,17 @@ import java.lang.StringBuilder
 
 @Composable
 fun NavigationGraph(
-    navController: NavHostController = rememberNavController(),
+    navController: NavHostController,
+    snackbarHostState: SnackbarHostState,
     accessToken: String? = null,
-    symbol: String
+    symbol: String,
+    modifier: Modifier
 ) {
 
     val activity = (LocalContext.current as? Activity)
 
     NavHost(
+        modifier = modifier,
         navController = navController,
         startDestination = if (accessToken != null) Screen.DashboardScreen.route else Screen.RegisterScreen.route
     ) {
@@ -76,7 +81,11 @@ fun NavigationGraph(
 
         composable(route = Screen.DashboardScreen.route) {
             DashboardScreen(
+                snackbarHostState = snackbarHostState,
                 symbol = symbol,
+                onSeeAllTransactionClicked = {
+                    navController.navigate(Screen.AllTransactions.route)
+                },
                 onAddTransactionFABClicked = {
                     navController.navigate(Screen.AddTransactionScreen.route)
                 },
@@ -192,7 +201,17 @@ fun NavigationGraph(
             )
         }
 
-
+        composable(route = Screen.AllTransactions.route) {
+            AllTransactions(
+                onBackPressed = {
+                    navController.navigate(Screen.DashboardScreen.route) {
+                        popUpTo(route = Screen.AllTransactions.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
     }
 }
 

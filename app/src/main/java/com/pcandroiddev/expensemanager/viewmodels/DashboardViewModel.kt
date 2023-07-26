@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pcandroiddev.expensemanager.data.local.SearchFilters
-import com.pcandroiddev.expensemanager.data.local.datastore.TokenManager
+import com.pcandroiddev.expensemanager.data.local.datastore.UserPreferencesManager
 import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
 import com.pcandroiddev.expensemanager.repository.auth.AuthRepository
 import com.pcandroiddev.expensemanager.repository.transaction.TransactionRepository
@@ -24,7 +24,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
-    private val tokenManager: TokenManager,
+    private val userPreferencesManager: UserPreferencesManager,
     private val transactionRepository: TransactionRepository,
     private val authRepository: AuthRepository
 ) : ViewModel() {
@@ -157,7 +157,7 @@ class DashboardViewModel @Inject constructor(
     */
 
     fun logout() = viewModelScope.launch {
-        tokenManager.deleteToken()
+        userPreferencesManager.deleteToken()
         authRepository.logout()
     }
 
