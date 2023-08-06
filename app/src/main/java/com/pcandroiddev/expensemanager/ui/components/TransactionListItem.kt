@@ -32,14 +32,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pcandroiddev.expensemanager.R
-import com.pcandroiddev.expensemanager.data.local.TransactionType
+import com.pcandroiddev.expensemanager.data.local.transaction.TransactionType
 import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.GreenIncomeColor
 import com.pcandroiddev.expensemanager.ui.theme.RedExpenseColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
-import java.time.LocalDate
+import com.pcandroiddev.expensemanager.utils.Helper
 
 
 @Composable
@@ -163,15 +163,15 @@ fun TransactionListItem(
                 Text(
                     text = when (transactionResponse.transactionType) {
                         TransactionType.EXPENSE.name -> {
-                            "-$symbol".plus(transactionResponse.amount.toString())
+                            "-$symbol".plus(Helper.formatAmountWithLocale(amount = transactionResponse.amount))
                         }
 
                         TransactionType.INCOME.name -> {
-                            "+$symbol".plus(transactionResponse.amount.toString())
+                            "+$symbol".plus(Helper.formatAmountWithLocale(amount = transactionResponse.amount))
                         }
 
                         else -> {
-                            transactionResponse.amount.toString()
+                            Helper.formatAmountWithLocale(amount = transactionResponse.amount)
                         }
                     },
                     fontFamily = FontFamily(Font(R.font.inter_semi_bold)),

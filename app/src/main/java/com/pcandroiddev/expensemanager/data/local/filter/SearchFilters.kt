@@ -1,4 +1,4 @@
-package com.pcandroiddev.expensemanager.data.local
+package com.pcandroiddev.expensemanager.data.local.filter
 
 enum class SearchFilters {
     All,

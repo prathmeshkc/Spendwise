@@ -1,8 +1,7 @@
 package com.pcandroiddev.expensemanager.ui.states.ui
 
-import com.pcandroiddev.expensemanager.data.local.TransactionType
+import com.pcandroiddev.expensemanager.data.local.transaction.TransactionType
 import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
-import java.text.DateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 

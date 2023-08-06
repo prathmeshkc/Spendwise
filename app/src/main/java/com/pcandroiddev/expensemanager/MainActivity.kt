@@ -39,7 +39,9 @@ import com.pcandroiddev.expensemanager.ui.theme.BottomNavigationBarItemIndicator
 import com.pcandroiddev.expensemanager.ui.theme.BottomNavigationBarItemSelectedColor
 import com.pcandroiddev.expensemanager.ui.theme.BottomNavigationBarItemUnselectedColor
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
+import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.ExpenseManagerTheme
+import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 import com.pcandroiddev.expensemanager.utils.NetworkState
 import com.pcandroiddev.expensemanager.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -58,6 +60,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var userPreferencesManager: UserPreferencesManager
+
+    @Inject
+    lateinit var currencyInstanceNumberFormat: NumberFormat
 
     private var token: String? = null
 
@@ -78,7 +83,10 @@ class MainActivity : ComponentActivity() {
                         /*val numberFormat = NumberFormat.getCurrencyInstance(Locale.getDefault())
                         val symbol = numberFormat.currency?.symbol
                         NavigationGraph(accessToken = token, symbol = symbol ?: "$")*/
-                        ExpenseManagerApp(accessToken = token)
+                        ExpenseManagerApp(
+                            accessToken = token,
+                            currencyInstanceNumberFormat = currencyInstanceNumberFormat
+                        )
                     }
 
                     NetworkState.Losing -> {
@@ -102,7 +110,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ExpenseManagerApp(
     modifier: Modifier = Modifier,
-    accessToken: String? = null
+    accessToken: String? = null,
+    currencyInstanceNumberFormat: NumberFormat
 ) {
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -121,10 +130,10 @@ fun ExpenseManagerApp(
         },
         snackbarHost = {
             SnackbarHost(snackbarHostState)
-        }
+        },
+        containerColor = SurfaceBackgroundColor
     ) { innerPadding ->
-        val numberFormat = NumberFormat.getCurrencyInstance(Locale.getDefault())
-        val symbol = numberFormat.currency?.symbol
+        val symbol = currencyInstanceNumberFormat.currency?.symbol
         NavigationGraph(
             navController = navController,
             snackbarHostState = snackbarHostState,
@@ -158,27 +167,6 @@ fun BottomNavigationBar(
 
 }
 
-
-/*@Composable
-fun BottomNavigationBar(navController: NavHostController, modifier: Modifier = Modifier) {
-    val destinations = listOf(DashboardScreen, AllTransactions)
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
-
-    NavigationBar(
-        modifier = modifier, tonalElevation = 8.dp,
-        containerColor = ComponentsBackgroundColor
-    ) {
-        destinations.forEach { screen: Screen ->
-            BottomNavigationItem(
-                destination = screen,
-                currentDestination = currentDestination,
-                navController = navController
-            )
-        }
-    }
-
-}*/
 
 @Composable
 fun RowScope.BottomNavigationItem(
@@ -215,7 +203,7 @@ fun RowScope.BottomNavigationItem(
             indicatorColor = BottomNavigationBarItemIndicatorColor,
             selectedIconColor = BottomNavigationBarItemSelectedColor,
             selectedTextColor = BottomNavigationBarItemSelectedColor,
-            unselectedIconColor = BottomNavigationBarItemUnselectedColor,
+            unselectedIconColor = DetailsTextColor,
             unselectedTextColor = BottomNavigationBarItemUnselectedColor
         )
     )

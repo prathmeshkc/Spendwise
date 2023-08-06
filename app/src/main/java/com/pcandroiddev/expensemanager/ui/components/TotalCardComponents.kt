@@ -1,6 +1,7 @@
 package com.pcandroiddev.expensemanager.ui.components
 
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,33 +12,54 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ChevronLeft
+import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.pcandroiddev.expensemanager.R
-import com.pcandroiddev.expensemanager.data.local.TransactionType
+import com.pcandroiddev.expensemanager.data.local.filter.TransactionFilters
+import com.pcandroiddev.expensemanager.data.local.transaction.TransactionType
+import com.pcandroiddev.expensemanager.ui.theme.BottomNavigationBarItemSelectedColor
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
 import com.pcandroiddev.expensemanager.ui.theme.GreenIncomeColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
 import com.pcandroiddev.expensemanager.ui.theme.RedExpenseColor
+import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.TotalBalanceColor
-import java.text.NumberFormat
-import java.util.Locale
+import com.pcandroiddev.expensemanager.utils.Helper
 
 //TODO: Make a single Composable for Income/Expense Card
 
@@ -45,21 +67,170 @@ import java.util.Locale
 @Composable
 fun TotalBalanceCard(
     modifier: Modifier = Modifier,
+    symbol: String = "$",
     labelText: String,
-    amountText: String,
-    symbol: String = "$"
-) {
+    amountText: Double,
+    currentTimeFrameText: String,
+    onTransactionFilterClicked: (String) -> Unit,
+    onPreviousTransactionsButtonClicked: () -> Unit,
+    onNextTransactionsButtonClicked: () -> Unit,
+
+    ) {
     Log.d("DashboardScreen", "TotalBalanceCard: $symbol")
     Card(
         modifier = modifier
-            .height(120.dp),
+            .height(130.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(containerColor = ComponentsBackgroundColor),
         shape = RoundedCornerShape(2.dp)
     ) {
 
+
+        var openDialog by remember {
+            mutableStateOf(false)
+        }
+
+        Row(
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            /*IconButton(onClick = { onPreviousTransactionsButtonClicked() }) {
+                Icon(
+                    imageVector = Icons.Outlined.ChevronLeft,
+                    contentDescription = "View Previous Transactions",
+                    tint = FABColor
+                )
+            }*/
+
+            OutlinedButton(
+                modifier = Modifier.padding(start = 12.dp),
+                onClick = { openDialog = true },
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = FABColor
+                ),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = SurfaceBackgroundColor
+                )
+            ) {
+                Text(
+                    //TODO: Change this text according to the currently selected filter
+                    text = currentTimeFrameText,
+                    style = TextStyle(
+                        color = DetailsTextColor,
+                        fontFamily = FontFamily(Font(R.font.inter_medium))
+                    )
+                )
+            }
+
+            /*IconButton(onClick = { onNextTransactionsButtonClicked() }) {
+                Icon(
+                    imageVector = Icons.Outlined.ChevronRight,
+                    contentDescription = "View Next Transactions",
+                    tint = FABColor
+                )
+            }*/
+        }
+
+
+        val transactionFiltersList = listOf(
+            TransactionFilters.Daily.name,
+            TransactionFilters.Weekly.name,
+            TransactionFilters.Monthly.name,
+            TransactionFilters.Yearly.name
+        )
+        var selectedTransactionFilter by remember {
+            mutableStateOf(transactionFiltersList[2])
+        }
+
+        /*IconButton(onClick = { openDialog = true }) {
+            Icon(
+                imageVector = Icons.Outlined.FilterAlt,
+                contentDescription = "Filter Transactions",
+                tint = HeadingTextColor
+            )
+        }*/
+
+        if (openDialog) {
+            Dialog(onDismissRequest = { openDialog = false }) {
+                Surface(
+                    color = ComponentsBackgroundColor
+                ) {
+                    Column(
+                        modifier = Modifier.padding(10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(top = 8.dp),
+                            text = "Show Transactions",
+                            style = TextStyle(
+                                fontSize = 18.sp,
+                                fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                                color = DetailsTextColor
+                            )
+                        )
+                        transactionFiltersList.forEach { transactionFilter ->
+                            Row(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                                    .selectable(
+                                        selected = selectedTransactionFilter == transactionFilter,
+                                        onClick = {
+                                            selectedTransactionFilter = transactionFilter
+                                            onTransactionFilterClicked(selectedTransactionFilter)
+                                            openDialog = false
+                                        }
+                                    ),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = selectedTransactionFilter == transactionFilter,
+                                    onClick = {
+                                        selectedTransactionFilter = transactionFilter
+                                        onTransactionFilterClicked(selectedTransactionFilter)
+                                        openDialog = false
+                                    },
+                                    colors = RadioButtonDefaults.colors(
+                                        selectedColor = BottomNavigationBarItemSelectedColor,
+
+                                        )
+                                )
+                                Text(
+                                    modifier = Modifier.padding(start = 16.dp),
+                                    text = transactionFilter,
+                                    style = TextStyle(
+                                        color = DetailsTextColor,
+                                        fontFamily = FontFamily(Font(R.font.inter_semi_bold))
+                                    )
+                                )
+                            }
+                        }
+
+                        TextButton(
+                            modifier = Modifier.align(Alignment.End),
+                            onClick = { openDialog = false }) {
+                            Text(
+                                text = "CANCEL",
+                                style = TextStyle(
+                                    color = BottomNavigationBarItemSelectedColor,
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -72,10 +243,17 @@ fun TotalBalanceCard(
                 color = HeadingTextColor
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = symbol.plus(amountText),
+                text = when {
+                    amountText < 0 -> {
+                        "- ".plus(symbol.plus(Helper.formatAmountWithLocale(amount = amountText * -1)))
+                    }
+
+                    else -> {
+                        symbol.plus(Helper.formatAmountWithLocale(amount = amountText))
+                    }
+                },
                 fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
                 fontStyle = FontStyle.Normal,
                 fontWeight = FontWeight.SemiBold,
@@ -88,6 +266,105 @@ fun TotalBalanceCard(
     }
 
 }
+
+
+@Composable
+fun DashboardFilterButton(
+
+    onTransactionFilterClicked: (String) -> Unit
+) {
+    var openDialog by remember {
+        mutableStateOf(false)
+    }
+
+    val transactionFiltersList = listOf("Daily", "Weekly", "Monthly", "Yearly")
+    var selectedTransactionFilter by remember {
+        mutableStateOf(transactionFiltersList[2])
+    }
+
+    /*IconButton(onClick = { openDialog = true }) {
+        Icon(
+            imageVector = Icons.Outlined.FilterAlt,
+            contentDescription = "Filter Transactions",
+            tint = HeadingTextColor
+        )
+    }*/
+
+    if (openDialog) {
+        Dialog(onDismissRequest = { openDialog = false }) {
+            Surface(
+                color = ComponentsBackgroundColor
+            ) {
+                Column(
+                    modifier = Modifier.padding(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+
+                ) {
+                    Text(
+                        modifier = Modifier.padding(top = 8.dp),
+                        text = "Show Transactions",
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                            color = DetailsTextColor
+                        )
+                    )
+                    transactionFiltersList.forEach { transactionFilter ->
+                        Row(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .selectable(
+                                    selected = selectedTransactionFilter == transactionFilter,
+                                    onClick = {
+                                        selectedTransactionFilter = transactionFilter
+                                        onTransactionFilterClicked(selectedTransactionFilter)
+                                        openDialog = false
+                                    }
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedTransactionFilter == transactionFilter,
+                                onClick = {
+                                    selectedTransactionFilter = transactionFilter
+                                    onTransactionFilterClicked(selectedTransactionFilter)
+                                    openDialog = false
+                                },
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = BottomNavigationBarItemSelectedColor,
+
+                                    )
+                            )
+                            Text(
+                                modifier = Modifier.padding(start = 16.dp),
+                                text = transactionFilter,
+                                style = TextStyle(
+                                    color = DetailsTextColor,
+                                    fontFamily = FontFamily(Font(R.font.inter_semi_bold))
+                                )
+                            )
+                        }
+                    }
+
+                    TextButton(
+                        modifier = Modifier.align(Alignment.End),
+                        onClick = { openDialog = false }) {
+                        Text(
+                            text = "CANCEL",
+                            style = TextStyle(
+                                color = BottomNavigationBarItemSelectedColor,
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 @Composable
 fun TotalIncomeCard(
@@ -105,51 +382,58 @@ fun TotalIncomeCard(
     ) {
 
         Column(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center
         ) {
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.Top,
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
             ) {
-                Image(
+
+                Row(
                     modifier = Modifier
                         .padding(top = 12.dp, end = 12.dp)
-                        .width(32.dp)
-                        .height(32.dp),
-                    painter = painterResource(id = R.drawable.transaction_type_income),
-                    contentDescription = "Total Income"
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+
+                    Text(
+                        modifier = Modifier
+                            .padding(start = 21.dp),
+                        text = "INCOME",
+                        fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                        fontStyle = FontStyle.Normal,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 12.sp,
+                        color = HeadingTextColor
+                    )
+
+                    Image(
+                        modifier = Modifier
+                            .width(32.dp)
+                            .height(32.dp),
+                        painter = painterResource(id = R.drawable.transaction_type_income),
+                        contentDescription = "Total Income"
+                    )
+
+
+                }
+
+                Text(
+                    modifier = Modifier
+                        .padding(start = 20.dp)
+                        .fillMaxWidth(),
+                    text = symbol.plus(amountText),
+                    fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                    fontStyle = FontStyle.Normal,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = GreenIncomeColor
                 )
             }
-
-
-            Text(
-                modifier = Modifier
-                    .padding(start = 21.dp)
-                    .fillMaxWidth(),
-                text = "TOTAL INCOME",
-                fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
-                fontStyle = FontStyle.Normal,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 12.sp,
-                color = HeadingTextColor
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Text(
-                modifier = Modifier
-                    .padding(start = 20.dp)
-                    .fillMaxWidth(),
-                text = "+ $symbol".plus(amountText),
-                fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
-                fontStyle = FontStyle.Normal,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 25.sp,
-                color = GreenIncomeColor
-            )
         }
     }
 }
@@ -169,51 +453,56 @@ fun TotalExpenseCard(
     ) {
 
         Column(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center
         ) {
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.Top,
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
             ) {
-                Image(
+
+                Row(
                     modifier = Modifier
                         .padding(top = 12.dp, end = 12.dp)
-                        .width(32.dp)
-                        .height(32.dp),
-                    painter = painterResource(id = R.drawable.transaction_type_expense),
-                    contentDescription = "Total Expense"
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+
+                    Text(
+                        modifier = Modifier
+                            .padding(start = 21.dp),
+                        text = "EXPENSE",
+                        fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                        fontStyle = FontStyle.Normal,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 12.sp,
+                        color = HeadingTextColor
+                    )
+
+                    Image(
+                        modifier = Modifier
+                            .width(32.dp)
+                            .height(32.dp),
+                        painter = painterResource(id = R.drawable.transaction_type_expense),
+                        contentDescription = "Total Expense"
+                    )
+                }
+
+                Text(
+                    modifier = Modifier
+                        .padding(start = 20.dp)
+                        .fillMaxWidth(),
+                    text = symbol.plus(amountText),
+                    fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                    fontStyle = FontStyle.Normal,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = RedExpenseColor
                 )
             }
-
-
-            Text(
-                modifier = Modifier
-                    .padding(start = 21.dp)
-                    .fillMaxWidth(),
-                text = "TOTAL EXPENSE",
-                fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
-                fontStyle = FontStyle.Normal,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 12.sp,
-                color = HeadingTextColor
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Text(
-                modifier = Modifier
-                    .padding(start = 20.dp)
-                    .fillMaxWidth(),
-                text = "- $symbol".plus(amountText),
-                fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
-                fontStyle = FontStyle.Normal,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 25.sp,
-                color = RedExpenseColor
-            )
         }
     }
 }
@@ -241,13 +530,26 @@ fun TotalIncomeExpenseCard(
         ) {
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.Top,
+                modifier = Modifier
+                    .padding(top = 12.dp, end = 12.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
+
+                Text(
+                    modifier = Modifier
+                        .padding(start = 21.dp),
+                    text = if (type == TransactionType.EXPENSE) "TOTAL EXPENSE" else "TOTAL INCOME",
+                    fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                    fontStyle = FontStyle.Normal,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 12.sp,
+                    color = HeadingTextColor
+                )
+
                 Image(
                     modifier = Modifier
-                        .padding(top = 12.dp, end = 12.dp)
                         .width(32.dp)
                         .height(32.dp),
                     painter = painterResource(
@@ -266,7 +568,7 @@ fun TotalIncomeExpenseCard(
             }
 
 
-            Text(
+            /*Text(
                 modifier = Modifier
                     .padding(start = 21.dp)
                     .fillMaxWidth(),
@@ -276,7 +578,7 @@ fun TotalIncomeExpenseCard(
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 12.sp,
                 color = HeadingTextColor
-            )
+            )*/
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -321,9 +623,22 @@ fun TotalCardsPreview() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+
+        Spacer(modifier = Modifier.height(30.dp))
+
         TotalBalanceCard(
-            labelText = "TOTAL BALANCE",
-            amountText = "1807.00"
+            labelText = "BALANCE",
+            amountText = 1807.123456,
+            currentTimeFrameText = TransactionFilters.Monthly.name,
+            onTransactionFilterClicked = {
+
+            },
+            onPreviousTransactionsButtonClicked = {
+
+            },
+            onNextTransactionsButtonClicked = {
+
+            }
         )
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -331,13 +646,13 @@ fun TotalCardsPreview() {
             TotalIncomeCard(
                 modifier = Modifier
                     .weight(1f)
-                    .height(124.dp),
+                    .height(100.dp),
                 amountText = "3574.00"
             )
             TotalExpenseCard(
                 modifier = Modifier
                     .weight(1f)
-                    .height(124.dp),
+                    .height(100.dp),
                 amountText = "1767.00"
             )
         }
@@ -349,7 +664,7 @@ fun TotalCardsPreview() {
                 type = TransactionType.INCOME,
                 modifier = Modifier
                     .weight(1f)
-                    .height(124.dp),
+                    .height(104.dp),
                 amountText = "3574.00",
             )
 
@@ -358,7 +673,7 @@ fun TotalCardsPreview() {
                 type = TransactionType.EXPENSE,
                 modifier = Modifier
                     .weight(1f)
-                    .height(124.dp),
+                    .height(104.dp),
                 amountText = "1767.00",
             )
 

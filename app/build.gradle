@@ -127,8 +127,7 @@ dependencies {
     //Auth0 JWTDecode
     implementation 'com.auth0.android:jwtdecode:2.0.2'
 
-    //Charty - For charts
-    implementation 'com.himanshoe:charty:2.0.0-alpha01'
-
+    //YCharts - For charts
+    implementation 'co.yml:ycharts:2.1.0'
 
 }

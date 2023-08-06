@@ -40,7 +40,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.pcandroiddev.expensemanager.R
-import com.pcandroiddev.expensemanager.data.local.SearchFilters
+import com.pcandroiddev.expensemanager.data.local.filter.SearchFilters
 import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
 import com.pcandroiddev.expensemanager.ui.components.TransactionListItem
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
@@ -52,7 +52,6 @@ import com.pcandroiddev.expensemanager.ui.theme.UnSelectedChipTextColor
 import com.pcandroiddev.expensemanager.ui.uievents.SearchTransactionUIEvent
 import com.pcandroiddev.expensemanager.utils.ApiResult
 import com.pcandroiddev.expensemanager.viewmodels.DashboardViewModel
-import java.text.DateFormatSymbols
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,7 +114,7 @@ fun SearchBarContentScreen(
                 selected = selectedFilter == SearchFilters.All.name,
                 onClick = {
                     selectedFilter = SearchFilters.All.name
-                    dashboardViewModel.onEventChange(
+                    dashboardViewModel.onSearchTransactionEventChange(
                         event = SearchTransactionUIEvent.SearchFilterChanged(
                             searchFilter = selectedFilter
                         )
@@ -148,7 +147,7 @@ fun SearchBarContentScreen(
                 selected = selectedFilter == SearchFilters.Income.name,
                 onClick = {
                     selectedFilter = SearchFilters.Income.name
-                    dashboardViewModel.onEventChange(
+                    dashboardViewModel.onSearchTransactionEventChange(
                         event = SearchTransactionUIEvent.SearchFilterChanged(
                             searchFilter = selectedFilter
                         )
@@ -181,7 +180,7 @@ fun SearchBarContentScreen(
                 selected = selectedFilter == SearchFilters.Expense.name,
                 onClick = {
                     selectedFilter = SearchFilters.Expense.name
-                    dashboardViewModel.onEventChange(
+                    dashboardViewModel.onSearchTransactionEventChange(
                         event = SearchTransactionUIEvent.SearchFilterChanged(
                             searchFilter = selectedFilter
                         )

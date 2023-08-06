@@ -4,6 +4,7 @@ package com.pcandroiddev.expensemanager.ui.screens.transaction
 
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -81,59 +83,59 @@ fun TransactionDetailsScreen(
         detailsViewModel.deleteTransactionState.collectAsState(initial = null)
 
 
-    Scaffold { innerPadding ->
+    Scaffold(
+        topBar = {
+            DetailsTopAppBar(
+                onBackButtonClicked = {
+                    onNavigateUpClicked()
+                },
+                onDeleteButtonClicked = {
+                    detailsViewModel.onEventChange(
+                        event = TransactionDetailsUIEvent.DeleteTransactionButtonClicked(
+                            transactionId = transactionResponse.transactionId
+                        )
+                    )
+                },
+                onShareButtonClicked = {
+                    onShareButtonClicked(transactionResponse)
+                }
+            )
+        },
+        floatingActionButton = {
+            EditFAB(
+                modifier = Modifier
+                    .padding(bottom = 92.dp, end = 16.dp, top = 50.dp),
+                onEditFABClicked = {
+                    onEditFABClicked()
+                }
+            )
+        },
+    ) { innerPadding ->
         Surface(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
             color = SurfaceBackgroundColor
         ) {
-            Column {
-                DetailsTopAppBar(
-                    onBackButtonClicked = {
-                        onNavigateUpClicked()
-                    },
-                    onDeleteButtonClicked = {
-                        detailsViewModel.onEventChange(
-                            event = TransactionDetailsUIEvent.DeleteTransactionButtonClicked(
-                                transactionId = transactionResponse.transactionId
-                            )
-                        )
-                    },
-                    onShareButtonClicked = {
-                        onShareButtonClicked(transactionResponse)
-                    }
+            Column(
+                modifier = Modifier
+                    .padding(20.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                DetailComponent(heading = "Title", value = transactionResponse.title)
+                DetailComponent(
+                    heading = "Amount",
+                    value = transactionResponse.amount.toString()
                 )
-
-                Column(
-                    modifier = Modifier
-                        .padding(20.dp)
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
-                ) {
-                    DetailComponent(heading = "Title", value = transactionResponse.title)
-                    DetailComponent(
-                        heading = "Amount",
-                        value = transactionResponse.amount.toString()
-                    )
-                    DetailComponent(
-                        heading = "Transaction Type",
-                        value = transactionResponse.transactionType
-                    )
-                    DetailComponent(heading = "Category", value = transactionResponse.category)
-                    DetailComponent(heading = "When", value = transactionResponse.transactionDate)
-                    if (transactionResponse.note.isNotEmpty()) {
-                        DetailComponent(heading = "Note", value = transactionResponse.note)
-                    }
-                    EditFAB(
-                        modifier = Modifier
-                            .padding(bottom = 31.dp, end = 16.dp, top = 50.dp)
-                            .align(Alignment.End),
-                        onEditFABClicked = {
-                            onEditFABClicked()
-                        }
-                    )
-
+                DetailComponent(
+                    heading = "Transaction Type",
+                    value = transactionResponse.transactionType
+                )
+                DetailComponent(heading = "Category", value = transactionResponse.category)
+                DetailComponent(heading = "When", value = transactionResponse.transactionDate)
+                if (transactionResponse.note.isNotEmpty()) {
+                    DetailComponent(heading = "Note", value = transactionResponse.note)
                 }
             }
 
@@ -157,10 +159,9 @@ fun TransactionDetailsScreen(
     }
 
 
-    /*BackHandler {
-//        ExpenseManagerRouter.navigateTo(destination = Screen.DashboardScreen)
-        navController.popBackStack()
-    }*/
+    BackHandler {
+        onNavigateUpClicked()
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -191,7 +192,7 @@ fun DetailsTopAppBar(
             }) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
-                    tint = HeadingTextColor,
+                    tint = DetailsTextColor,
                     contentDescription = "Back Button"
                 )
             }
@@ -219,7 +220,7 @@ fun DetailsTopAppBar(
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = ComponentsBackgroundColor
+            containerColor = SurfaceBackgroundColor
         )
     )
 

@@ -8,6 +8,9 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import java.text.NumberFormat
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import javax.inject.Singleton
 
 @Module
@@ -27,5 +30,20 @@ object AppModule {
     @Singleton
     fun providesAuthRepository(firebaseAuth: FirebaseAuth): AuthRepository =
         AuthRepositoryImpl(firebaseAuth = firebaseAuth)
+
+    @Provides
+    @Singleton
+    fun providesDateTimeFormatter(): DateTimeFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
+
+    @Provides
+    @Singleton
+    fun providesLocale(): Locale = Locale.getDefault()
+
+    @Provides
+    @Singleton
+    fun providesCurrencyInstanceNumberFormat(locale: Locale): NumberFormat {
+        return NumberFormat.getCurrencyInstance(locale)
+    }
+
 
 }

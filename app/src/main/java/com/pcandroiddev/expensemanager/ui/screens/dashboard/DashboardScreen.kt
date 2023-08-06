@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Receipt
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,7 +52,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.pcandroiddev.expensemanager.R
-import com.pcandroiddev.expensemanager.data.local.TransactionType
+import com.pcandroiddev.expensemanager.data.local.transaction.TransactionType
 import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
 import com.pcandroiddev.expensemanager.ui.components.DashboardExpensesSearchBar
 import com.pcandroiddev.expensemanager.ui.components.TotalBalanceCard
@@ -65,6 +64,7 @@ import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 import com.pcandroiddev.expensemanager.ui.uievents.SearchTransactionUIEvent
+import com.pcandroiddev.expensemanager.ui.uievents.TransactionFilterUIEvent
 import com.pcandroiddev.expensemanager.utils.ApiResult
 import com.pcandroiddev.expensemanager.utils.Helper
 import com.pcandroiddev.expensemanager.utils.isScrollingUp
@@ -120,6 +120,8 @@ fun DashboardScreen(
 
     val transactionResponseList by dashboardViewModel.transactionList.collectAsState()
 
+//    val currentTimeFrameText by dashboardViewModel.currentTimeFrameText
+    val currentlySelectedFilter by dashboardViewModel.currentlySelectedFilter
 
 
     when (transactionResponseList) {
@@ -148,197 +150,10 @@ fun DashboardScreen(
     Scaffold(
         snackbarHost = {
             SnackbarHost(snackbarHostState)
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .background(SurfaceBackgroundColor),
-
-            ) {
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-
-                DashboardExpensesSearchBar(
-                    modifier = Modifier
-                        .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 12.dp)
-                        .fillMaxWidth(),
-                    onLogoutOptionClicked = {
-                        dashboardViewModel.logout()
-                        onLogOutButtonClicked()
-                    },
-                    onTransactionFilterClicked = { selectedTransactionFilter ->
-                        //TODO: Send an event to the viewModel and save the currently selected filter in the pref datastore
-                        Log.d(TAG, "DashboardScreen: $selectedTransactionFilter")
-                    },
-                    isActive = { isActive ->
-                        isSearchBarActive = isActive
-                        if (!isSearchBarActive) {
-                            dashboardViewModel.resetSearchState()
-                        }
-                    },
-                    onSearchTextChanged = {
-                        dashboardViewModel.onEventChange(
-                            event = SearchTransactionUIEvent.SearchTextChanged(
-                                searchText = it
-                            )
-                        )
-                    },
-                    onSearchButtonClicked = {
-                        dashboardViewModel.onEventChange(
-                            event = SearchTransactionUIEvent.SearchTransactionButtonClicked
-                        )
-                    }
-                ) {
-                    SearchBarContentScreen(
-                        dashboardViewModel = dashboardViewModel,
-                        symbol = symbol,
-                        onSearchedTransactionListItemClicked = { transactionResponse ->
-                            onSearchedTransactionListItemClicked(transactionResponse)
-                        }
-                    )
-                }
-
-                TotalBalanceCard(
-                    modifier = Modifier
-                        .padding(horizontal = 12.dp)
-                        .fillMaxWidth(),
-                    labelText = "TOTAL BALANCE",
-                    amountText = Helper.stringifyTotalBalance(balance = totalBalanceText),
-                    symbol = symbol
-                )
-
-                Row(
-                    modifier = Modifier
-                        .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    TotalIncomeCard(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(124.dp),
-                        amountText = totalIncomeText.toString(),
-                        symbol = symbol
-                    )
-                    TotalExpenseCard(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(124.dp),
-                        amountText = totalExpenseText.toString(),
-                        symbol = symbol
-                    )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .padding(start = 12.dp, end = 12.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Recent Transactions",
-                        fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
-                        fontStyle = FontStyle.Normal,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp,
-                        color = DetailsTextColor
-                    )
-
-                    //TODO: Navigate to All Transaction Screen
-
-                    Icon(
-                        modifier = Modifier
-                            .clickable {
-                                //TODO: Navigate to All Transaction Screen
-                                onSeeAllTransactionClicked()
-                            },
-                        imageVector = Icons.Outlined.ChevronRight,
-                        contentDescription = "View All Transactions",
-                        tint = FABColor
-                    )
-                }
-
-                //TODO: Send list to this composable only when Success
-
-                if (isLoading) {
-                    /*CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        color = FABColor
-                    )*/
-                    LazyColumn(content = {
-                        items(count = 7) {
-                            TransactionListItemShimmerEffect()
-                        }
-                    })
-
-                } else {
-
-                    Box(modifier = Modifier.fillMaxSize()) {
-
-                        SwipeRefresh(
-                            modifier = Modifier.fillMaxSize(),
-                            state = swipeToRefreshState,
-                            onRefresh = { dashboardViewModel.getAllTransaction() }) {
-                            if (transactionList.isEmpty()) {
-
-                                val composition by rememberLottieComposition(
-                                    spec = LottieCompositionSpec.RawRes(
-                                        R.raw.cards_animation
-                                    )
-                                )
-                                LottieAnimation(
-                                    modifier = Modifier.align(Alignment.Center),
-                                    composition = composition,
-                                    isPlaying = true,
-                                    iterations = LottieConstants.IterateForever
-                                )
-
-                            } else {
-                                TransactionList(
-                                    symbol = symbol,
-                                    listState = listState,
-                                    transactionList = transactionList,
-                                    onTransactionListItemClicked = {
-                                        onTransactionListItemClicked(it)
-                                    })
-                            }
-                        }
-                        /*if (transactionList.isEmpty()) {
-
-                            val composition by rememberLottieComposition(
-                                spec = LottieCompositionSpec.RawRes(
-                                    R.raw.cards_animation
-                                )
-                            )
-                            LottieAnimation(
-                                modifier = Modifier.align(Alignment.Center),
-                                composition = composition,
-                                isPlaying = true,
-                                iterations = LottieConstants.IterateForever
-                            )
-
-                        } else {
-                            TransactionList(
-                                listState = listState,
-                                transactionList = transactionList,
-                                onTransactionListItemClicked = {
-                                    onTransactionListItemClicked(it)
-                                })
-                        }*/
-                    }
-                }
-            }
-
+        },
+        floatingActionButton = {
             if (!isSearchBarActive) {
                 ExtendedFloatingActionButton(
-                    modifier = Modifier
-                        .padding(bottom = 40.dp, end = 30.dp)
-                        .align(alignment = Alignment.BottomEnd),
                     containerColor = FABColor,
                     text = {
                         Text(
@@ -364,6 +179,212 @@ fun DashboardScreen(
                     expanded = listState.isScrollingUp()
 
                 )
+            }
+        }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .background(SurfaceBackgroundColor),
+
+            ) {
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+
+                DashboardExpensesSearchBar(
+                    modifier = Modifier
+                        .padding(start = 12.dp, end = 12.dp, bottom = 12.dp)
+                        .fillMaxWidth(),
+                    onLogoutOptionClicked = {
+                        dashboardViewModel.logout()
+                        onLogOutButtonClicked()
+                    },
+                    onTransactionFilterClicked = { selectedTransactionFilter ->
+                        //TODO: Send an event to the viewModel and save the currently selected filter in the pref datastore
+                        Log.d(TAG, "DashboardScreen: $selectedTransactionFilter")
+                        dashboardViewModel.onTransactionFilterEventChange(
+                            event = TransactionFilterUIEvent.TransactionFilterChanged(
+                                selectedFilter = selectedTransactionFilter
+                            )
+                        )
+                    },
+                    isActive = { isActive ->
+                        isSearchBarActive = isActive
+                        Log.d(TAG, "DashboardScreen/isSearchBarActive: $isSearchBarActive")
+                        if (!isSearchBarActive) {
+                            dashboardViewModel.resetSearchState()
+                        }
+                    },
+                    onSearchTextChanged = {
+                        dashboardViewModel.onSearchTransactionEventChange(
+                            event = SearchTransactionUIEvent.SearchTextChanged(
+                                searchText = it
+                            )
+                        )
+                    },
+                    onSearchButtonClicked = {
+                        dashboardViewModel.onSearchTransactionEventChange(
+                            event = SearchTransactionUIEvent.SearchTransactionButtonClicked
+                        )
+                    }
+                ) {
+                    SearchBarContentScreen(
+                        dashboardViewModel = dashboardViewModel,
+                        symbol = symbol,
+                        onSearchedTransactionListItemClicked = { transactionResponse ->
+                            onSearchedTransactionListItemClicked(transactionResponse)
+                        }
+                    )
+                }
+
+                TotalBalanceCard(
+                    modifier = Modifier
+                        .padding(horizontal = 12.dp)
+                        .fillMaxWidth(),
+                    labelText = "BALANCE",
+                    amountText = totalBalanceText,
+                    symbol = symbol,
+                    currentTimeFrameText = currentlySelectedFilter,
+                    onTransactionFilterClicked = { selectedTransactionFilter ->
+                        //TODO: Send an event to the viewModel and save the currently selected filter in the pref datastore
+                        Log.d(TAG, "DashboardScreen: $selectedTransactionFilter")
+                        dashboardViewModel.onTransactionFilterEventChange(
+                            event = TransactionFilterUIEvent.TransactionFilterChanged(
+                                selectedFilter = selectedTransactionFilter
+                            )
+                        )
+
+                    },
+                    onPreviousTransactionsButtonClicked = {
+                        //TODO: Handle previous transactions
+                        /*dashboardViewModel.onTransactionFilterEventChange(
+                            event = TransactionFilterUIEvent.PreviousTransactionsButtonClicked
+                        )*/
+                    },
+                    onNextTransactionsButtonClicked = {
+                        //TODO: Handle next transactions
+                        /*dashboardViewModel.onTransactionFilterEventChange(
+                            event = TransactionFilterUIEvent.NextTransactionsButtonClicked
+                        )*/
+
+                    }
+                )
+
+                Row(
+                    modifier = Modifier
+                        .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    TotalIncomeCard(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(90.dp),
+                        amountText = Helper.formatAmountWithLocale(amount = totalIncomeText),
+                        symbol = symbol
+                    )
+                    TotalExpenseCard(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(90.dp),
+                        amountText = Helper.formatAmountWithLocale(amount = totalExpenseText),
+                        symbol = symbol
+                    )
+                }
+
+                Row(
+                    modifier = Modifier
+                        .padding(start = 12.dp, end = 12.dp, bottom = 10.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Recent Transactions",
+                        fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                        fontStyle = FontStyle.Normal,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        color = DetailsTextColor
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .clickable {
+                                //TODO: Navigate to All Transaction Screen
+                                onSeeAllTransactionClicked()
+                            },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "See All",
+                            style = TextStyle(
+                                color = FABColor,
+                                fontFamily = FontFamily(Font(R.font.inter_regular))
+                            )
+                        )
+
+
+                        //TODO: Navigate to All Transaction Screen
+
+                        Icon(
+                            imageVector = Icons.Outlined.ChevronRight,
+                            contentDescription = "View All Transactions",
+                            tint = FABColor
+                        )
+                    }
+                }
+
+                //TODO: Send list to this composable only when Success
+
+                if (isLoading) {
+                    LazyColumn(content = {
+                        items(count = 7) {
+                            TransactionListItemShimmerEffect()
+                        }
+                    })
+
+                } else {
+
+                    Box(modifier = Modifier.fillMaxSize()) {
+
+                        SwipeRefresh(
+                            modifier = Modifier.fillMaxSize(),
+                            state = swipeToRefreshState,
+                            onRefresh = {
+                                dashboardViewModel.getAllTransaction(
+                                    currentlySelectedFilter
+                                )
+                            }) {
+                            if (transactionList.isEmpty()) {
+
+                                val composition by rememberLottieComposition(
+                                    spec = LottieCompositionSpec.RawRes(
+                                        R.raw.cards_animation
+                                    )
+                                )
+                                LottieAnimation(
+                                    modifier = Modifier.align(Alignment.Center),
+                                    composition = composition,
+                                    isPlaying = true,
+                                    iterations = LottieConstants.IterateForever
+                                )
+
+                            } else {
+                                TransactionList(
+                                    symbol = symbol,
+                                    listState = listState,
+                                    transactionList = transactionList,
+                                    onTransactionListItemClicked = {
+                                        onTransactionListItemClicked(it)
+                                    })
+                            }
+                        }
+                    }
+                }
             }
         }
     }

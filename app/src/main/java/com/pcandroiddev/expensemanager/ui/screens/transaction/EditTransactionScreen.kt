@@ -29,7 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.pcandroiddev.expensemanager.data.local.TransactionType
+import com.pcandroiddev.expensemanager.data.local.transaction.TransactionType
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
@@ -58,7 +58,36 @@ fun EditTransactionScreen(
         editTransactionViewModel.updateTransactionState.collectAsState(initial = null)
 
 
-    Scaffold { innerPadding ->
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                modifier = Modifier.fillMaxWidth(),
+                title = {
+                    Text(
+                        text = "Edit Transaction",
+                        color = DetailsTextColor,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 20.sp
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        //TODO: Reset the respective UI State
+                        onNavigateUpClicked()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            tint = HeadingTextColor,
+                            contentDescription = "Back Button"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = SurfaceBackgroundColor
+                )
+            )
+        }
+    ) { innerPadding ->
         Surface(
             modifier = Modifier
                 .padding(innerPadding)
@@ -69,7 +98,7 @@ fun EditTransactionScreen(
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
-                TopAppBar(
+                /*TopAppBar(
                     modifier = Modifier.fillMaxWidth(),
                     title = {
                         Text(
@@ -94,7 +123,7 @@ fun EditTransactionScreen(
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = ComponentsBackgroundColor
                     )
-                )
+                )*/
 
                 Row(
                     modifier = Modifier

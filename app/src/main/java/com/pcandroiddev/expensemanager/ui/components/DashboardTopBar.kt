@@ -1,6 +1,5 @@
 package com.pcandroiddev.expensemanager.ui.components
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -207,6 +206,10 @@ fun DashboardExpensesSearchBar(
         onActiveChange = {
             active = it
             isActive(active)
+            if (!active) {
+                queryText = ""
+                onSearchTextChanged(queryText)
+            }
         },
         placeholder = {
             Text(
@@ -264,9 +267,10 @@ fun DashboardExpensesSearchBar(
 
                     //TODO: Add a filter icon button
 
-                    DashboardSearchBarFilterButton(onTransactionFilterClicked = { selectedTransactionFilter ->
-                        onTransactionFilterClicked(selectedTransactionFilter)
-                    })
+                    /*DashboardFilterButton(
+                        onTransactionFilterClicked = { selectedTransactionFilter ->
+                            onTransactionFilterClicked(selectedTransactionFilter)
+                        })*/
 
                     DashboardSearchBarOptionsMenu(
                         onLogoutOptionClicked = {
@@ -288,24 +292,12 @@ fun DashboardExpensesSearchBar(
         )
     ) {
         content()
-        BackHandler {
-            queryText = ""
-            onSearchTextChanged(queryText)
-            active = false
-            isActive(active)
-        }
-    }
-
-    BackHandler {
-        queryText = ""
-        onSearchTextChanged(queryText)
-        active = false
-        isActive(active)
     }
 }
 
+/*
 @Composable
-fun DashboardSearchBarFilterButton(
+fun DashboardFilterButton(
     onTransactionFilterClicked: (String) -> Unit
 ) {
     var openDialog by remember {
@@ -314,7 +306,7 @@ fun DashboardSearchBarFilterButton(
 
     val transactionFiltersList = listOf("Daily", "Weekly", "Monthly", "Yearly")
     var selectedTransactionFilter by remember {
-        mutableStateOf(transactionFiltersList[0])
+        mutableStateOf(transactionFiltersList[2])
     }
 
     IconButton(onClick = { openDialog = true }) {
@@ -399,6 +391,7 @@ fun DashboardSearchBarFilterButton(
         }
     }
 }
+*/
 
 @Composable
 fun DashboardSearchBarOptionsMenu(
@@ -494,10 +487,10 @@ fun DashboardTopBarPreview() {
 
         })
 
-        DashboardSearchBarFilterButton(onTransactionFilterClicked = {
+       /* DashboardFilterButton(onTransactionFilterClicked = {
 
         })
-
+*/
 
     }
 }

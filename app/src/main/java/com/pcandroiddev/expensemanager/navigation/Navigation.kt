@@ -19,7 +19,7 @@ import com.pcandroiddev.expensemanager.ui.screens.dashboard.DashboardScreen
 import com.pcandroiddev.expensemanager.ui.screens.login.LoginScreen
 import com.pcandroiddev.expensemanager.ui.screens.register.RegisterScreen
 import com.pcandroiddev.expensemanager.ui.screens.transaction.AddTransactionScreen
-import com.pcandroiddev.expensemanager.ui.screens.transaction.AllTransactions
+import com.pcandroiddev.expensemanager.ui.screens.transaction.AllTransactionsScreen
 import com.pcandroiddev.expensemanager.ui.screens.transaction.EditTransactionScreen
 import com.pcandroiddev.expensemanager.ui.screens.transaction.TransactionDetailsScreen
 import java.lang.StringBuilder
@@ -54,9 +54,7 @@ fun NavigationGraph(
                         }
                     }
                 },
-                onBackPressedCallback = {
-                    activity?.finishAffinity()
-                }
+                onBackPressedCallback = { activity?.finish() }
             )
         }
 
@@ -109,7 +107,7 @@ fun NavigationGraph(
                     }
                 },
                 onBackPressedCallback = {
-                    activity?.finishAffinity()
+                    activity?.finish()
                     /*navController.popBackStack(
                         route = Screen.DashboardScreen.route,
                         inclusive = true
@@ -136,11 +134,13 @@ fun NavigationGraph(
             TransactionDetailsScreen(
                 jsonTransactionResponse = jsonTransactionResponse,
                 onNavigateUpClicked = {
-                    navController.navigate(route = Screen.DashboardScreen.route) {
+                    /*navController.navigate(route = Screen.DashboardScreen.route) {
                         popUpTo(Screen.TransactionDetailsScreen.route) {
                             inclusive = true
                         }
-                    }
+                    }*/
+
+                    navController.popBackStack()
                 },
                 onEditFABClicked = {
                     navController.navigate(
@@ -202,7 +202,15 @@ fun NavigationGraph(
         }
 
         composable(route = Screen.AllTransactions.route) {
-            AllTransactions(
+            AllTransactionsScreen(
+                snackbarHostState = snackbarHostState,
+                symbol = symbol,
+                onTransactionListItemClicked = { transactionResponse ->
+                    val transactionResponseString = Gson().toJson(transactionResponse)
+                    navController.navigate(
+                        Screen.TransactionDetailsScreen.withArgs(transactionResponseString)
+                    )
+                },
                 onBackPressed = {
                     navController.navigate(Screen.DashboardScreen.route) {
                         popUpTo(route = Screen.AllTransactions.route) {
