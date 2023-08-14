@@ -1,7 +1,9 @@
 package com.pcandroiddev.expensemanager.ui.screens.transaction
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Typeface
+import android.net.Uri
 import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,28 +21,38 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FileDownload
+import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material.icons.outlined.Today
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DateRangePicker
-import androidx.compose.material3.DateRangePickerState
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDateRangePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,12 +76,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import co.yml.charts.common.components.Legends
 import co.yml.charts.common.model.LegendLabel
 import co.yml.charts.common.model.LegendsConfig
 import co.yml.charts.common.model.PlotType
-import co.yml.charts.ui.piechart.charts.DonutPieChart
 import co.yml.charts.ui.piechart.charts.PieChart
 import co.yml.charts.ui.piechart.models.PieChartConfig
 import co.yml.charts.ui.piechart.models.PieChartData
@@ -79,28 +92,32 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.pcandroiddev.expensemanager.R
+import com.pcandroiddev.expensemanager.data.local.filter.StatementOptions
 import com.pcandroiddev.expensemanager.data.local.transaction.TransactionType
 import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
 import com.pcandroiddev.expensemanager.ui.components.TransactionListItem
 import com.pcandroiddev.expensemanager.ui.components.TransactionListItemShimmerEffect
-import com.pcandroiddev.expensemanager.ui.theme.BottomNavigationBarItemIndicatorColor
 import com.pcandroiddev.expensemanager.ui.theme.BottomNavigationBarItemSelectedColor
 import com.pcandroiddev.expensemanager.ui.theme.CategoryColors
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
+import com.pcandroiddev.expensemanager.ui.theme.DisabledButtonColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
+import com.pcandroiddev.expensemanager.ui.theme.GreenIncomeColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
 import com.pcandroiddev.expensemanager.ui.theme.LinkColor
 import com.pcandroiddev.expensemanager.ui.theme.PurpleGrey40
+import com.pcandroiddev.expensemanager.ui.theme.RedExpenseColor
 import com.pcandroiddev.expensemanager.ui.theme.SelectedChipContainerColor
-import com.pcandroiddev.expensemanager.ui.theme.SelectedChipTextColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
-import com.pcandroiddev.expensemanager.ui.theme.TotalBalanceColor
-import com.pcandroiddev.expensemanager.ui.uievents.DateRangeUIEvent
+import com.pcandroiddev.expensemanager.ui.theme.UnSelectedChipTextColor
+import com.pcandroiddev.expensemanager.ui.uievents.AllTransactionTopBarUIEvent
 import com.pcandroiddev.expensemanager.utils.ApiResult
 import com.pcandroiddev.expensemanager.utils.Helper
 import com.pcandroiddev.expensemanager.viewmodels.AllTransactionsViewModel
 import kotlinx.coroutines.launch
+import java.io.File
+import java.lang.Exception
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -116,11 +133,23 @@ fun AllTransactionsScreen(
     symbol: String,
     snackbarHostState: SnackbarHostState,
     onTransactionListItemClicked: (TransactionResponse) -> Unit,
+    onStatementGenerated: (File) -> Unit,
     onBackPressed: () -> Unit
 ) {
 
     val context = LocalContext.current
 
+    val scope = rememberCoroutineScope()
+
+    val statementGenerationErrorState =
+        allTransactionsViewModel.statementGenerationErrorState.collectAsState()
+
+    val statementGenerationSuccessState =
+        allTransactionsViewModel.statementGenerationSuccessState.collectAsState()
+
+    val bottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
 
     var transactionList by remember {
         mutableStateOf(emptyList<TransactionResponse>())
@@ -141,9 +170,15 @@ fun AllTransactionsScreen(
     }
 
     val swipeToRefreshState = rememberSwipeRefreshState(isRefreshing = isLoading)
+
     var isCalendarOpen by remember {
         mutableStateOf(false)
     }
+
+    var isBottomSheetOpen by remember {
+        mutableStateOf(false)
+    }
+
     var currentlyShowingDates by remember {
         val formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
         val currentMonth = LocalDate.now().format(formatter)
@@ -192,18 +227,53 @@ fun AllTransactionsScreen(
     }
 
 
-    Scaffold(snackbarHost = {
-        SnackbarHost(snackbarHostState)
-    }, topBar = {
-        if (!isCalendarOpen) {
-            AllTransactionsTopAppBar(
-                onCalendarButtonClicked = {
-                    isCalendarOpen = true
-                }, onExportButtonClicked = {
-                    /*TODO*/
-                })
-        }
-    }, containerColor = SurfaceBackgroundColor
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(snackbarHostState)
+        },
+        topBar = {
+            if (!isCalendarOpen) {
+                AllTransactionsTopAppBar(
+                    onCalendarButtonClicked = {
+                        isCalendarOpen = true
+                    },
+                    onStatementOptionSelected = { selectionStatementOption ->
+                        //TODO
+                        Log.d(TAG, "AllTransactionsScreen: $selectionStatementOption")
+                        if (allTransactionsViewModel.isOfMonthYearFormat(currentlyShowingDates)) {
+
+                            val dateRange = allTransactionsViewModel.getCurrentMonthDates()
+                            allTransactionsViewModel.onTopBarEventChange(
+                                event = AllTransactionTopBarUIEvent.DownloadStatement(
+                                    transactionList = transactionList,
+                                    startDate = dateRange.first,
+                                    endDate = dateRange.second,
+                                    income = incomeText.toString(),
+                                    expense = expenseText.toString(),
+                                    fileType = selectionStatementOption
+                                )
+                            )
+                        } else {
+
+                            val dateRangeList = currentlyShowingDates.split(" - ")
+                            val dateRange: Pair<String, String> =
+                                dateRangeList[0] to dateRangeList[1]
+                            allTransactionsViewModel.onTopBarEventChange(
+                                event = AllTransactionTopBarUIEvent.DownloadStatement(
+                                    transactionList = transactionList,
+                                    startDate = dateRange.first,
+                                    endDate = dateRange.second,
+                                    income = incomeText.toString(),
+                                    expense = expenseText.toString(),
+                                    fileType = selectionStatementOption
+                                )
+                            )
+
+                        }
+
+                    })
+            }
+        }, containerColor = SurfaceBackgroundColor
 
     ) { innerPadding ->
 
@@ -219,16 +289,16 @@ fun AllTransactionsScreen(
                     onConfirmButtonClicked = { startDate: Long, endDate: Long ->
                         Log.d("AllTransactionsScreen", "startDate-$startDate endDate-$endDate")
                         isCalendarOpen = false
-                        /*
-                                                snackScope.launch {
-                                                    snackbarHostState.showSnackbar(
-                                                        message = "$startDate to $endDate",
-                                                        withDismissAction = true
-                                                    )
-                                                }
-                        */
-                        allTransactionsViewModel.onDateRangeEventChange(
-                            event = DateRangeUIEvent.DateRangeChanged(
+
+                        /*snackScope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = "$startDate to $endDate",
+                                withDismissAction = true
+                            )
+                        }*/
+
+                        allTransactionsViewModel.onTopBarEventChange(
+                            event = AllTransactionTopBarUIEvent.DateRangeChanged(
                                 startDate = startDate,
                                 endDate = endDate
                             )
@@ -252,39 +322,153 @@ fun AllTransactionsScreen(
                     expenseText = expenseText
                 )
 
-                Text(
-                    modifier = Modifier
-                        .padding(top = 12.dp)
-                        .fillMaxWidth(),
-                    text = currentlyShowingDates,
-                    style = TextStyle(
-                        color = TotalBalanceColor,
-                        fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
-                        fontSize = 16.sp,
-                        textAlign = TextAlign.Center
-                    )
-                )
-
-                DonutChart(
-                    context = context,
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .background(SurfaceBackgroundColor),
-                    categoryData = categoryPercentages
-                )
-
                 Row(
                     modifier = Modifier
-                        .padding(start = 12.dp, end = 12.dp, bottom = 10.dp, top = 16.dp)
+                        .padding(horizontal = 12.dp, vertical = 10.dp)
                         .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "All Transactions",
+                        text = currentlyShowingDates,
                         fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 20.sp,
+                        fontSize = 16.sp,
                         color = DetailsTextColor
                     )
+
+                    IconButton(onClick = { isBottomSheetOpen = true }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Insights,
+                            tint = FABColor,
+                            contentDescription = "Show Pie Chart"
+                        )
+                    }
+                }
+
+                if (isBottomSheetOpen) {
+
+                    ModalBottomSheet(
+                        containerColor = ComponentsBackgroundColor,
+                        tonalElevation = 8.dp,
+                        onDismissRequest = { isBottomSheetOpen = false },
+                        dragHandle = {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                BottomSheetDefaults.DragHandle(color = HeadingTextColor)
+
+                                Row(
+                                    modifier = Modifier
+                                        .padding(horizontal = 12.dp)
+                                        .fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "Insights",
+                                            style = TextStyle(
+                                                color = DetailsTextColor,
+                                                fontFamily = FontFamily(Font(R.font.inter_bold)),
+                                                fontSize = 22.sp,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Icon(
+                                            imageVector = Icons.Outlined.AutoAwesome,
+                                            tint = UnSelectedChipTextColor,
+                                            contentDescription = null
+                                        )
+                                    }
+
+                                    IconButton(onClick = {
+                                        scope.launch { bottomSheetState.hide() }
+                                            .invokeOnCompletion {
+                                                if (!bottomSheetState.isVisible) isBottomSheetOpen =
+                                                    false
+                                            }
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Close,
+                                            tint = FABColor,
+                                            contentDescription = "Close Charts Bottom Sheet"
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                Divider(color = SelectedChipContainerColor)
+                            }
+                        }
+                    ) {
+
+                        val listOfSlice = mutableListOf<PieChartData.Slice>()
+                        categoryPercentages.forEach { (category, percentage) ->
+                            val formattedPercentage = String.format("%.2f%%", percentage)
+                            println("$category: $formattedPercentage")
+                            listOfSlice.add(
+                                PieChartData.Slice(
+                                    label = category,
+                                    value = Helper.formatDoubleWithTwoDecimals(percentage)
+                                        .toFloat(),
+                                    color = CategoryColors[category] ?: Color.White
+                                )
+                            )
+                        }
+
+                        Log.d(TAG, "DonutChart/listOfSlice: $listOfSlice")
+
+                        val pieChartData = PieChartData(
+                            slices = listOfSlice, plotType = PlotType.Pie
+                        )
+
+                        val pieChartConfig = PieChartConfig(
+                            showSliceLabels = true,
+                            sliceLabelTextSize = 14.sp,
+                            sliceLabelTextColor = DetailsTextColor,
+                            sliceLabelTypeface = Typeface.defaultFromStyle(Typeface.ITALIC),
+                            labelVisible = true,
+                            strokeWidth = 100f,
+                            labelColor = DetailsTextColor,
+                            activeSliceAlpha = .5f,
+                            inActiveSliceAlpha = 1f,
+                            isEllipsizeEnabled = true,
+                            sliceLabelEllipsizeAt = TextUtils.TruncateAt.MIDDLE,
+                            labelTypeface = Typeface.defaultFromStyle(Typeface.BOLD),
+                            backgroundColor = SurfaceBackgroundColor,
+                            chartPadding = 30,
+                            isAnimationEnable = true,
+                            animationDuration = 500,
+                            isClickOnSliceEnabled = false,
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Legends(
+                            legendsConfig = getLegendsConfigFromPieChartData(
+                                pieChartData = pieChartData,
+                                gridSize = 1
+                            )
+                        )
+
+                        PieChart(
+                            modifier = Modifier
+                                .background(color = ComponentsBackgroundColor),
+                            pieChartData = pieChartData,
+                            pieChartConfig = pieChartConfig,
+                            onSliceClick = {
+                                Log.d(TAG, "PieChart/OnClick: $it")
+                            }
+                        )
+
+                        /*DonutChart(
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                            categoryData = categoryPercentages
+                        )*/
+                    }
                 }
 
                 if (isLoading) {
@@ -301,9 +485,18 @@ fun AllTransactionsScreen(
                             state = swipeToRefreshState,
                             onRefresh = {
 //                            TODO: Refresh on the currently selected start and end dates
-                                /*allTransactionsViewModel.getAllTransaction(
-                                    currentlySelectedFilter
-                                )*/
+                                val dateRange = allTransactionsViewModel.getCurrentMonthDates()
+                                allTransactionsViewModel.getAllTransactionBetweenDates(
+                                    startDate = dateRange.first,
+                                    endDate = dateRange.second
+                                )
+
+                                val formatter =
+                                    DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
+                                val currentMonth = LocalDate.now().format(formatter)
+
+                                currentlyShowingDates = currentMonth
+
                             }) {
                             if (transactionList.isEmpty()) {
 
@@ -354,6 +547,23 @@ fun AllTransactionsScreen(
             }
 
         }
+
+
+
+
+        LaunchedEffect(key1 = statementGenerationErrorState.value) {
+            statementGenerationErrorState.value?.let { message ->
+                showToast(context, message)
+                allTransactionsViewModel.clearStatementGenerationState()
+            }
+        }
+
+        LaunchedEffect(key1 = statementGenerationSuccessState.value) {
+            statementGenerationSuccessState.value?.let { file ->
+                showToast(context, "Statement generated in Downloads folder")
+                onStatementGenerated(file)
+            }
+        }
     }
 
 
@@ -362,11 +572,21 @@ fun AllTransactionsScreen(
     }
 }
 
+
+fun showToast(context: Context, message: String) {
+    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AllTransactionsTopAppBar(
-    onCalendarButtonClicked: () -> Unit, onExportButtonClicked: () -> Unit
+    onCalendarButtonClicked: () -> Unit, onStatementOptionSelected: (String) -> Unit
 ) {
+
+    var openDialog by remember {
+        mutableStateOf(false)
+    }
+
     TopAppBar(modifier = Modifier.fillMaxWidth(), title = {
         Text(
             text = "Transactions",
@@ -384,19 +604,112 @@ fun AllTransactionsTopAppBar(
             )
         }
 
-        IconButton(onClick = { onExportButtonClicked() }) {
+        IconButton(
+            onClick = {
+                openDialog = true
+            }
+        ) {
             Icon(
                 imageVector = Icons.Outlined.FileDownload,
                 tint = DetailsTextColor,
                 contentDescription = "Download CSV or PDF file for currently filtered transactions"
             )
         }
-    }, colors = TopAppBarDefaults.topAppBarColors(
-        containerColor = SurfaceBackgroundColor
+    },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = SurfaceBackgroundColor
+        )
     )
 
-
+    val statementOptionsList = listOf(
+        StatementOptions.PDF.name,
+//        StatementOptions.EXCEL.name
     )
+
+    var selectedStatementOption by remember {
+        mutableStateOf(statementOptionsList[0])
+    }
+
+    if (openDialog) {
+        Dialog(onDismissRequest = { openDialog = false }) {
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = ComponentsBackgroundColor
+            ) {
+                Column(
+                    modifier = Modifier.padding(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+
+                ) {
+
+                    Text(
+                        modifier = Modifier.padding(top = 8.dp),
+                        text = "Download Statement For Selected Dates",
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                            textAlign = TextAlign.Center,
+                            color = DetailsTextColor
+                        )
+                    )
+
+                    statementOptionsList.forEach { statementOption ->
+                        Row(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .fillMaxWidth()
+                                .height(36.dp)
+                                .selectable(
+                                    selected = selectedStatementOption == statementOption,
+                                    onClick = {
+                                        selectedStatementOption = statementOption
+                                        onStatementOptionSelected(selectedStatementOption)
+                                        openDialog = false
+                                    }
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedStatementOption == statementOption,
+                                onClick = {
+                                    selectedStatementOption = statementOption
+                                    onStatementOptionSelected(selectedStatementOption)
+                                    openDialog = false
+                                },
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = BottomNavigationBarItemSelectedColor,
+
+                                    )
+                            )
+
+                            Text(
+                                modifier = Modifier.padding(start = 16.dp),
+                                text = statementOption,
+                                style = TextStyle(
+                                    color = DetailsTextColor,
+                                    fontFamily = FontFamily(Font(R.font.inter_semi_bold))
+                                )
+                            )
+                        }
+                    }
+
+                    TextButton(
+                        modifier = Modifier.align(Alignment.End),
+                        onClick = { openDialog = false }) {
+                        Text(
+                            text = "CANCEL",
+                            style = TextStyle(
+                                color = BottomNavigationBarItemSelectedColor,
+                            )
+                        )
+                    }
+                }
+            }
+
+        }
+    }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -421,6 +734,7 @@ fun ExpenseDateRangePicker(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+
             IconButton(onClick = {
                 onCloseCalendarButtonClicked()
             }) {
@@ -430,6 +744,7 @@ fun ExpenseDateRangePicker(
                     tint = HeadingTextColor
                 )
             }
+
             TextButton(
                 onClick = {
                     onConfirmButtonClicked(
@@ -437,18 +752,22 @@ fun ExpenseDateRangePicker(
                         dateRangePickerState.selectedEndDateMillis!!
                     )
                 },
-                enabled = dateRangePickerState.selectedEndDateMillis != null
+                enabled = dateRangePickerState.selectedEndDateMillis != null,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = FABColor,
+                    disabledContentColor = DisabledButtonColor
+                )
             ) {
                 Text(
                     text = "Confirm",
                     style = TextStyle(
-                        color = FABColor,
                         fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
                         fontSize = 16.sp
                     )
                 )
             }
         }
+
         DateRangePicker(
             state = dateRangePickerState,
             modifier = Modifier
@@ -457,7 +776,7 @@ fun ExpenseDateRangePicker(
                 Text(
                     modifier = Modifier
                         .padding(start = 64.dp, end = 12.dp),
-                    text = "Select Transaction Dates",
+                    text = "Select Start and End Dates",
                     style = TextStyle(
                         fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
                     )
@@ -480,9 +799,7 @@ fun ExpenseDateRangePicker(
                 todayDateBorderColor = BottomNavigationBarItemSelectedColor,
                 dayInSelectionRangeContentColor = SelectedChipContainerColor,
                 dayInSelectionRangeContainerColor = BottomNavigationBarItemSelectedColor,
-
-
-                )
+            )
         )
 
     }
@@ -490,8 +807,7 @@ fun ExpenseDateRangePicker(
 
 @Composable
 fun DonutChart(
-    context: Context,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     categoryData: Map<String, Double>
 ) {
 
@@ -548,22 +864,35 @@ fun DonutChart(
         backgroundColor = SurfaceBackgroundColor,
         chartPadding = 30,
         isAnimationEnable = true,
-        animationDuration = 700,
+        animationDuration = 500,
         isClickOnSliceEnabled = false,
     )
 
-    Column(
+    PieChart(
         modifier = modifier
             .height(370.dp)
+            .fillMaxSize(),
+        pieChartData = pieChartData,
+        pieChartConfig = pieChartConfig,
+        onSliceClick = {
+            Log.d(TAG, "PieChart/OnClick: $it")
+        }
+
+    )
+
+    /*Column(
+        modifier = modifier
+            .height(370.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        /*Legends(
+        *//*Legends(
             legendsConfig = getLegendsConfigFromPieChartData(
                 pieChartData = donutChartData,
                 gridSize = 2
             )
-        )*/
+        )*//*
 
-        /*DonutPieChart(
+        *//*DonutPieChart(
             modifier = modifier,
             pieChartData = donutChartData,
             pieChartConfig = donutChartConfig,
@@ -571,7 +900,7 @@ fun DonutChart(
                 Log.d(TAG, "DonutChart/OnClick: $it")
             }
 
-        )*/
+        )*//*
 
         PieChart(
             modifier = modifier,
@@ -579,15 +908,14 @@ fun DonutChart(
             pieChartConfig = pieChartConfig,
             onSliceClick = {
                 Log.d(TAG, "PieChart/OnClick: $it")
-                Toast.makeText(context, "${it.label} ${it.value}%", Toast.LENGTH_SHORT).show()
             }
 
         )
-    }
+    }*/
 
 }
 
-@Composable
+/*@Composable
 fun IncomeExpenseText(
     modifier: Modifier = Modifier,
     symbol: String = "$",
@@ -617,7 +945,7 @@ fun IncomeExpenseText(
         Text(
             modifier = modifier
                 .weight(1f)
-                .background(Color(220, 50, 0)),
+                .background(Color(191, 63, 36)),
             text = symbol.plus(Helper.formatAmountWithLocale(expenseText)),
             style = TextStyle(
                 fontSize = 20.sp,
@@ -630,33 +958,134 @@ fun IncomeExpenseText(
             overflow = TextOverflow.Ellipsis
         )
     }
+}*/
+
+@Composable
+fun IncomeExpenseText(
+    modifier: Modifier = Modifier,
+    symbol: String = "$",
+    incomeText: Double,
+    expenseText: Double
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color.Transparent),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        val incomeAnnotatedString = buildAnnotatedString {
+            withStyle(
+                style = SpanStyle(
+                    color = GreenIncomeColor,
+                    fontSize = 20.sp,
+                    fontFamily = FontFamily(Font(R.font.inter_semi_bold))
+                )
+            ) {
+                append(symbol.plus(Helper.formatAmountWithLocale(incomeText)))
+            }
+
+            withStyle(
+                style = SpanStyle(
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    fontFamily = FontFamily(Font(R.font.inter_regular))
+                )
+            ) {
+                pushStringAnnotation(tag = "Income", annotation = "Income")
+                append(" Income")
+            }
+        }
+
+        val expenseAnnotatedString = buildAnnotatedString {
+            withStyle(
+                style = SpanStyle(
+                    color = RedExpenseColor,
+                    fontSize = 20.sp,
+                    fontFamily = FontFamily(Font(R.font.inter_semi_bold))
+                )
+            ) {
+                append(symbol.plus(Helper.formatAmountWithLocale(expenseText)))
+            }
+
+            withStyle(
+                style = SpanStyle(
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    fontFamily = FontFamily(Font(R.font.inter_regular))
+                )
+            ) {
+                pushStringAnnotation(tag = "Expense", annotation = "Expense")
+                append(" Expense")
+            }
+        }
+
+        Log.d(TAG, "IncomeExpenseText/incomeAnnotatedString: $incomeAnnotatedString")
+        Log.d(TAG, "IncomeExpenseText/expenseAnnotatedString: $incomeAnnotatedString")
+
+        Text(
+            text = incomeAnnotatedString,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Divider(
+            modifier = Modifier
+                .height(20.dp)
+                .width(1.dp),
+            color = DetailsTextColor
+        )
+
+        Text(
+            text = expenseAnnotatedString,
+            overflow = TextOverflow.Ellipsis
+        )
+
+
+        /*Text(
+            modifier = modifier
+                .weight(1f)
+                .background(Color(0, 180, 102)),
+            text = symbol.plus(Helper.formatAmountWithLocale(incomeText)),
+            style = TextStyle(
+                fontSize = 20.sp,
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                fontFamily = FontFamily(Font(R.font.inter_semi_bold))
+            ),
+
+
+        )*/
+
+        /*Text(
+            modifier = modifier
+                .weight(1f)
+                .background(Color(191, 63, 36)),
+            text = symbol.plus(Helper.formatAmountWithLocale(expenseText)),
+            style = TextStyle(
+                fontSize = 20.sp,
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                fontFamily = FontFamily(Font(R.font.inter_semi_bold))
+
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )*/
+    }
 }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
-fun AllTransactionsScreenPreview() {/*IncomeExpenseText(
+fun AllTransactionsScreenPreview() {
+    /*IncomeExpenseText(
         incomeText = 1749.0,
         expenseText = 1420.0
     )*/
 
-    /*AllTransactionsScreen(
-        symbol = "$",
-        onBackPressed = {
-
-        })
-*/
-    val dateRangePickerState = rememberDateRangePickerState()
-    ExpenseDateRangePicker(
-        onConfirmButtonClicked = { _, _ ->
-
-        },
-        onCloseCalendarButtonClicked = {
-
-        })
-
-
+    IncomeExpenseText(incomeText = 100043.59, expenseText = 60549.35)
 }
 
 /**

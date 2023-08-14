@@ -1,10 +1,12 @@
 package com.pcandroiddev.expensemanager
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -13,6 +15,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,14 +45,14 @@ import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.ExpenseManagerTheme
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
-import com.pcandroiddev.expensemanager.utils.NetworkState
+import com.pcandroiddev.expensemanager.utils.networkstate.NetworkState
+import com.pcandroiddev.expensemanager.utils.orientationstate.OrientationState
 import com.pcandroiddev.expensemanager.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
-import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -68,6 +71,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        this.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         CoroutineScope(Dispatchers.IO).launch {
             token = userPreferencesManager.getToken()
@@ -101,6 +106,38 @@ class MainActivity : ComponentActivity() {
                         NetworkStateScreen(networkState = "Network Unavailable")
                     }
                 }
+
+                //                val orientationState by mainViewModel.orientationState.collectAsStateWithLifecycle()
+
+                /*when (orientationState) {
+                    OrientationState.Portrait -> {
+
+                    }
+
+                    OrientationState.Landscape -> {
+                        when (networkState) {
+                            NetworkState.Available -> {
+                                Surface(
+                                    modifier = Modifier.fillMaxSize(),
+                                    color = SurfaceBackgroundColor) {
+
+                                }
+                            }
+
+                            NetworkState.Losing -> {
+                                NetworkStateScreen(networkState = "Losing Network")
+                            }
+
+                            NetworkState.Lost -> {
+                                NetworkStateScreen(networkState = "Network Lost")
+                            }
+
+                            NetworkState.Unavailable -> {
+                                NetworkStateScreen(networkState = "Network Unavailable")
+                            }
+                        }
+                    }
+                }*/
             }
         }
     }

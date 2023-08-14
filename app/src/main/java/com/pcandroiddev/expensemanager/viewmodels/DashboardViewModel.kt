@@ -210,11 +210,9 @@ class DashboardViewModel @Inject constructor(
                      searchTransactions()
                  }
                  printState()*/
+
             }
 
-            else -> {
-                Log.d(TAG, "onEventChange: Else branch")
-            }
         }
         validateDataWithRules()
 
@@ -411,6 +409,9 @@ class DashboardViewModel @Inject constructor(
                     }
                 }
             }*/
+            else -> {
+
+            }
         }
     }
 

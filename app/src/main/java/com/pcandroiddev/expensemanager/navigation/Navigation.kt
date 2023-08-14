@@ -3,6 +3,8 @@ package com.pcandroiddev.expensemanager.navigation
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -22,7 +24,7 @@ import com.pcandroiddev.expensemanager.ui.screens.transaction.AddTransactionScre
 import com.pcandroiddev.expensemanager.ui.screens.transaction.AllTransactionsScreen
 import com.pcandroiddev.expensemanager.ui.screens.transaction.EditTransactionScreen
 import com.pcandroiddev.expensemanager.ui.screens.transaction.TransactionDetailsScreen
-import java.lang.StringBuilder
+import java.io.File
 
 
 @Composable
@@ -35,6 +37,8 @@ fun NavigationGraph(
 ) {
 
     val activity = (LocalContext.current as? Activity)
+    val context = LocalContext.current
+
 
     NavHost(
         modifier = modifier,
@@ -126,8 +130,6 @@ fun NavigationGraph(
             )
         ) { navBackStackEntry: NavBackStackEntry ->
 
-            val context = LocalContext.current
-
 
             val jsonTransactionResponse =
                 navBackStackEntry.arguments?.getString("transactionResponse")!!
@@ -211,6 +213,9 @@ fun NavigationGraph(
                         Screen.TransactionDetailsScreen.withArgs(transactionResponseString)
                     )
                 },
+                onStatementGenerated = { file ->
+                    openStatement(context, file)
+                },
                 onBackPressed = {
                     navController.navigate(Screen.DashboardScreen.route) {
                         popUpTo(route = Screen.AllTransactions.route) {
@@ -257,5 +262,22 @@ private fun shareTransaction(
         )
     )
 }
+
+
+private fun openStatement(context: Context, file: File) {
+    val uri = Uri.fromFile(file)
+    val intent = Intent(Intent.ACTION_VIEW)
+    intent.setDataAndType(uri, "application/pdf")
+    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+
+    try {
+        context.startActivity(intent)
+    } catch (exception: Exception) {
+        Log.d(TAG, "Exception in startActivity: ${exception.message}")
+    }
+
+}
+
+private const val TAG = "Navigation"
 
 

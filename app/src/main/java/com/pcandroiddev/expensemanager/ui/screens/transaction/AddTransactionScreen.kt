@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.pcandroiddev.expensemanager.ui.screens.transaction
 
 import android.util.Log
@@ -21,6 +23,8 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -33,10 +37,12 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -65,14 +71,17 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.pcandroiddev.expensemanager.R
 import com.pcandroiddev.expensemanager.data.local.transaction.TransactionType
 import com.pcandroiddev.expensemanager.ui.components.SegmentedControl
+import com.pcandroiddev.expensemanager.ui.theme.BottomNavigationBarItemSelectedColor
 import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.DisabledButtonColor
 import com.pcandroiddev.expensemanager.ui.theme.DisabledTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
+import com.pcandroiddev.expensemanager.ui.theme.LinkColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 import com.pcandroiddev.expensemanager.ui.uievents.AddTransactionUIEvent
+import com.pcandroiddev.expensemanager.utils.Helper
 import com.pcandroiddev.expensemanager.viewmodels.AddTransactionViewModel
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.DatePickerDefaults
@@ -80,6 +89,7 @@ import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+
 
 //TODO: Add onValueChange for UIEvents
 
@@ -238,7 +248,17 @@ fun AddTransactionScreen(
                     )
 
 
-                    TransactionDateComponent(
+                    /*TransactionDateComponent(
+                        onDateChanged = { date ->
+                            addTransactionViewModel.onEventChange(
+                                event = AddTransactionUIEvent.DateChanged(
+                                    date
+                                )
+                            )
+                        }
+                    )*/
+
+                    TransactionDatePicker(
                         onDateChanged = { date ->
                             addTransactionViewModel.onEventChange(
                                 event = AddTransactionUIEvent.DateChanged(
@@ -635,6 +655,7 @@ fun TransactionCategoryMenuComponent(
 
 }
 
+
 @Composable
 fun TransactionDateComponent(
     defaultSelectedDate: LocalDate = LocalDate.now(),
@@ -733,6 +754,171 @@ fun TransactionDateComponent(
 
     }
 
+
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TransactionDatePicker(
+    defaultSelectedDate: Long = System.currentTimeMillis(),
+    onDateChanged: (String) -> Unit
+) {
+
+    var openDialog by remember {
+        mutableStateOf(false)
+    }
+
+    var selectedDate by remember {
+        mutableStateOf(defaultSelectedDate)
+    }
+
+    val formattedDate by remember {
+        derivedStateOf {
+            Helper.getLocalDateFromLong(selectedDate)
+        }
+    }
+
+    TextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = true) {
+                openDialog = true
+            },
+        enabled = false,
+        value = formattedDate,
+        onValueChange = {},
+        readOnly = true,
+        label = {
+            Text(
+                text = "Date",
+                fontFamily = FontFamily(Font(R.font.inter_regular))
+            )
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Filled.CalendarMonth,
+                tint = HeadingTextColor,
+                contentDescription = "Date Picker"
+            )
+        },
+        textStyle = TextStyle(
+            color = DetailsTextColor,
+            fontFamily = FontFamily(Font(R.font.inter_regular)),
+            fontSize = 15.sp
+        ),
+        colors = TextFieldDefaults.colors(
+            disabledTextColor = DetailsTextColor,
+            focusedContainerColor = SurfaceBackgroundColor,
+            unfocusedContainerColor = SurfaceBackgroundColor,
+            disabledContainerColor = SurfaceBackgroundColor,
+            disabledIndicatorColor = HeadingTextColor,
+            disabledLabelColor = DetailsTextColor,
+        ),
+
+        )
+
+
+
+
+    if (openDialog) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = defaultSelectedDate
+        )
+
+        val confirmEnabled by remember {
+            derivedStateOf { datePickerState.selectedDateMillis != null }
+        }
+
+        DatePickerDialog(
+            onDismissRequest = {
+                openDialog = false
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        openDialog = false
+                        selectedDate = datePickerState.selectedDateMillis!!
+                        onDateChanged(formattedDate)
+                        Log.d(TAG, "TransactionDatePicker formattedDate: $formattedDate")
+                    },
+                    enabled = confirmEnabled,
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = FABColor,
+                        disabledContentColor = DisabledButtonColor
+                    )
+                ) {
+                    Text(
+                        text = "Confirm",
+                        style = TextStyle(
+                            fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                            fontSize = 16.sp
+                        )
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        /*TODO: Pass the value to the onConfirmClicked*/
+                        openDialog = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = FABColor,
+                        disabledContentColor = DisabledButtonColor
+                    )
+                ) {
+                    Text(
+                        text = "Cancel",
+                        style = TextStyle(
+                            fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                            fontSize = 16.sp
+                        )
+                    )
+                }
+            },
+            colors = androidx.compose.material3.DatePickerDefaults.colors(
+                containerColor = ComponentsBackgroundColor,
+            )
+        ) {
+            DatePicker(
+                state = datePickerState,
+                title = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .padding(top = 12.dp),
+                            text = "Select Transaction Date",
+                            style = TextStyle(
+                                fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                            )
+                        )
+                    }
+                },
+                showModeToggle = false,
+                colors = androidx.compose.material3.DatePickerDefaults.colors(
+                    containerColor = ComponentsBackgroundColor,
+                    titleContentColor = DetailsTextColor,
+                    headlineContentColor = DetailsTextColor,
+                    weekdayContentColor = DetailsTextColor,
+                    subheadContentColor = DetailsTextColor,
+                    yearContentColor = DetailsTextColor,
+                    currentYearContentColor = FABColor,
+                    selectedYearContentColor = DetailsTextColor,
+                    selectedYearContainerColor = FABColor,
+                    dayContentColor = DetailsTextColor,
+                    selectedDayContentColor = DetailsTextColor,
+                    selectedDayContainerColor = LinkColor,
+                    todayContentColor = BottomNavigationBarItemSelectedColor,
+                    todayDateBorderColor = BottomNavigationBarItemSelectedColor,
+                )
+            )
+        }
+
+    }
 
 }
 
@@ -865,7 +1051,7 @@ fun AddTransactionScreenPreview() {
         }
     )*/
 
-    Row(
+    /*Row(
         modifier = Modifier
             .padding(top = 12.dp, bottom = 12.dp)
             .fillMaxWidth(),
@@ -877,7 +1063,10 @@ fun AddTransactionScreenPreview() {
 
             }
         )
-    }
+    }*/
 
+    /*TransactionDatePicker() {
+
+    }*/
 
 }

@@ -211,7 +211,7 @@ fun EditTransactionScreen(
                     )
 
 //              TODO: Remember to change the defaultDate to LocalDate format
-                    TransactionDateComponent(
+                    /*TransactionDateComponent(
                         defaultSelectedDate = Helper.stringToLocalDate(editTransactionViewModel.editTransactionUIState.value.date),
                         onDateChanged = { date ->
                             editTransactionViewModel.onEventChange(
@@ -220,7 +220,18 @@ fun EditTransactionScreen(
                                 )
                             )
                         }
-                    )
+                    )*/
+
+                    TransactionDatePicker(defaultSelectedDate = Helper.stringToLocalDate(
+                        editTransactionViewModel.editTransactionUIState.value.date
+                    ),
+                        onDateChanged = { date ->
+                            editTransactionViewModel.onEventChange(
+                                event = EditTransactionUIEvent.DateChanged(
+                                    date
+                                )
+                            )
+                        })
 
 
                     TransactionNoteComponent(

@@ -130,4 +130,11 @@ dependencies {
     //YCharts - For charts
     implementation 'co.yml:ycharts:2.1.0'
 
+    //OpenPDF
+//    implementation 'com.github.librepdf:openpdf:1.3.30'
+
+    //iText
+    // https://mvnrepository.com/artifact/com.itextpdf/itextpdf
+    implementation 'com.itextpdf:itextpdf:5.5.13.3'
+
 }

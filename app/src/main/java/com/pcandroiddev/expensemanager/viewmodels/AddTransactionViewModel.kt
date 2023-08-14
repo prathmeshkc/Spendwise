@@ -120,7 +120,7 @@ class AddTransactionViewModel @Inject constructor(
         )
 
         _allValidationPassed.value =
-            titleResult.first && amountResult.first && categoryResult.first && noteResult.first
+            titleResult.first && amountResult.first && categoryResult.first
 
         printState()
 

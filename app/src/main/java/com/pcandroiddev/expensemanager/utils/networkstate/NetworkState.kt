@@ -1,4 +1,4 @@
-package com.pcandroiddev.expensemanager.utils
+package com.pcandroiddev.expensemanager.utils.networkstate
 
 sealed interface NetworkState {
     object Available : NetworkState

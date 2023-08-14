@@ -157,6 +157,7 @@ fun TotalBalanceCard(
         if (openDialog) {
             Dialog(onDismissRequest = { openDialog = false }) {
                 Surface(
+                    shape = RoundedCornerShape(8.dp),
                     color = ComponentsBackgroundColor
                 ) {
                     Column(

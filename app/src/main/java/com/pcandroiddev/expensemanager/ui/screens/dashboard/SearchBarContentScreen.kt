@@ -243,6 +243,8 @@ fun SearchBarContentScreen(
                     transactionList = searchedTransactionList,
                     onTransactionListItemClicked = { transactionResponse ->
                         onSearchedTransactionListItemClicked(transactionResponse)
+                        dashboardViewModel.resetSearchState()
+
                     }
                 )
             }

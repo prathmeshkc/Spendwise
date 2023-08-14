@@ -25,7 +25,6 @@ import javax.inject.Inject
 class RegisterViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userPreferencesManager: UserPreferencesManager,
-    private val firebaseClientId: String
 ) : ViewModel() {
 
 
@@ -84,7 +83,10 @@ class RegisterViewModel @Inject constructor(
                         val userId = tokenResult?.claims?.get("user_id")
                         Log.d(TAG, "registerUserWithEmailPassword: $userId")
                         userPreferencesManager.saveToken(token = token!!)
-                        Log.d(TAG, "registerUserWithEmailPassword: ${userPreferencesManager.getToken()}")
+                        Log.d(
+                            TAG,
+                            "registerUserWithEmailPassword: ${userPreferencesManager.getToken()}"
+                        )
                         _signUpState.send(ResultState(isSuccess = "Sign Up Success!"))
                     }
 
