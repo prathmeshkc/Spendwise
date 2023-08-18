@@ -44,7 +44,7 @@ val CategoryColors = mapOf(
     "Miscellaneous" to Color(213, 94, 0),      // Vermilion
     "Personal Spending" to Color(204, 121, 167), // Rose
     "Savings & Debts" to Color(240, 50, 230),   // Magenta
-    "Transportation" to Color(26, 25, 30),        // Black
+    "Transportation" to Color(237, 201, 175),        // Black
     "Utilities" to Color(86, 86, 86)           // Dark Gray
 )
 

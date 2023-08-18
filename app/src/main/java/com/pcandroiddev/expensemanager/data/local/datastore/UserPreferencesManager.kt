@@ -3,6 +3,7 @@ package com.pcandroiddev.expensemanager.data.local.datastore
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -20,6 +21,7 @@ class UserPreferencesManager @Inject constructor(@ApplicationContext private val
         val TOKEN_KEY = stringPreferencesKey(name = "TOKEN")
         val EMAIL = stringPreferencesKey(name = "EMAIL")
         val PASSWORD = stringPreferencesKey(name = "PASSWORD")
+        val EMAIL_VERIFICATION_STATUS = booleanPreferencesKey(name = "EMAIL_VERIFICATION_STATUS")
 //        val SELECTED_FILTER = stringPreferencesKey(name = "SELECTED_FILTER")
     }
 
@@ -58,9 +60,20 @@ class UserPreferencesManager @Inject constructor(@ApplicationContext private val
         }
     }
 
+    suspend fun saveEmailVerificationStatus(isVerified: Boolean) {
+        context.tokenDataStore.edit {
+            it[EMAIL_VERIFICATION_STATUS] = isVerified
+        }
+    }
+
     suspend fun getToken(): String? {
         val preferences = context.tokenDataStore.data.first()
         return preferences[TOKEN_KEY]
+    }
+
+    suspend fun getEmailVerificationStatus(): Boolean {
+        val preferences = context.tokenDataStore.data.first()
+        return preferences[EMAIL_VERIFICATION_STATUS] ?: false
     }
 
     suspend fun getEmail(): String? {

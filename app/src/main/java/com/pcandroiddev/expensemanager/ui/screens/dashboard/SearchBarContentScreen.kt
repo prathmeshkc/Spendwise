@@ -244,6 +244,9 @@ fun SearchBarContentScreen(
                     onTransactionListItemClicked = { transactionResponse ->
                         onSearchedTransactionListItemClicked(transactionResponse)
                         dashboardViewModel.resetSearchState()
+                        dashboardViewModel.onSearchTransactionEventChange(
+                            event = SearchTransactionUIEvent.ResetSearchTransactionUIState
+                        )
 
                     }
                 )
@@ -259,6 +262,10 @@ fun SearchBarContentScreen(
         onDispose {
             if (dashboardViewModel.searchTransactionUIState.value.searchText.isEmpty()) {
                 dashboardViewModel.resetSearchState()
+                dashboardViewModel.onSearchTransactionEventChange(
+                    event = SearchTransactionUIEvent.ResetSearchTransactionUIState
+                )
+
             }
         }
     }

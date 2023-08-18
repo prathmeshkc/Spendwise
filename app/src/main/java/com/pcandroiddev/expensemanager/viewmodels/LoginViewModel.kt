@@ -8,6 +8,7 @@ import com.google.firebase.auth.AuthResult
 import com.pcandroiddev.expensemanager.data.local.datastore.UserPreferencesManager
 import com.pcandroiddev.expensemanager.repository.auth.AuthRepository
 import com.pcandroiddev.expensemanager.ui.rules.Validator
+import com.pcandroiddev.expensemanager.ui.states.RegistrationState
 import com.pcandroiddev.expensemanager.ui.states.ResultState
 import com.pcandroiddev.expensemanager.ui.states.ui.LoginUIState
 import com.pcandroiddev.expensemanager.ui.uievents.LoginUIEvent
@@ -32,7 +33,7 @@ class LoginViewModel @Inject constructor(
     var allValidationPassed = mutableStateOf(false)
         private set
 
-    private val _signInState = Channel<ResultState>()
+    private val _signInState = Channel<RegistrationState>()
     val singInState = _signInState.receiveAsFlow()
 
     fun onEventChange(event: LoginUIEvent) {
@@ -69,19 +70,29 @@ class LoginViewModel @Inject constructor(
 
                 when (authResult) {
                     is ApiResult.Loading -> {
-                        _signInState.send(ResultState(isLoading = true))
+                        _signInState.send(RegistrationState(isLoading = true))
                     }
 
                     is ApiResult.Success -> {
                         val tokenResult = authResult.data?.user?.getIdToken(false)?.await()
                         val token = tokenResult?.token
-                        userPreferencesManager.saveToken(token = token!!)
-                        Log.d(TAG, "loginUserWithEmailPassword: ${userPreferencesManager.getToken()}")
-                        _signInState.send(ResultState(isSuccess = "Sign In Success!"))
+                        val user = authResult.data?.user
+
+                        if (user?.isEmailVerified!!) {
+                            userPreferencesManager.saveEmailVerificationStatus(isVerified = true)
+                            userPreferencesManager.saveToken(token = token!!)
+                            Log.d(
+                                TAG,
+                                "loginUserWithEmailPassword: ${userPreferencesManager.getToken()}"
+                            )
+                            _signInState.send(RegistrationState(isSuccess = "Sign In Success!"))
+                        }else {
+                            _signInState.send(RegistrationState(verify = "Please Verify Your Email!", isLoading = false))
+                        }
                     }
 
                     is ApiResult.Error -> {
-                        _signInState.send(ResultState(isError = authResult.message))
+                        _signInState.send(RegistrationState(isError = authResult.message))
                     }
                 }
 

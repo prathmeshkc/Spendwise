@@ -149,7 +149,7 @@ fun DashboardScreen(
 
     Scaffold(
         snackbarHost = {
-            SnackbarHost(snackbarHostState)
+            SnackbarHost(hostState = snackbarHostState)
         },
         floatingActionButton = {
             if (!isSearchBarActive) {

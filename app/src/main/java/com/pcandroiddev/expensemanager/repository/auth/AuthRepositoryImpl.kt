@@ -1,5 +1,6 @@
 package com.pcandroiddev.expensemanager.repository.auth
 
+import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.pcandroiddev.expensemanager.utils.ApiResult
@@ -43,7 +44,7 @@ class AuthRepositoryImpl @Inject constructor(
         return tokenResult?.token
     }
 
-    /*override fun googleSignIn(credential: AuthCredential): Flow<NetworkResult<AuthResult>> {
+    /*override fun googleSignIn(credential: AuthCredential): Flow<ApiResult<AuthResult>> {
         TODO("Not yet implemented")
     }*/
 }

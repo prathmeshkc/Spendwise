@@ -213,6 +213,10 @@ class DashboardViewModel @Inject constructor(
 
             }
 
+            SearchTransactionUIEvent.ResetSearchTransactionUIState -> {
+                searchTransactionUIState.value = SearchUIState()
+                return
+            }
         }
         validateDataWithRules()
 

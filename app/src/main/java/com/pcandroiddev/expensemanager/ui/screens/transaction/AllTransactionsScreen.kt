@@ -42,6 +42,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -122,7 +123,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-//TODO: Show everything only if transaction list of not empty
 
 private const val TAG = "AllTransactionsScreen"
 
@@ -450,7 +450,7 @@ fun AllTransactionsScreen(
                         Legends(
                             legendsConfig = getLegendsConfigFromPieChartData(
                                 pieChartData = pieChartData,
-                                gridSize = 1
+                                gridSize = 2
                             )
                         )
 
@@ -553,15 +553,27 @@ fun AllTransactionsScreen(
 
         LaunchedEffect(key1 = statementGenerationErrorState.value) {
             statementGenerationErrorState.value?.let { message ->
-                showToast(context, message)
+//                showToast(context, message)
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = message,
+                        duration = SnackbarDuration.Long
+                    )
+                }
                 allTransactionsViewModel.clearStatementGenerationState()
             }
         }
 
         LaunchedEffect(key1 = statementGenerationSuccessState.value) {
             statementGenerationSuccessState.value?.let { file ->
-                showToast(context, "Statement generated in Downloads folder")
                 onStatementGenerated(file)
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "Statement generated in Downloads folder",
+                        duration = SnackbarDuration.Long
+                    )
+                }
+//                showToast(context, "Statement generated in Downloads folder")
             }
         }
     }

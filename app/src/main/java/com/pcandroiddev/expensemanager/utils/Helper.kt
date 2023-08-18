@@ -15,15 +15,18 @@ import javax.inject.Inject
 
 object Helper {
 
-    fun stringToLocalDate(dateString: String): Long {
-        val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.ENGLISH)
+    fun stringToLocalDate(dateString: String): LocalDate {
+        /*val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.ENGLISH)
         val localDate = LocalDate.parse(dateString, formatter)
 
         // Convert LocalDate to ZonedDateTime at midnight
         val zonedDateTime = ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneOffset.UTC)
 
         // Get the epoch milliseconds
-        return zonedDateTime.toInstant().toEpochMilli()
+        return zonedDateTime.toInstant().toEpochMilli()*/
+
+        val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.ENGLISH)
+        return LocalDate.parse(dateString, formatter)
     }
 
     /*fun stringifyTotalBalance(balance: Double): String {
@@ -50,11 +53,20 @@ object Helper {
 
     fun getLocalDateFromLong(
         dateInLong: Long,
-    ): String {
+    ): LocalDate {
+
+        /*val dateTimeFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
+        val instant = Instant.ofEpochMilli(dateInLong)
+        val zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
+        return dateTimeFormatter.format(zonedDateTime)*/
 
         val instant = Instant.ofEpochMilli(dateInLong)
-        val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy").withZone(ZoneId.of("UTC"))
-        return formatter.format(instant)
+        return instant.atZone(ZoneId.systemDefault()).toLocalDate()
+    }
+
+    fun getFormattedDateFromLocalDate(localDate: LocalDate): String {
+        val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
+        return formatter.format(localDate)
     }
 
 

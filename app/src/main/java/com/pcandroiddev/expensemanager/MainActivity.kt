@@ -68,6 +68,7 @@ class MainActivity : ComponentActivity() {
     lateinit var currencyInstanceNumberFormat: NumberFormat
 
     private var token: String? = null
+    private var isEmailVerified: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,6 +77,7 @@ class MainActivity : ComponentActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             token = userPreferencesManager.getToken()
+            isEmailVerified = userPreferencesManager.getEmailVerificationStatus()
         }
 
         setContent {
@@ -90,6 +92,7 @@ class MainActivity : ComponentActivity() {
                         NavigationGraph(accessToken = token, symbol = symbol ?: "$")*/
                         ExpenseManagerApp(
                             accessToken = token,
+                            isEmailVerified = isEmailVerified,
                             currencyInstanceNumberFormat = currencyInstanceNumberFormat
                         )
                     }
@@ -148,6 +151,7 @@ class MainActivity : ComponentActivity() {
 fun ExpenseManagerApp(
     modifier: Modifier = Modifier,
     accessToken: String? = null,
+    isEmailVerified: Boolean = false,
     currencyInstanceNumberFormat: NumberFormat
 ) {
     val navController = rememberNavController()
@@ -175,6 +179,7 @@ fun ExpenseManagerApp(
             navController = navController,
             snackbarHostState = snackbarHostState,
             accessToken = accessToken,
+            isEmailVerified = isEmailVerified,
             symbol = symbol ?: "$",
             modifier = Modifier.padding(innerPadding)
         )

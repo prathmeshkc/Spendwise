@@ -32,6 +32,7 @@ fun NavigationGraph(
     navController: NavHostController,
     snackbarHostState: SnackbarHostState,
     accessToken: String? = null,
+    isEmailVerified: Boolean = false,
     symbol: String,
     modifier: Modifier
 ) {
@@ -43,11 +44,12 @@ fun NavigationGraph(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = if (accessToken != null) Screen.DashboardScreen.route else Screen.RegisterScreen.route
+        startDestination = if (accessToken != null && isEmailVerified) Screen.DashboardScreen.route else Screen.RegisterScreen.route
     ) {
 
         composable(route = Screen.RegisterScreen.route) {
             RegisterScreen(
+                snackbarHostState = snackbarHostState,
                 onLoginTextClicked = {
                     navController.navigate(Screen.LoginScreen.route)
                 },
@@ -64,6 +66,7 @@ fun NavigationGraph(
 
         composable(route = Screen.LoginScreen.route) {
             LoginScreen(
+                snackbarHostState = snackbarHostState,
                 onRegisterTextClicked = {
                     navController.navigate(Screen.RegisterScreen.route) {
                         popUpTo(route = Screen.LoginScreen.route) {

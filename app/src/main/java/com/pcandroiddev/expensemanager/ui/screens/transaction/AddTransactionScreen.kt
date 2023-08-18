@@ -761,7 +761,7 @@ fun TransactionDateComponent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionDatePicker(
-    defaultSelectedDate: Long = System.currentTimeMillis(),
+    defaultSelectedDate: LocalDate = LocalDate.now(),
     onDateChanged: (String) -> Unit
 ) {
 
@@ -775,7 +775,7 @@ fun TransactionDatePicker(
 
     val formattedDate by remember {
         derivedStateOf {
-            Helper.getLocalDateFromLong(selectedDate)
+            Helper.getFormattedDateFromLocalDate(selectedDate)
         }
     }
 
@@ -822,9 +822,7 @@ fun TransactionDatePicker(
 
 
     if (openDialog) {
-        val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = defaultSelectedDate
-        )
+        val datePickerState = rememberDatePickerState()
 
         val confirmEnabled by remember {
             derivedStateOf { datePickerState.selectedDateMillis != null }
@@ -838,7 +836,8 @@ fun TransactionDatePicker(
                 TextButton(
                     onClick = {
                         openDialog = false
-                        selectedDate = datePickerState.selectedDateMillis!!
+                        selectedDate =
+                            Helper.getLocalDateFromLong(datePickerState.selectedDateMillis!!)
                         onDateChanged(formattedDate)
                         Log.d(TAG, "TransactionDatePicker formattedDate: $formattedDate")
                     },

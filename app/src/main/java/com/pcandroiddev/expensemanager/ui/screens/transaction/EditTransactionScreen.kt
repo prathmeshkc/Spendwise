@@ -222,9 +222,10 @@ fun EditTransactionScreen(
                         }
                     )*/
 
-                    TransactionDatePicker(defaultSelectedDate = Helper.stringToLocalDate(
-                        editTransactionViewModel.editTransactionUIState.value.date
-                    ),
+                    TransactionDatePicker(
+                        defaultSelectedDate = Helper.stringToLocalDate(
+                            editTransactionViewModel.editTransactionUIState.value.date
+                        ),
                         onDateChanged = { date ->
                             editTransactionViewModel.onEventChange(
                                 event = EditTransactionUIEvent.DateChanged(

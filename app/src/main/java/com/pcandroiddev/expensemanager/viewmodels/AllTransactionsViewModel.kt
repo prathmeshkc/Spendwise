@@ -22,6 +22,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.Locale
@@ -189,8 +190,16 @@ class AllTransactionsViewModel @Inject constructor(
     ): String {
 
         val instant = Instant.ofEpochMilli(dateInLong)
-        val formatter = dateTimeFormatter.withZone(ZoneId.of("UTC"))
+        val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy").withZone(ZoneId.of("UTC"))
         return formatter.format(instant)
+
+        /*val instant = Instant.ofEpochMilli(dateInLong)
+        val formatter = dateTimeFormatter.withZone(ZoneId.systemDefault())
+        return formatter.format(instant)*/
+
+        /*val instant = Instant.ofEpochMilli(dateInLong)
+        val zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
+        return dateTimeFormatter.format(zonedDateTime)*/
     }
 
 

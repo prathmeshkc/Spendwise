@@ -5,9 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.AuthResult
+import com.google.firebase.auth.FirebaseAuth
 import com.pcandroiddev.expensemanager.data.local.datastore.UserPreferencesManager
 import com.pcandroiddev.expensemanager.repository.auth.AuthRepository
 import com.pcandroiddev.expensemanager.ui.rules.Validator
+import com.pcandroiddev.expensemanager.ui.states.RegistrationState
 import com.pcandroiddev.expensemanager.ui.states.ResultState
 import com.pcandroiddev.expensemanager.ui.states.ui.RegisterUIState
 import com.pcandroiddev.expensemanager.ui.uievents.RegisterUIEvent
@@ -15,6 +17,7 @@ import com.pcandroiddev.expensemanager.utils.ApiResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -23,6 +26,7 @@ import javax.inject.Inject
 //TODO: Add HiltViewModel when injecting into the constructor
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
+    private val firebaseAuth: FirebaseAuth,
     private val authRepository: AuthRepository,
     private val userPreferencesManager: UserPreferencesManager,
 ) : ViewModel() {
@@ -34,7 +38,7 @@ class RegisterViewModel @Inject constructor(
     var allValidationPassed = mutableStateOf(false)
         private set
 
-    private val _signUpState = Channel<ResultState>()
+    private val _signUpState = Channel<RegistrationState>()
     val signUpState = _signUpState.receiveAsFlow()
 
 
@@ -74,24 +78,61 @@ class RegisterViewModel @Inject constructor(
             ).collect { authResult: ApiResult<AuthResult> ->
                 when (authResult) {
                     is ApiResult.Loading -> {
-                        _signUpState.send(ResultState(isLoading = true))
+                        _signUpState.send(RegistrationState(isLoading = true))
                     }
 
                     is ApiResult.Success -> {
-                        val tokenResult = authResult.data?.user?.getIdToken(true)?.await()
+                        val user = authResult.data?.user
+                        val tokenResult = user?.getIdToken(true)?.await()
                         val token = tokenResult?.token
                         val userId = tokenResult?.claims?.get("user_id")
                         Log.d(TAG, "registerUserWithEmailPassword: $userId")
-                        userPreferencesManager.saveToken(token = token!!)
-                        Log.d(
-                            TAG,
-                            "registerUserWithEmailPassword: ${userPreferencesManager.getToken()}"
-                        )
-                        _signUpState.send(ResultState(isSuccess = "Sign Up Success!"))
+
+//                        var isEmailSent = false
+                        user?.sendEmailVerification()
+                            ?.addOnCompleteListener { emailVerificationTask ->
+                                if (emailVerificationTask.isSuccessful) {
+//                                    isEmailSent = true
+                                    Log.d(TAG, "Verification email sent successfully.")
+                                    _signUpState.trySend(
+                                        RegistrationState(
+                                            verify = "Please Verify Your Email!",
+                                            isLoading = false
+                                        )
+                                    )
+
+                                }
+                            }
+
+                        /*if (isEmailSent) {
+                            _signUpState.send(
+                                RegistrationState(
+                                    verify = "Please Verify Your Email!",
+                                    isLoading = false
+                                )
+                            )
+
+                            *//*while (!user?.isEmailVerified!!) {
+                                delay(2000)
+                                user.reload()
+
+                                if(user.isEmailVerified) {
+                                    userPreferencesManager.saveToken(token = token!!)
+                                    Log.d(
+                                        TAG,
+                                        "registerUserWithEmailPassword: ${userPreferencesManager.getToken()}"
+                                    )
+                                    _signUpState.send(RegistrationState(isSuccess = "Sign Up Success!"))
+                                }
+                            }*//*
+
+                        }*/
+
+
                     }
 
                     is ApiResult.Error -> {
-                        _signUpState.send(ResultState(isError = authResult.message))
+                        _signUpState.send(RegistrationState(isError = authResult.message))
                     }
                 }
             }
