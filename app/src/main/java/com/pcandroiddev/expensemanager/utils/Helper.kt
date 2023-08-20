@@ -1,17 +1,12 @@
 package com.pcandroiddev.expensemanager.utils
 
 import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
 import java.text.NumberFormat
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.ZoneId
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import javax.inject.Inject
 
 object Helper {
 
@@ -61,11 +56,11 @@ object Helper {
         return dateTimeFormatter.format(zonedDateTime)*/
 
         val instant = Instant.ofEpochMilli(dateInLong)
-        return instant.atZone(ZoneId.systemDefault()).toLocalDate()
+        return instant.atZone(ZoneId.of("UTC")).toLocalDate()
     }
 
-    fun getFormattedDateFromLocalDate(localDate: LocalDate): String {
-        val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
+    fun getFormattedStringDateFromLocalDate(localDate: LocalDate): String {
+        val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy").withZone(ZoneId.of("UTC"))
         return formatter.format(localDate)
     }
 

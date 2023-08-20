@@ -176,6 +176,9 @@ class DashboardViewModel @Inject constructor(
                 val formattedStartDate = dateTimeFormatter.format(firstDayOfMonth)
                 val formattedEndDate = dateTimeFormatter.format(lastDayOfMonth)
 
+                Log.d(TAG, "getAllTransaction: formattedStartDate: $formattedStartDate")
+                Log.d(TAG, "getAllTransaction: formattedEndDate: $formattedEndDate")
+
                 transactionRepository.getAllTransactionBetweenDates(
                     startDate = formattedStartDate,
                     endDate = formattedEndDate
@@ -217,6 +220,8 @@ class DashboardViewModel @Inject constructor(
                 searchTransactionUIState.value = SearchUIState()
                 return
             }
+
+            else -> {}
         }
         validateDataWithRules()
 

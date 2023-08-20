@@ -93,6 +93,10 @@ class AllTransactionsViewModel @Inject constructor(
                     fileType = event.fileType
                 )
             }
+
+            else -> {
+                Log.d(TAG, "onTopBarEventChange: Else branch")
+            }
         }
     }
 

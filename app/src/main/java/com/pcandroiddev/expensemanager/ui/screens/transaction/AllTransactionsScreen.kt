@@ -224,6 +224,10 @@ fun AllTransactionsScreen(
 
 //            allTransactionsViewModel.getCategoryPercentages(transactionList = transactionList)
         }
+
+        else -> {
+            Log.d(TAG, "AllTransactionsScreen: Else branch")
+        }
     }
 
 

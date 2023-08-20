@@ -145,6 +145,8 @@ fun DashboardScreen(
             totalExpenseText = totalExpenseList.sumOf { it.amount }
             totalBalanceText = totalIncomeText - totalExpenseText
         }
+
+        else -> {}
     }
 
     Scaffold(

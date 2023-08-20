@@ -775,7 +775,7 @@ fun TransactionDatePicker(
 
     val formattedDate by remember {
         derivedStateOf {
-            Helper.getFormattedDateFromLocalDate(selectedDate)
+            Helper.getFormattedStringDateFromLocalDate(selectedDate)
         }
     }
 
@@ -818,9 +818,6 @@ fun TransactionDatePicker(
 
         )
 
-
-
-
     if (openDialog) {
         val datePickerState = rememberDatePickerState()
 
@@ -839,6 +836,7 @@ fun TransactionDatePicker(
                         selectedDate =
                             Helper.getLocalDateFromLong(datePickerState.selectedDateMillis!!)
                         onDateChanged(formattedDate)
+                        Log.d(TAG, "TransactionDatePicker milliseconds: ${datePickerState.selectedDateMillis}")
                         Log.d(TAG, "TransactionDatePicker formattedDate: $formattedDate")
                     },
                     enabled = confirmEnabled,

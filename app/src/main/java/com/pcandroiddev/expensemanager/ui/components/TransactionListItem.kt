@@ -128,7 +128,11 @@ fun TransactionListItem(
 
             ) {
                 Text(
-                    text = transactionResponse.title,
+                    text = if (transactionResponse.title.length > 20) {
+                        "${transactionResponse.title.take(20)}..." // Truncate and add ellipsis
+                    } else {
+                        transactionResponse.title // Use the original title if not exceeding 20 characters
+                    },
                     fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
                     fontStyle = FontStyle.Normal,
                     fontWeight = FontWeight.SemiBold,

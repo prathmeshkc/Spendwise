@@ -171,7 +171,7 @@ fun RegisterScreen(
 
                 SimpleTextField(
                     modifier = Modifier
-                        .padding(top = 75.dp),
+                        .padding(top = 60.dp),
                     label = "Name",
                     placeholder = "Full Name",
                     leadingIcon = Icons.Outlined.Person,
