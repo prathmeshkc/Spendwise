@@ -179,8 +179,8 @@ fun AddTransactionScreen(
 
                 Row(
                     modifier = Modifier
-                        .padding(top = 12.dp, bottom = 12.dp)
-                        .align(Alignment.CenterHorizontally),
+                        .padding(vertical = 12.dp)
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
                     TransactionTypeSegmentedButton(

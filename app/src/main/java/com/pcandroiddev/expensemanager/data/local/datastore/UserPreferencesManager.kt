@@ -15,6 +15,9 @@ import javax.inject.Singleton
 @Singleton
 class UserPreferencesManager @Inject constructor(@ApplicationContext private val context: Context) {
     private val Context.tokenDataStore: DataStore<Preferences> by preferencesDataStore(name = "TOKEN_DATASTORE")
+    private val Context.pushNotificationDataStore: DataStore<Preferences> by preferencesDataStore(
+        name = "PUSH_NOTIFICATION_DATASTORE"
+    )
 //    private val Context.filterDataStore: DataStore<Preferences> by preferencesDataStore(name = "FILTER_DATASTORE")
 
     companion object {
@@ -22,7 +25,10 @@ class UserPreferencesManager @Inject constructor(@ApplicationContext private val
         val EMAIL = stringPreferencesKey(name = "EMAIL")
         val PASSWORD = stringPreferencesKey(name = "PASSWORD")
         val EMAIL_VERIFICATION_STATUS = booleanPreferencesKey(name = "EMAIL_VERIFICATION_STATUS")
-//        val SELECTED_FILTER = stringPreferencesKey(name = "SELECTED_FILTER")
+
+        //        val SELECTED_FILTER = stringPreferencesKey(name = "SELECTED_FILTER")
+        val TOPIC_SUBSCRIPTION_STATUS =
+            booleanPreferencesKey("TOPIC_SUBSCRIPTION_STATUS")
     }
 
     /*suspend fun saveSelectedFilter(filter: String) {
@@ -60,9 +66,16 @@ class UserPreferencesManager @Inject constructor(@ApplicationContext private val
         }
     }
 
+
     suspend fun saveEmailVerificationStatus(isVerified: Boolean) {
         context.tokenDataStore.edit {
             it[EMAIL_VERIFICATION_STATUS] = isVerified
+        }
+    }
+
+    suspend fun saveTopicSubscriptionStatus(isSubscribed: Boolean) {
+        context.pushNotificationDataStore.edit {
+            it[TOPIC_SUBSCRIPTION_STATUS] = isSubscribed
         }
     }
 
@@ -76,6 +89,11 @@ class UserPreferencesManager @Inject constructor(@ApplicationContext private val
         return preferences[EMAIL_VERIFICATION_STATUS] ?: false
     }
 
+    suspend fun getTopicSubscriptionStatus(): Boolean {
+        val preferences = context.pushNotificationDataStore.data.first()
+        return preferences[TOPIC_SUBSCRIPTION_STATUS] ?: false
+    }
+
     suspend fun getEmail(): String? {
         val preferences = context.tokenDataStore.data.first()
         return preferences[EMAIL]
@@ -85,6 +103,7 @@ class UserPreferencesManager @Inject constructor(@ApplicationContext private val
         val preferences = context.tokenDataStore.data.first()
         return preferences[PASSWORD]
     }
+
 
     suspend fun deleteToken() {
         context.tokenDataStore.edit { preferences ->
@@ -103,4 +122,6 @@ class UserPreferencesManager @Inject constructor(@ApplicationContext private val
             preferences.remove(PASSWORD)
         }
     }
+
+
 }

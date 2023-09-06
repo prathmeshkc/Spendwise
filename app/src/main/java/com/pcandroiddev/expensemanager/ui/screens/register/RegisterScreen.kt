@@ -104,15 +104,16 @@ fun RegisterScreen(
     snackbarHostState: SnackbarHostState,
     onLoginTextClicked: () -> Unit,
     onRegistrationSuccessful: () -> Unit,
+    onVerifyEmail: (String) -> Unit,
     onBackPressedCallback: () -> Unit
 ) {
     val signUpState = registerViewModel.signUpState.collectAsState(initial = null)
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    var isBottomSheetOpen by remember {
-        mutableStateOf(false)
-    }
+    /* var isBottomSheetOpen by remember {
+         mutableStateOf(false)
+     }*/
 
 
     Scaffold(
@@ -260,7 +261,7 @@ fun RegisterScreen(
                 }
 
 
-                if (isBottomSheetOpen) {
+                /*if (isBottomSheetOpen) {
                     ModalBottomSheet(
                         containerColor = ComponentsBackgroundColor,
                         tonalElevation = 8.dp,
@@ -330,7 +331,7 @@ fun RegisterScreen(
                         Spacer(modifier = Modifier.height(10.dp))
 
                     }
-                }
+                }*/
 
             }
 
@@ -341,7 +342,9 @@ fun RegisterScreen(
             val verify = signUpState.value?.verify
             if (verify != null && verify == "Please Verify Your Email!") {
                 Log.d(TAG, "RegisterScreen/verify: $verify")
-                isBottomSheetOpen = true
+//                isBottomSheetOpen = true
+//                TODO: Navigate to LoginScreen with an event to verify
+                onVerifyEmail("Please Verify Your Email!")
             }
         }
 
@@ -350,7 +353,7 @@ fun RegisterScreen(
             if (success != null && success == "Sign Up Success!") {
                 Log.d(TAG, "RegisterScreen/isSuccess: $success")
 //            onRegistrationSuccessful()
-                isBottomSheetOpen = false
+//                isBottomSheetOpen = false
                 scope.launch {
                     snackbarHostState.showSnackbar(
                         message = "Registration Successful!",
@@ -364,7 +367,7 @@ fun RegisterScreen(
             val error = signUpState.value?.isError
             if (!error.isNullOrBlank()) {
                 Log.d(TAG, "RegisterScreen/isError: $error")
-                isBottomSheetOpen = false
+//                isBottomSheetOpen = false
                 scope.launch {
                     snackbarHostState.showSnackbar(
                         message = error,

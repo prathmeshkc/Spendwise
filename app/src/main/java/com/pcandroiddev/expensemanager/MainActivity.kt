@@ -2,11 +2,12 @@ package com.pcandroiddev.expensemanager
 
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -15,7 +16,6 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,6 +32,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.messaging.FirebaseMessaging
 import com.pcandroiddev.expensemanager.data.local.datastore.UserPreferencesManager
 import com.pcandroiddev.expensemanager.navigation.NavigationGraph
 import com.pcandroiddev.expensemanager.navigation.Screen
@@ -46,12 +47,14 @@ import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.ExpenseManagerTheme
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 import com.pcandroiddev.expensemanager.utils.networkstate.NetworkState
-import com.pcandroiddev.expensemanager.utils.orientationstate.OrientationState
 import com.pcandroiddev.expensemanager.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.text.NumberFormat
 import javax.inject.Inject
 
@@ -67,6 +70,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var currencyInstanceNumberFormat: NumberFormat
 
+    @Inject
+    lateinit var firebaseMessaging: FirebaseMessaging
+
     private var token: String? = null
     private var isEmailVerified: Boolean = false
 
@@ -78,6 +84,25 @@ class MainActivity : ComponentActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             token = userPreferencesManager.getToken()
             isEmailVerified = userPreferencesManager.getEmailVerificationStatus()
+
+            if (!userPreferencesManager.getTopicSubscriptionStatus()) {
+                try {
+                    val task = firebaseMessaging.subscribeToTopic("DailyExpenseReminder")
+                    if (task.isComplete) {
+                        var message = "Subscribed to the topic: DailyExpenseReminder"
+                        if (!task.isSuccessful) {
+                            message = "Failed to subscribe to the topic: DailyExpenseReminder"
+                        }
+                        userPreferencesManager.saveTopicSubscriptionStatus(isSubscribed = true)
+                        Log.d("MainActivity", message)
+                    }
+                } catch (exception: Exception) {
+                    Log.e(
+                        "MainActivity",
+                        "onCreate: Exception during subscription ${exception.message}",
+                    )
+                }
+            }
         }
 
         setContent {
@@ -143,6 +168,11 @@ class MainActivity : ComponentActivity() {
                 }*/
             }
         }
+    }
+
+    private fun subscribeFCMTopic() {
+
+
     }
 }
 

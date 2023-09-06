@@ -51,7 +51,7 @@ fun NavigationGraph(
             RegisterScreen(
                 snackbarHostState = snackbarHostState,
                 onLoginTextClicked = {
-                    navController.navigate(Screen.LoginScreen.route)
+                    navController.navigate(Screen.LoginScreen.withArgs("no_event"))
                 },
                 onRegistrationSuccessful = {
                     navController.navigate(Screen.DashboardScreen.route) {
@@ -60,13 +60,28 @@ fun NavigationGraph(
                         }
                     }
                 },
+                onVerifyEmail = { eventString ->
+                    navController.navigate(Screen.LoginScreen.withArgs(eventString))
+                },
                 onBackPressedCallback = { activity?.finish() }
             )
         }
 
-        composable(route = Screen.LoginScreen.route) {
+        composable(
+            route = Screen.LoginScreen.route + "/{eventString}",
+            arguments = listOf(
+                navArgument(name = "eventString") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            )
+        ) { navBackStackEntry: NavBackStackEntry ->
+
+            val eventString = navBackStackEntry.arguments?.getString("eventString")!!
+
             LoginScreen(
                 snackbarHostState = snackbarHostState,
+                eventString = if (eventString != "no_event") eventString else null,
                 onRegisterTextClicked = {
                     navController.navigate(Screen.RegisterScreen.route) {
                         popUpTo(route = Screen.LoginScreen.route) {
@@ -107,7 +122,7 @@ fun NavigationGraph(
                     )
                 },
                 onLogOutButtonClicked = {
-                    navController.navigate(Screen.LoginScreen.route) {
+                    navController.navigate(Screen.LoginScreen.withArgs("no_event")) {
                         popUpTo(Screen.DashboardScreen.route) {
                             inclusive = true
                         }

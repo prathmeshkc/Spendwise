@@ -4,6 +4,7 @@ plugins {
     id 'kotlin-kapt'
     id 'com.google.gms.google-services'
     id 'dagger.hilt.android.plugin'
+    id 'com.google.firebase.crashlytics'
 }
 
 android {
@@ -93,16 +94,15 @@ dependencies {
 
 
     // Import the Firebase BoM
-    implementation platform('com.google.firebase:firebase-bom:32.1.1')
+    implementation platform('com.google.firebase:firebase-bom:32.2.2')
 
-    // When using the BoM, don't specify versions in Firebase dependencies
+    //Firebase Dependencies
     implementation 'com.google.firebase:firebase-analytics-ktx'
-
-    //Firebase Auth
     implementation 'com.google.firebase:firebase-auth-ktx'
-
-    //add the dependency for the Google Play services library and specify its version
     implementation 'com.google.android.gms:play-services-auth:20.6.0'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-messaging-ktx'
 
     // Dagger - Hilt
     implementation "com.google.dagger:hilt-android:2.44"

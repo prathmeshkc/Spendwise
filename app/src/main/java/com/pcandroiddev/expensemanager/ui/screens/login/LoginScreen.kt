@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,9 +17,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -28,7 +31,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,12 +48,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.pcandroiddev.expensemanager.R
 import com.pcandroiddev.expensemanager.ui.screens.register.ClickableLoginTextComponent
 import com.pcandroiddev.expensemanager.ui.screens.register.DividerTextComponent
 import com.pcandroiddev.expensemanager.ui.screens.register.PasswordTextFieldComponent
 import com.pcandroiddev.expensemanager.ui.screens.register.RegisterLoginButtonComponent
 import com.pcandroiddev.expensemanager.ui.screens.register.SimpleTextField
+import com.pcandroiddev.expensemanager.ui.theme.ComponentsBackgroundColor
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
 import com.pcandroiddev.expensemanager.ui.theme.FABColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
@@ -57,10 +69,12 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "LoginScreen"
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     loginViewModel: LoginViewModel = hiltViewModel(),
     snackbarHostState: SnackbarHostState,
+    eventString: String? = null,
     onRegisterTextClicked: () -> Unit,
     onLoginSuccessful: () -> Unit
 ) {
@@ -68,6 +82,10 @@ fun LoginScreen(
     val signInState = loginViewModel.singInState.collectAsState(initial = null)
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    var isBottomSheetOpen by remember {
+        mutableStateOf(false)
+    }
 
     Scaffold(
         snackbarHost = {
@@ -203,8 +221,85 @@ fun LoginScreen(
                     )
                 }
 
+                if (isBottomSheetOpen) {
+                    ModalBottomSheet(
+                        containerColor = ComponentsBackgroundColor,
+                        tonalElevation = 8.dp,
+                        onDismissRequest = { isBottomSheetOpen = false },
+                        dragHandle = {
+                            Column(
+                                modifier = Modifier.padding(
+                                    start = 20.dp,
+                                    end = 20.dp,
+                                    top = 20.dp
+                                )
+                            ) {
+                                Image(
+                                    painterResource(id = R.drawable.ic_app),
+                                    contentDescription = "",
+                                    modifier = Modifier
+                                        .padding(start = 16.dp)
+                                        .width(30.dp)
+                                        .height(30.dp)
+                                        .align(Alignment.CenterHorizontally),
+                                )
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                Text(
+                                    modifier = Modifier.padding(start = 16.dp),
+                                    text = "Verify your account",
+                                    style = TextStyle(
+                                        fontFamily = FontFamily(Font(R.font.inter_bold)),
+                                        fontSize = 22.sp,
+                                        color = DetailsTextColor
+                                    )
+                                )
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                Text(
+                                    modifier = Modifier.padding(start = 16.dp),
+                                    text = "Account activation link has been sent to the email address you provided",
+                                    style = TextStyle(
+                                        fontFamily = FontFamily(Font(R.font.inter_light)),
+                                        fontSize = 18.sp,
+                                        color = DetailsTextColor
+                                    )
+                                )
+
+                            }
+                        }
+                    ) {
+
+
+                        val composition by rememberLottieComposition(
+                            spec = LottieCompositionSpec.RawRes(
+                                R.raw.email_verification
+                            )
+                        )
+                        LottieAnimation(
+                            modifier = Modifier
+                                .padding(start = 16.dp)
+                                .width(200.dp)
+                                .height(200.dp)
+                                .align(Alignment.CenterHorizontally),
+                            composition = composition,
+                            isPlaying = true,
+                            iterations = LottieConstants.IterateForever
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+                }
+
 
             }
+        }
+    }
+
+    LaunchedEffect(key1 = eventString != null) {
+        if(eventString == "Please Verify Your Email!") {
+            isBottomSheetOpen = true
         }
     }
 
@@ -213,6 +308,7 @@ fun LoginScreen(
         if (verify != null && verify == "Please Verify Your Email!") {
             Log.d(TAG, "LoginScreen/verify: $verify")
 //            Toast.makeText(context, verify, Toast.LENGTH_LONG).show()
+            isBottomSheetOpen = true
             scope.launch {
                 snackbarHostState.showSnackbar(
                     message = "Please verify your email!",
@@ -226,6 +322,7 @@ fun LoginScreen(
         val success = signInState.value?.isSuccess
         if (success != null && success == "Sign In Success!") {
             Log.d(TAG, "LoginScreen/isSuccess: $success")
+            isBottomSheetOpen = false
             onLoginSuccessful()
         }
 
@@ -237,6 +334,7 @@ fun LoginScreen(
         if (!error.isNullOrBlank()) {
             Log.d(TAG, "LoginScreen/isError: $error")
 //            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+            isBottomSheetOpen = false
             scope.launch {
                 snackbarHostState.showSnackbar(
                     message = error,

@@ -1,6 +1,9 @@
 package com.pcandroiddev.expensemanager.di
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.ktx.messaging
 import com.pcandroiddev.expensemanager.repository.auth.AuthRepository
 import com.pcandroiddev.expensemanager.repository.auth.AuthRepositoryImpl
 import dagger.Module
@@ -19,6 +22,10 @@ object AppModule {
     @Provides
     @Singleton
     fun providesFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+    @Provides
+    @Singleton
+    fun providesFirebaseMessaging(): FirebaseMessaging = Firebase.messaging
 
 
     /*@Provides
