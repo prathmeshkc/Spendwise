@@ -64,6 +64,8 @@ class RegisterViewModel @Inject constructor(
             is RegisterUIEvent.GoogleSignUpClicked -> {
                 registerWithGoogleSignUp()
             }
+
+            else -> {}
         }
         validateWithRules()
     }

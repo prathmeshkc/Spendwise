@@ -510,7 +510,7 @@ fun TotalExpenseCard(
 
 
 @Composable
-fun TotalIncomeExpenseCard(
+fun  TotalIncomeExpenseCard(
     modifier: Modifier = Modifier,
     type: TransactionType,
     amountText: String,

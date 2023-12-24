@@ -133,6 +133,8 @@ class MainActivity : ComponentActivity() {
                     NetworkState.Unavailable -> {
                         NetworkStateScreen(networkState = "Network Unavailable")
                     }
+
+                    else -> {}
                 }
 
                 //                val orientationState by mainViewModel.orientationState.collectAsStateWithLifecycle()
@@ -168,11 +170,6 @@ class MainActivity : ComponentActivity() {
                 }*/
             }
         }
-    }
-
-    private fun subscribeFCMTopic() {
-
-
     }
 }
 
