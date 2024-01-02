@@ -58,8 +58,8 @@ fun ExpenseManagerTheme(
         SideEffect {
             val window = (view.context as Activity).window
 //            window.statusBarColor = colorScheme.primary.toArgb()
-            window.statusBarColor = ComponentsBackgroundColor.toArgb()
-            window.navigationBarColor = ComponentsBackgroundColor.toArgb()
+            window.statusBarColor = SurfaceBackgroundColor.toArgb()
+            window.navigationBarColor = SurfaceBackgroundColor.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
         }
     }
