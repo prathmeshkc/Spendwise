@@ -4,7 +4,7 @@
 
 # Spendwise - Track Expenses
 
-Spendwise - Expense Tracker Android & iOS App for Budget Management and Financial Tracking
+Spendwise - Expense Tracker Android App for Budget Management and Financial Tracking
 
 Take control of your finances with Spendwise, an intuitive expense tracker Android app. This powerful tool lets you effortlessly record your income and expenses, providing a complete overview of your financial situation. Set a budget and monitor your spending in different categories to ensure that you're staying on track. The app also offers a pie chart visualization, allowing you to easily identify where you're spending the most. Additionally, Spendwise allows you to generate and download statements of your income and expense records, making it simple to analyze your financial habits and make informed decisions. With Spendwise, managing your budget has never been easier.
 
@@ -40,9 +40,9 @@ Take control of your finances with Spendwise, an intuitive expense tracker Andro
 
 ↗️ [Checkout Android App](https://github.com/prathmeshkc/Spendwise)\
 ↗️ [Checkout iOS App](https://github.com/prathmeshkc/Spendwise-iOS-dev)\
-↗️ [Checkout Backend App](https://github.com/prathmeshkc/SpendwiseBackend)
+↗️ [Checkout Backend](https://github.com/prathmeshkc/SpendwiseBackend)
 
-## :iphone: Screenshots
+## :iphone: Android Screenshots
 
 <table style="width:100%">
   <tr>
@@ -51,40 +51,72 @@ Take control of your finances with Spendwise, an intuitive expense tracker Andro
     <th>Details Screen</th> 
   </tr>
   <tr>
-    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1697514741/DashboardScreen_skj6ca.png" width=240/></td> 
-    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1697514740/AllTransactionScreen_rlbptk.png" width=240/></td>
-    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1697514742/DetailsScreen_vft3pp.png" width=240/></td>
+    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1704156162/Spendwise-Android/Spendwise_Home_Andr_zkqblm.png" width=240/></td> 
+    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1697514740/Spendwise-Android/AllTransactionScreen_rlbptk.png" width=240/></td>
+    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1697514742/Spendwise-Android/DetailsScreen_vft3pp.png" width=240/></td>
   </tr>
-  
+
   <tr>
     <th>Add Transaction</th>
     <th>Insights</th> 
     <th>Push Notification Sample</th> 
   </tr>
   <tr>
-    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1697514740/AddEditTransactionScreen_douktk.png" width=240/></td> 
-    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1697514741/Chart_bg6dmi.png" width=240/></td>
-    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1697515488/IMG-20230911-WA0008_q6cmu6.jpg" width=240/></td>
+    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1697514740/Spendwise-Android/AddEditTransactionScreen_douktk.png" width=240/></td> 
+    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1697514741/Spendwise-Android/Chart_bg6dmi.png" width=240/></td>
+    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1697515488/Spendwise-Android/IMG-20230911-WA0008_q6cmu6.jpg" width=240/></td>
   </tr>
   <tr>
     <th>Register Screen</th>
     <th>Login Screen</th> 
   </tr>
   <tr>
-    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1697514742/RegisterScreen_co7ilh.png" width=240/></td> 
-    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1697514742/LoginScreen_j3tevw.png" width=240/></td>
+    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1697514742/Spendwise-Android/RegisterScreen_co7ilh.png" width=240/></td> 
+    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1697514742/Spendwise-Android/LoginScreen_j3tevw.png" width=240/></td>
   </tr>
 </table>
 <br>
 
+## :iphone: iOS Screenshots
+
+<table style="width:100%">
+  <tr>
+    <th>Home Screen</th>
+    <th>All Transaction Screen</th> 
+    <th>Add/Edit Transaction</th>
+  </tr>
+  <tr>
+    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1703541411/Spendwise-iOS/Simulator_Screenshot_-_iPhone_15_Pro_-_2023-12-25_at_16.49.11_urciu8.png" width=240/></td> 
+    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1703541562/Spendwise-iOS/Simulator_Screenshot_-_iPhone_15_Pro_-_2023-12-25_at_16.59.08_kbgf7g.png" width=240/></td>
+    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1703541625/Spendwise-iOS/Simulator_Screenshot_-_iPhone_15_Pro_-_2023-12-25_at_17.00.10_hbwp98.png" width=240/></td> 
+
+  </tr>
+
+  <tr>
+    <th>Insights</th>
+    <th>Register Screen</th>
+    <th>Login Screen</th> 
+  </tr>
+  <tr>
+        <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1703539282/Spendwise-iOS/Simulator_Screenshot_-_iPhone_15_Pro_-_2023-12-16_at_18.09.12_qc2cqe.png" width=240/></td>
+    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1703539280/Spendwise-iOS/Register_jaqpii.png" width=240/></td> 
+    <td><img src = "https://res.cloudinary.com/prathmeshc/image/upload/v1703539280/Spendwise-iOS/Simulator_Screenshot_-_iPhone_15_Pro_-_2023-12-16_at_18.06.27_hvu5ew.png" width=240/></td>
+  </tr>
+
+</table>
+<br>
+
+
+
 ## 🏗️ Spendwise Architecture Diagram
 
-![Spendwise Architecture Diagram](https://res.cloudinary.com/prathmeshc/image/upload/v1697513981/ExpenseManager_HLD_faugzn.png)
+![Spendwise Architecture Diagram](https://res.cloudinary.com/prathmeshc/image/upload/v1697513981/Spendwise-Backend/ExpenseManager_HLD_faugzn.png)
 
 ## 🏗️ Spendwise Push Notification Architecture Diagram
-![Spendwise Push Notification Architecture Diagram](https://res.cloudinary.com/prathmeshc/image/upload/v1697513981/Push_Notification_HLD_ef5r6m.png)
+![Spendwise Push Notification Architecture Diagram](https://res.cloudinary.com/prathmeshc/image/upload/v1697513981/Spendwise-Backend/Push_Notification_HLD_ef5r6m.png)
 
-
+## 🏗️ Spendwise CI/CD Pipeline
+![Spendwise CI/CD Pipeline](https://res.cloudinary.com/prathmeshc/image/upload/v1703606212/Spendwise-Backend/Spendwise-Backend-CI_CD_mu61dw.png)
 
 ## Authors
 

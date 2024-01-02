@@ -3,7 +3,9 @@ package com.pcandroiddev.expensemanager.ui.components
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,17 +13,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ChevronLeft
-import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.TrendingDown
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
@@ -35,7 +41,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -58,6 +65,7 @@ import com.pcandroiddev.expensemanager.ui.theme.GreenIncomeColor
 import com.pcandroiddev.expensemanager.ui.theme.HeadingTextColor
 import com.pcandroiddev.expensemanager.ui.theme.RedExpenseColor
 import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
+import com.pcandroiddev.expensemanager.ui.theme.TotalBalanceCardColor
 import com.pcandroiddev.expensemanager.ui.theme.TotalBalanceColor
 import com.pcandroiddev.expensemanager.utils.Helper
 
@@ -268,6 +276,237 @@ fun TotalBalanceCard(
 
 }
 
+@Composable
+fun TotalCardView(
+    modifier: Modifier = Modifier,
+    symbol: String = "$",
+    income: Double,
+    expense: Double,
+    currentTimeFrameText: String,
+    onTransactionFilterClicked: (String) -> Unit,
+    onPreviousTransactionsButtonClicked: () -> Unit,
+    onNextTransactionsButtonClicked: () -> Unit
+    ) {
+    Log.d("DashboardScreen", "TotalBalanceCard: $symbol")
+    val balance = income - expense
+    Card(
+        modifier = modifier
+            .height(130.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = TotalBalanceCardColor.copy(alpha = 0.5f)),
+        shape = RoundedCornerShape(10.dp)
+    ) {
+
+
+        var openDialog by remember {
+            mutableStateOf(false)
+        }
+
+        val transactionFiltersList = listOf(
+            TransactionFilters.Daily.name,
+            TransactionFilters.Weekly.name,
+            TransactionFilters.Monthly.name,
+            TransactionFilters.Yearly.name
+        )
+        var selectedTransactionFilter by remember {
+            mutableStateOf(transactionFiltersList[2])
+        }
+
+        Row(
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            OutlinedButton(
+                modifier = Modifier
+                    .padding(start = 12.dp)
+                    .wrapContentWidth(align = Alignment.Start),
+                onClick = { openDialog = true },
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = Color.Transparent
+                ),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = ComponentsBackgroundColor
+                )
+            ) {
+                Text(
+                    text = currentTimeFrameText,
+                    style = TextStyle(
+                        color = DetailsTextColor,
+                        fontFamily = FontFamily(Font(R.font.inter_medium))
+                    )
+                )
+            }
+
+
+            Row(
+                modifier = Modifier.fillMaxWidth(0.8f),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = when {
+                        balance < 0 -> {
+                            "- ".plus(symbol.plus(Helper.formatAmountWithLocale(amount = balance * -1)))
+                        }
+
+                        else -> {
+                            symbol.plus(Helper.formatAmountWithLocale(amount = balance))
+                        }
+                    },
+                    fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                    fontStyle = FontStyle.Normal,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 25.sp,
+                    color = Color.White
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Icon(
+                    imageVector = if (expense > income) Icons.Default.TrendingDown else Icons.Default.TrendingUp,
+                    contentDescription = null,
+                    tint = if (expense > income) RedExpenseColor else GreenIncomeColor
+                )
+            }
+        }
+
+
+        if (openDialog) {
+            Dialog(onDismissRequest = { openDialog = false }) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = ComponentsBackgroundColor
+                ) {
+                    Column(
+                        modifier = Modifier.padding(10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(top = 8.dp),
+                            text = "Show Transactions",
+                            style = TextStyle(
+                                fontSize = 18.sp,
+                                fontFamily = FontFamily(Font(R.font.inter_semi_bold)),
+                                color = DetailsTextColor
+                            )
+                        )
+                        transactionFiltersList.forEach { transactionFilter ->
+                            Row(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                                    .selectable(
+                                        selected = selectedTransactionFilter == transactionFilter,
+                                        onClick = {
+                                            selectedTransactionFilter = transactionFilter
+                                            onTransactionFilterClicked(selectedTransactionFilter)
+                                            openDialog = false
+                                        }
+                                    ),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = selectedTransactionFilter == transactionFilter,
+                                    onClick = {
+                                        selectedTransactionFilter = transactionFilter
+                                        onTransactionFilterClicked(selectedTransactionFilter)
+                                        openDialog = false
+                                    },
+                                    colors = RadioButtonDefaults.colors(
+                                        selectedColor = BottomNavigationBarItemSelectedColor,
+
+                                        )
+                                )
+                                Text(
+                                    modifier = Modifier.padding(start = 16.dp),
+                                    text = transactionFilter,
+                                    style = TextStyle(
+                                        color = DetailsTextColor,
+                                        fontFamily = FontFamily(Font(R.font.inter_semi_bold))
+                                    )
+                                )
+                            }
+                        }
+
+                        TextButton(
+                            modifier = Modifier.align(Alignment.End),
+                            onClick = { openDialog = false }) {
+                            Text(
+                                text = "CANCEL",
+                                style = TextStyle(
+                                    color = BottomNavigationBarItemSelectedColor,
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            TransactionType.values().forEach { type ->
+                val symbolImage =
+                    if (type == TransactionType.INCOME) Icons.Default.ArrowDownward else Icons.Default.ArrowUpward
+                val tint = if (type == TransactionType.INCOME) GreenIncomeColor else RedExpenseColor
+
+                Row(
+                    modifier = Modifier.padding(horizontal = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+
+                    Box(
+                        modifier = Modifier
+                            .size(35.dp)
+                            .clip(CircleShape)
+                            .background(tint.copy(alpha = 0.25f)),
+                        contentAlignment = Alignment.Center
+                        ) {
+                        Icon(
+                            imageVector = symbolImage,
+                            contentDescription = null,
+                            tint = tint.copy(alpha = 1f)
+                        )
+                    }
+
+                    Column {
+                        Text(
+                            text = type.name,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            color = tint
+                        )
+
+                        Text(
+                            text = symbol.plus(Helper.formatAmountWithLocale(amount = if(type == TransactionType.INCOME) income else expense)),
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+
+                        )
+                    }
+                }
+            }
+        }
+
+    }
+
+}
 
 @Composable
 fun DashboardFilterButton(
@@ -510,7 +749,7 @@ fun TotalExpenseCard(
 
 
 @Composable
-fun  TotalIncomeExpenseCard(
+fun TotalIncomeExpenseCard(
     modifier: Modifier = Modifier,
     type: TransactionType,
     amountText: String,
@@ -620,7 +859,9 @@ fun  TotalIncomeExpenseCard(
 @Composable
 fun TotalCardsPreview() {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(SurfaceBackgroundColor),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -641,44 +882,59 @@ fun TotalCardsPreview() {
 
             }
         )
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            TotalIncomeCard(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(100.dp),
-                amountText = "3574.00"
-            )
-            TotalExpenseCard(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(100.dp),
-                amountText = "1767.00"
-            )
-        }
-        Text(text = "Single Card Component")
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            TotalIncomeExpenseCard(
-                type = TransactionType.INCOME,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(104.dp),
-                amountText = "3574.00",
-            )
 
+        TotalCardView(
+            income = 6500.00,
+            expense = 3200.00,
+            currentTimeFrameText = TransactionFilters.Monthly.name,
+            onTransactionFilterClicked = {
 
-            TotalIncomeExpenseCard(
-                type = TransactionType.EXPENSE,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(104.dp),
-                amountText = "1767.00",
-            )
+            },
+            onPreviousTransactionsButtonClicked = {
+
+            }
+        ) {
 
         }
+
+//        Row(
+//            horizontalArrangement = Arrangement.spacedBy(8.dp)
+//        ) {
+//            TotalIncomeCard(
+//                modifier = Modifier
+//                    .weight(1f)
+//                    .height(100.dp),
+//                amountText = "3574.00"
+//            )
+//            TotalExpenseCard(
+//                modifier = Modifier
+//                    .weight(1f)
+//                    .height(100.dp),
+//                amountText = "1767.00"
+//            )
+//        }
+//        Text(text = "Single Card Component")
+//        Row(
+//            horizontalArrangement = Arrangement.spacedBy(8.dp)
+//        ) {
+//            TotalIncomeExpenseCard(
+//                type = TransactionType.INCOME,
+//                modifier = Modifier
+//                    .weight(1f)
+//                    .height(104.dp),
+//                amountText = "3574.00",
+//            )
+//
+//
+//            TotalIncomeExpenseCard(
+//                type = TransactionType.EXPENSE,
+//                modifier = Modifier
+//                    .weight(1f)
+//                    .height(104.dp),
+//                amountText = "1767.00",
+//            )
+//
+//        }
 
 
     }

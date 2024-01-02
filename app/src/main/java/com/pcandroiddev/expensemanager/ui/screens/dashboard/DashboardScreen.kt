@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -55,9 +54,7 @@ import com.pcandroiddev.expensemanager.R
 import com.pcandroiddev.expensemanager.data.local.transaction.TransactionType
 import com.pcandroiddev.expensemanager.data.remote.TransactionResponse
 import com.pcandroiddev.expensemanager.ui.components.DashboardExpensesSearchBar
-import com.pcandroiddev.expensemanager.ui.components.TotalBalanceCard
-import com.pcandroiddev.expensemanager.ui.components.TotalExpenseCard
-import com.pcandroiddev.expensemanager.ui.components.TotalIncomeCard
+import com.pcandroiddev.expensemanager.ui.components.TotalCardView
 import com.pcandroiddev.expensemanager.ui.components.TransactionListItem
 import com.pcandroiddev.expensemanager.ui.components.TransactionListItemShimmerEffect
 import com.pcandroiddev.expensemanager.ui.theme.DetailsTextColor
@@ -66,7 +63,6 @@ import com.pcandroiddev.expensemanager.ui.theme.SurfaceBackgroundColor
 import com.pcandroiddev.expensemanager.ui.uievents.SearchTransactionUIEvent
 import com.pcandroiddev.expensemanager.ui.uievents.TransactionFilterUIEvent
 import com.pcandroiddev.expensemanager.utils.ApiResult
-import com.pcandroiddev.expensemanager.utils.Helper
 import com.pcandroiddev.expensemanager.utils.isScrollingUp
 import com.pcandroiddev.expensemanager.viewmodels.DashboardViewModel
 
@@ -243,12 +239,12 @@ fun DashboardScreen(
                     )
                 }
 
-                TotalBalanceCard(
+                TotalCardView(
                     modifier = Modifier
-                        .padding(horizontal = 12.dp)
+                        .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 10.dp)
                         .fillMaxWidth(),
-                    labelText = "BALANCE",
-                    amountText = totalBalanceText,
+                    income = totalIncomeText,
+                    expense = totalExpenseText,
                     symbol = symbol,
                     currentTimeFrameText = currentlySelectedFilter,
                     onTransactionFilterClicked = { selectedTransactionFilter ->
@@ -266,35 +262,13 @@ fun DashboardScreen(
                         /*dashboardViewModel.onTransactionFilterEventChange(
                             event = TransactionFilterUIEvent.PreviousTransactionsButtonClicked
                         )*/
-                    },
-                    onNextTransactionsButtonClicked = {
-                        //TODO: Handle next transactions
-                        /*dashboardViewModel.onTransactionFilterEventChange(
-                            event = TransactionFilterUIEvent.NextTransactionsButtonClicked
-                        )*/
-
                     }
-                )
-
-                Row(
-                    modifier = Modifier
-                        .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    TotalIncomeCard(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(90.dp),
-                        amountText = Helper.formatAmountWithLocale(amount = totalIncomeText),
-                        symbol = symbol
-                    )
-                    TotalExpenseCard(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(90.dp),
-                        amountText = Helper.formatAmountWithLocale(amount = totalExpenseText),
-                        symbol = symbol
-                    )
+                    //TODO: Handle next transactions
+                    /*dashboardViewModel.onTransactionFilterEventChange(
+                        event = TransactionFilterUIEvent.NextTransactionsButtonClicked
+                    )*/
+
                 }
 
                 Row(
